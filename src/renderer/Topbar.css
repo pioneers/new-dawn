@@ -1,0 +1,45 @@
+.Topbar {
+  width: 100%;
+  font-family: Tahoma, sans-serif;
+  padding: 10px;
+  user-select: none;
+}
+.Topbar-left-group {
+  float: left;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.Topbar-right-group {
+  float: right;
+}
+.Topbar-tail {
+  clear: both;
+}
+.Topbar-dawn-version {
+  font-size: 25px;
+  margin-right: 40px;
+}
+.Topbar-info-card {
+  margin-right: 10px;
+  border-radius: 20px;
+  padding: 4px 8px 4px 8px;
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+}
+.Topbar-robot-disconnected {
+  background-color: red;
+}
+.Topbar-runtime-version {
+  background-color: blue;
+}
+.Topbar-info-card-red {
+  background-color: red;
+}
+.Topbar-info-card-yellow {
+  background-color: yellow;
+}
+.Topbar-info-card-green {
+  background-color: green;
+}

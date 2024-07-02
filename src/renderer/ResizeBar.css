@@ -1,0 +1,13 @@
+.ResizeBar {
+  background-color: black;
+  max-width: 5px;
+  cursor: col-resize;
+}
+.ResizeBar-active-area {
+  top: 0;
+  left: 0;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  cursor: col-resize;
+}
