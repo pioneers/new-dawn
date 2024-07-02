@@ -1,16 +1,19 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const initialState = {
+  content: "",
+  layoutInfo: {
+    resizeInitialXPos: -1,
+    width: -1,
+    widthBeforeResize: -1,
+    containerWidth: -1,
+    maxWidthPercent: -1,
+    minWidthPercent: -1
+  }
+};
 export const editorSlice = createSlice({
   name: 'editor',
-  initialState: {
-    content: "",
-    layoutInfo: {
-      resizeInitialXPos: -1,
-      width: -1,
-      widthBeforeResize: -1,
-      containerWidth: -1
-    },
-  },
+  initialState: initialState,
   reducers: {
     /**
      * Sets the stored content of the editor.
@@ -73,4 +76,5 @@ export const editorSlice = createSlice({
 });
 
 export const editorActions = editorSlice.actions;
+export type EditorState = typeof initialState;
 export default editorSlice.reducer;

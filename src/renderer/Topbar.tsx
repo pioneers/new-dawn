@@ -1,15 +1,15 @@
-import { useSelector } from 'react-redux'
-import pjson from 'package.json' assert { type: 'json' }
-import ConnectionConfig from './ConnectionConfig.tsx'
-import './Topbar.css'
+import { useSelector } from 'react-redux';
+import ConnectionConfig from './ConnectionConfig';
+import type { State } from './store/store';
+import './Topbar.css';
 
 /**
  * Component displaying Dawn version and connection info.
  */
 export default function Topbar() {
-  const robotRuntimeVersion = useSelector((state) => state.robotInfo.runtimeVersion);
-  const robotBatteryVoltage = useSelector((state) => state.robotInfo.batteryVoltage);
-  const robotLatencyMs = 100; //useSelector((state) => state.robotInfo.latencyMs);
+  const robotRuntimeVersion = useSelector((state: State) => state.robotInfo.runtimeVersion);
+  const robotBatteryVoltage = useSelector((state: State) => state.robotInfo.batteryVoltage);
+  const robotLatencyMs = useSelector((state: State) => state.robotInfo.latencyMs);
   const robotInfo = robotLatencyMs == -1 ?
     (
       <div className="Topbar-robot-disconnected Topbar-info-card">DISCONNECTED</div>
@@ -31,7 +31,7 @@ export default function Topbar() {
     <div className="Topbar">
       <div className="Topbar-left-group">
         <div className="Topbar-dawn-version">
-          Dawn v{pjson.version}
+          Dawn vX.X.X
         </div>
         {robotInfo}
       </div>

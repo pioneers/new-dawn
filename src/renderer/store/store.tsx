@@ -1,7 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
-import robotInfoReducer from './robotInfoSlice.tsx';
-import editorReducer from './editorSlice.tsx';
+import robotInfoReducer, { RobotInfoState } from './robotInfoSlice';
+import editorReducer, { EditorState } from './editorSlice';
 
+export interface State {
+  robotInfo: RobotInfoState,
+  editor: EditorState
+}
 export default configureStore({
   reducer: {
     robotInfo: robotInfoReducer,

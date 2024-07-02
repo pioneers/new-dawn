@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import AceEditor from 'react-ace';
-import 'ace-builds/webpack-resolver';
 import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/webpack-resolver';
 import { useSelector, useDispatch } from 'react-redux';
-import { editorActions } from 'renderer/store/editorSlice.tsx';
+import { editorActions } from '../store/editorSlice';
+import type { State } from '../store/store';
 
 /**
  * Component holding the Ace editor and editor toolbar.
@@ -24,13 +25,13 @@ export default function Editor() {
       () => dispatch(editorActions.resizeContainer(window.innerWidth)));
   }, [dispatch]);
       
-  const width = useSelector(state => state.editor.layoutInfo.width);
+  const width = useSelector((state: State) => state.editor.layoutInfo.width);
   return (
     <div className='Editor' style={{ width: width, flexGrow: 0 }}>
       <AceEditor
         style={{ width: '100%' }}
         mode="python"
-        onChange={(e)=>dispatch(editorActions.setContent(e))}
+        onChange={(e) => dispatch(editorActions.setContent(e))}
       />
     </div>
   );

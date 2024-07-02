@@ -1,10 +1,13 @@
-import Topbar from './Topbar.tsx';
-import Editor from './editor/Editor.tsx';
-import DeviceInfo from './DeviceInfo.tsx';
-import AppConsole from './AppConsole.tsx';
-import ConnectionInfoModal from './modals/ConnectionInfoModal.tsx';
-import GamepadInfoModal from './modals/GamepadInfoModal.tsx';
-import ResizeBar from './ResizeBar.tsx';
+import { StrictMode } from 'react';
+import { Provider as ReduxProvider } from 'react-redux';
+import store from './store/store';
+import Topbar from './Topbar';
+import Editor from './editor/Editor';
+import DeviceInfo from './DeviceInfo';
+import AppConsole from './AppConsole';
+import ConnectionInfoModal from './modals/ConnectionInfoModal';
+import GamepadInfoModal from './modals/GamepadInfoModal';
+import ResizeBar from './ResizeBar';
 import './App.css';
 
 /**
@@ -12,18 +15,22 @@ import './App.css';
  */
 export default function App() {
   return (
-    <div className="App">
-      <Topbar />
-      <div className="App-cols">
-        <Editor />
-        <ResizeBar />
-        <DeviceInfo />
-      </div>
-      <AppConsole />
-      <div className="App-modal-container">
-        <ConnectionInfoModal />
-        <GamepadInfoModal />
-      </div>
-    </div>
+    <StrictMode>
+      <ReduxProvider store={store}>
+        <div className="App">
+          <Topbar />
+          <div className="App-cols">
+            <Editor />
+            <ResizeBar />
+            <DeviceInfo />
+          </div>
+          <AppConsole />
+          <div className="App-modal-container">
+            <ConnectionInfoModal />
+            <GamepadInfoModal />
+          </div>
+        </div>
+      </ReduxProvider>
+    </StrictMode>
   );
 }
