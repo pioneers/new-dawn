@@ -10,6 +10,7 @@ export default function Topbar() {
   const robotRuntimeVersion = useSelector((state: State) => state.robotInfo.runtimeVersion);
   const robotBatteryVoltage = useSelector((state: State) => state.robotInfo.batteryVoltage);
   const robotLatencyMs = useSelector((state: State) => state.robotInfo.latencyMs);
+  const dawnVersion = useSelector((state: State) => state.robotInfo.dawnVersion);
   const robotInfo = robotLatencyMs == -1 ?
     (
       <div className="Topbar-robot-disconnected Topbar-info-card">DISCONNECTED</div>
@@ -31,7 +32,7 @@ export default function Topbar() {
     <div className="Topbar">
       <div className="Topbar-left-group">
         <div className="Topbar-dawn-version">
-          Dawn vX.X.X
+          Dawn v{dawnVersion}
         </div>
         {robotInfo}
       </div>

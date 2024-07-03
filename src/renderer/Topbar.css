@@ -1,5 +1,5 @@
 .Topbar {
-  width: 100%;
+  width: calc(100% - 20px);
   font-family: Tahoma, sans-serif;
   padding: 10px;
   user-select: none;

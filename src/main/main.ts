@@ -14,6 +14,8 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import { version as dawnVersion } from '../../package.json';
+import { robotInfoActions } from '../renderer/store/robotInfoSlice';
 
 class AppUpdater {
   constructor() {
@@ -24,12 +26,6 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -87,6 +83,8 @@ const createWindow = async () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
+    mainWindow.webContents.send('renderer-store-dispatch',
+      robotInfoActions.setDawnVersion(dawnVersion));
     if (process.env.START_MINIMIZED) {
       mainWindow.minimize();
     } else {

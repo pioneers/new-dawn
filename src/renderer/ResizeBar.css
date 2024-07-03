@@ -1,6 +1,6 @@
 .ResizeBar {
   background-color: black;
-  max-width: 5px;
+  width: 5px;
   cursor: col-resize;
 }
 .ResizeBar-active-area {
