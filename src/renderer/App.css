@@ -7,11 +7,14 @@ body {
   flex-direction: row;
 }
 .App-modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  position: fixed;
-  background-color: rgb(0 0 0 / 80%);
+  background-color: rgb(0 0 0 / 50%);
   display: none;
+  z-index: 4;
 }
 .App-modal-container:has(.modal-active) {
   display: block;

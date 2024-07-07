@@ -1,8 +1,13 @@
+import Modal from './Modal';
+import { Modals } from '../store/modalSlice';
+
 /**
  * Modal component exposing info about the connection to the robot (IP address, port, etc.)
  */
 export default function ConnectionInfoModal() {
   return (
-    <div className="ConnectionInfoModal">Connection info modal</div>
+    <Modal modalType={Modals.ConnectionConfig} modalTitle="Connection info">
+      Test
+    </Modal>
   );
 }

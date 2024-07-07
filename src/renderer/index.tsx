@@ -7,6 +7,6 @@ const root = createRoot(container);
 root.render(<App />);
 
 window.electron.ipcRenderer.on('renderer-store-dispatch', (action) => {
-  console.log('renderer store dispatch');
+  //console.log('renderer store dispatch');
   store.dispatch(action);
 });

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { editorActions } from './store/editorSlice';
-import { State } from './store/store';
+import type { State } from './store/store';
 import './ResizeBar.css'
 
 /**
