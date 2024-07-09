@@ -15,7 +15,6 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { version as dawnVersion } from '../../package.json';
-import { robotInfoActions } from '../renderer/store/robotInfoSlice';
 
 class AppUpdater {
   constructor() {
@@ -83,8 +82,7 @@ const createWindow = async () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
-    mainWindow.webContents.send('renderer-store-dispatch',
-      robotInfoActions.setDawnVersion(dawnVersion));
+    mainWindow.webContents.send('renderer-init', { dawnVersion: dawnVersion });
     if (process.env.START_MINIMIZED) {
       mainWindow.minimize();
     } else {

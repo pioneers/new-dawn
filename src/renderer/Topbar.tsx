@@ -1,16 +1,17 @@
-import { useSelector } from 'react-redux';
 import ConnectionConfig from './ConnectionConfig';
-import type { State } from './store/store';
 import './Topbar.css';
 
 /**
  * Component displaying Dawn version and connection info.
  */
-export default function Topbar() {
-  const robotRuntimeVersion = useSelector((state: State) => state.robotInfo.runtimeVersion);
-  const robotBatteryVoltage = useSelector((state: State) => state.robotInfo.batteryVoltage);
-  const robotLatencyMs = useSelector((state: State) => state.robotInfo.latencyMs);
-  const dawnVersion = useSelector((state: State) => state.robotInfo.dawnVersion);
+export default function Topbar({ onConnectionConfigModalOpen, runtimeVersion, robotBatteryVoltage,
+    robotLatencyMs, dawnVersion }: {
+  onConnectionConfigModalOpen: () => void;
+  runtimeVersion: string;
+  robotBatteryVoltage: number;
+  robotLatencyMs: number;
+  dawnVersion: string;
+}) {
   const robotInfo = robotLatencyMs == -1 ?
     (
       <div className="Topbar-robot-disconnected Topbar-info-card">DISCONNECTED</div>
@@ -18,7 +19,7 @@ export default function Topbar() {
     (
       <>
         <div className="Topbar-runtime-version Topbar-info-card">
-          Runtime v{robotRuntimeVersion}
+          Runtime v{runtimeVersion}
         </div>
         <div className="Topbar-info-card">
           Battery: {robotBatteryVoltage} V
@@ -37,7 +38,7 @@ export default function Topbar() {
         {robotInfo}
       </div>
       <div className="Topbar-right-group">
-        <ConnectionConfig />
+        <ConnectionConfig onModalOpen={onConnectionConfigModalOpen} />
       </div>
       <div className="Topbar-tail"></div>
     </div>

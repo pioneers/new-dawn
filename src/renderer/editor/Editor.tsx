@@ -1,37 +1,20 @@
-import React, { useEffect, useState } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
-import 'ace-builds/webpack-resolver';
-import { useSelector, useDispatch } from 'react-redux';
-import { editorActions } from '../store/editorSlice';
-import type { State } from '../store/store';
+import './Editor.css';
 
 /**
  * Component holding the Ace editor and editor toolbar.
  */
-export default function Editor() { 
-  const dispatch = useDispatch();
-  // useEffect with dispatch as the only dependency runs once, as if by componentDidMount
-  useEffect(() => {
-    dispatch(editorActions.initLayout({
-      width: window.innerWidth * 0.6, // initial width is 60% of window size
-      // Editor should scale with window (really should scale with parent element, but I'm not sure
-      // how to do that):
-      containerWidth: window.innerWidth,
-      minWidthPercent: 0.50, // percentages of containerWidth
-      maxWidthPercent: 0.85
-    }));
-    window.addEventListener('resize',
-      () => dispatch(editorActions.resizeContainer(window.innerWidth)));
-  }, [dispatch]);
-      
-  const width = useSelector((state: State) => state.editor.layoutInfo.width);
+export default function Editor({ width, onChange }: {
+  width: number;
+  onChange: (content: string) => void
+}) { 
   return (
-    <div className='Editor' style={{ width: width, flexGrow: 0 }}>
+    <div className="Editor" style={{ width: width }}>
       <AceEditor
-        style={{ width: '100%' }}
+        style={{ width: '100%', height: '100%' }}
         mode="python"
-        onChange={(e) => dispatch(editorActions.setContent(e))}
+        onChange={onChange}
       />
     </div>
   );

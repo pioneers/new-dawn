@@ -1,23 +1,40 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { editorActions } from './store/editorSlice';
-import type { State } from './store/store';
+import React, { useState } from 'react';
 import './ResizeBar.css'
 
 /**
  * Component allowing Editor to be resized.
  */
-export default function ResizeBar() {
-  const isResizing = useSelector((state: State) =>
-    (state.editor.layoutInfo.resizeInitialXPos !== -1));
-  const dispatch = useDispatch();
-  const startResize = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
-    dispatch(editorActions.beginResizeAtPos(e.clientX));
-  const updateResize = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) =>
-    dispatch(editorActions.resizeToPos(e.clientX));
-  const endResize = () => dispatch(editorActions.endResize());
+export default function ResizeBar({ onStartResize, onUpdateResize, onEndResize, axis }: {
+  onStartResize?: () => void;
+  onUpdateResize: (pos: number) => boolean;
+  onEndResize?: () => void;
+  axis: 'x' | 'y'
+}) {
+  const [isResizing, setIsResizing] = useState(false);
+  const [initialSize, setInitialSize] = useState(0);
+  const selectCoordinate = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    return axis === 'x' ? e.clientX : e.clientY;
+  };
+  const startResize = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    setIsResizing(true);
+    setInitialSize(selectCoordinate(e));
+    if (onStartResize) {
+      onStartResize();
+    }
+  };
+  const updateResize = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    if (!onUpdateResize(selectCoordinate(e) - initialSize)) {
+      setIsResizing(false);
+    }
+  };
+  const endResize = () => {
+    setIsResizing(false);
+    if (onEndResize) {
+      onEndResize();
+    }
+  };
   return (
-    <div className="ResizeBar" onMouseDown={startResize}>
+    <div className={'ResizeBar ResizeBar-axis-' + axis} onMouseDown={startResize}>
       <div className="ResizeBar-active-area" onMouseUp={endResize} onMouseLeave={endResize}
         onMouseMove={updateResize} style={{ display: isResizing ? "block" : "none" }}>
       </div>

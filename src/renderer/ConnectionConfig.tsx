@@ -1,15 +1,10 @@
-import { useDispatch } from 'react-redux';
-import { modalActions, Modals } from './store/modalSlice';
-
 /**
  * Button component that opens the ConnectionConfigModal.
  */
-export default function ConnectionConfig() {
-  const dispatch = useDispatch();
+export default function ConnectionConfig({ onModalOpen }: { onModalOpen: () => void }) {
   return (
     <div className="ConnectionConfig">
-      <button className="ConnectionConfig-button"
-          onClick={() => dispatch(modalActions.setActive(Modals.ConnectionConfig))}>
+      <button className="ConnectionConfig-button" onClick={onModalOpen}>
         Connection settings...
       </button>
     </div>

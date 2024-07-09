@@ -2,7 +2,7 @@
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'renderer-store-dispatch';
+export type Channels = 'renderer-init' | 'robot-connection-update';
 
 const electronHandler = {
   ipcRenderer: {

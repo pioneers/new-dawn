@@ -2,9 +2,15 @@ body {
   margin: 0;
 }
 
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
 .App-cols {
   display: flex;
   flex-direction: row;
+  flex-shrink: 0;
 }
 .App-modal-container {
   position: fixed;
