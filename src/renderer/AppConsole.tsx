@@ -6,9 +6,7 @@ import './AppConsole.css';
 export default function AppConsole() {
   return (
     <div className="AppConsole">
-      <div className="AppConsole-inner">
-        Test
-      </div>
+      <div className="AppConsole-inner">Test</div>
     </div>
   );
 }
