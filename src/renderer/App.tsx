@@ -9,6 +9,8 @@ import Topbar from './Topbar';
 import Editor from './editor/Editor';
 import DeviceInfo from './DeviceInfo';
 import AppConsole from './AppConsole';
+import AppConsoleMessage from '../common/AppConsoleMessage';
+import ConfirmModal from './modals/ConfirmModal';
 import ConnectionConfigModal from './modals/ConnectionConfigModal';
 import GamepadInfoModal from './modals/GamepadInfoModal';
 import ResizeBar from './ResizeBar';
@@ -44,7 +46,15 @@ export default function App() {
   // Robot latency, -1 if disconnected from robot
   const [robotLatencyMs, setRobotLatencyMs] = useState(-1);
   // Text content of editor
-  const [, setEditorContent] = useState('');
+  const [editorContent, setEditorContent] = useState('');
+  // Clean/dirty/extDirty status of edited file
+  const [editorStatus, setEditorStatus] = useState(
+    'clean' as 'clean' | 'dirty' | 'extDirty',
+  );
+  // Path to file in editor, empty if no save path
+  const [editorPath, setEditorPath] = useState('');
+  // AppConsoleMessages displayed in AppConsole
+  const [consoleMsgs, setConsoleMsgs] = useState([] as AppConsoleMessage[]);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
   const [windowSize, setWindowSize] = useReducer(
     (oldSize: [number, number], newSize: [number, number]) => {
@@ -69,6 +79,7 @@ export default function App() {
     [-1, -1],
   );
 
+  // Update windowSize:
   useLayoutEffect(() => {
     const onResize = () =>
       setWindowSize([window.innerWidth, window.innerHeight]);
@@ -83,10 +94,8 @@ export default function App() {
       window.electron.ipcRenderer.once('renderer-init', (data) => {
         setDawnVersion((data as { dawnVersion: string }).dawnVersion);
       });
-      // ipcRenderer.on returns a cleanup function
-      return window.electron.ipcRenderer.on(
-        'robot-connection-update',
-        (data) => {
+      const listenerDestructors = [
+        window.electron.ipcRenderer.on('renderer-robot-update', (data) => {
           const {
             newRuntimeVersion,
             newRobotBatteryVoltage,
@@ -105,11 +114,76 @@ export default function App() {
           if (newRobotLatencyMs !== undefined) {
             setRobotLatencyMs(newRobotLatencyMs);
           }
-        },
-      );
+        }),
+        window.electron.ipcRenderer.on('renderer-post-console', (data) => {
+          setConsoleMsgs((old) => [...old, data as AppConsoleMessage]);
+        }),
+      ];
+      return () => listenerDestructors.forEach((destructor) => destructor());
     }
     return () => {};
   }, []);
+
+  const changeActiveModal = (newModalName: string) => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    setActiveModal(newModalName);
+  };
+  useEffect(() => {
+    if (window.electron) {
+      return window.electron.ipcRenderer.on('renderer-file-control', (data) => {
+        if (!data || typeof data !== 'object' || !('type' in data)) {
+          throw new Error('Bad data for renderer-file-control.');
+        }
+        if (data.type === 'promptSave') {
+          window.electron.ipcRenderer.sendMessage('main-file-control', {
+            type: 'save',
+            content: editorContent,
+            forceDialog: (data as { type: 'promptSave'; forceDialog: boolean })
+              .forceDialog,
+          });
+        } else if (data.type === 'promptLoad') {
+          if (editorStatus === 'clean') {
+            window.electron.ipcRenderer.sendMessage('main-file-control', {
+              type: 'load',
+            });
+          } else {
+            changeActiveModal('DirtyLoadConfirm');
+          }
+        } else if (data.type === 'didSave') {
+          setEditorStatus('clean');
+        } else if (data.type === 'didOpen') {
+          setEditorStatus('clean');
+          setEditorContent(
+            (data as { type: 'didOpen'; content: string }).content,
+          );
+        } else if (data.type === 'didExternalChange') {
+          setEditorStatus('extDirty');
+        } else if (data.type === 'didChangePath') {
+          setEditorPath((data as { type: 'didChangePath'; path: string }).path);
+        } else {
+          throw new Error(
+            `Unknown data.type for renderer-file-control ${data.type}`,
+          );
+        }
+      });
+    }
+    return () => {};
+  }, [editorContent, editorStatus]);
+
+  useEffect(() => {
+    if (window.electron) {
+      return window.electron.ipcRenderer.on('renderer-quit-request', () => {
+        if (activeModal !== 'DirtyQuitConfirm' && editorStatus !== 'clean') {
+          changeActiveModal('DirtyQuitConfirm');
+        } else {
+          window.electron.ipcRenderer.sendMessage('main-quit');
+        }
+      });
+    }
+    return () => {};
+  }, [activeModal, editorStatus]);
 
   // Editor ResizeBar handlers:
   const startEditorResize = () => setEditorInitialSize(editorSize);
@@ -147,20 +221,34 @@ export default function App() {
   };
   const endColsResize = () => setColsInitialSize(-1);
 
-  const closeModal = () => setActiveModal('');
+  const changeEditorContent = (newContent: string) => {
+    setEditorContent(newContent);
+    if (editorStatus === 'clean') {
+      setEditorStatus('dirty');
+    }
+  };
+  const closeModal = () => changeActiveModal('');
 
   return (
     <StrictMode>
       <div className="App">
         <Topbar
-          onConnectionConfigModalOpen={() => setActiveModal('ConnectionConfig')}
+          onConnectionConfigModalOpen={() =>
+            changeActiveModal('ConnectionConfig')
+          }
           dawnVersion={dawnVersion}
           runtimeVersion={runtimeVersion}
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}
         />
         <div className="App-cols" style={{ height: colsSize }}>
-          <Editor width={editorSize} onChange={setEditorContent} />
+          <Editor
+            width={editorSize}
+            onChange={changeEditorContent}
+            fileStatus={editorStatus}
+            filePath={editorPath}
+            content={editorContent}
+          />
           <ResizeBar
             onStartResize={startEditorResize}
             onUpdateResize={updateEditorResize}
@@ -175,7 +263,7 @@ export default function App() {
           onEndResize={endColsResize}
           axis="y"
         />
-        <AppConsole />
+        <AppConsole messages={consoleMsgs} />
         <div className="App-modal-container">
           <ConnectionConfigModal
             isActive={activeModal === 'ConnectionConfig'}
@@ -184,6 +272,27 @@ export default function App() {
           <GamepadInfoModal
             isActive={activeModal === 'GamepadInfo'}
             onClose={closeModal}
+          />
+          <ConfirmModal
+            isActive={activeModal === 'DirtyLoadConfirm'}
+            onClose={closeModal}
+            onConfirm={() =>
+              window.electron.ipcRenderer.sendMessage('main-file-control', {
+                type: 'load',
+              })
+            }
+            queryText="You have unsaved changes. Really load?"
+            modalTitle="Confirm load"
+          />
+          <ConfirmModal
+            isActive={activeModal === 'DirtyQuitConfirm'}
+            onClose={closeModal}
+            onConfirm={() =>
+              window.electron.ipcRenderer.sendMessage('main-quit')
+            }
+            queryText="You have unsaved changes. Really quit?"
+            modalTitle="Confirm quit"
+            noAutoClose
           />
         </div>
       </div>

@@ -14,7 +14,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { version as dawnVersion } from '../../package.json';
+import MainApp from './MainApp';
 
 class AppUpdater {
   constructor() {
@@ -75,14 +75,14 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+  const mainApp = new MainApp(mainWindow);
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
-
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
-    mainWindow.webContents.send('renderer-init', { dawnVersion });
+    mainApp.onPresent();
     if (process.env.START_MINIMIZED) {
       mainWindow.minimize();
     } else {
@@ -94,7 +94,7 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
+  const menuBuilder = new MenuBuilder(mainApp, mainWindow);
   menuBuilder.buildMenu();
 
   // Open urls in the user's browser
