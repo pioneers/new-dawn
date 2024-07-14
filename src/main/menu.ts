@@ -5,6 +5,7 @@ import {
   BrowserWindow,
   MenuItemConstructorOptions,
 } from 'electron';
+import type MainApp from './MainApp';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
@@ -12,9 +13,12 @@ interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
 }
 
 export default class MenuBuilder {
+  mainApp: MainApp;
+
   mainWindow: BrowserWindow;
 
-  constructor(mainWindow: BrowserWindow) {
+  constructor(mainApp: MainApp, mainWindow: BrowserWindow) {
+    this.mainApp = mainApp;
     this.mainWindow = mainWindow;
   }
 
@@ -200,12 +204,22 @@ export default class MenuBuilder {
           {
             label: '&Open',
             accelerator: 'Ctrl+O',
+            click: () => {
+              this.mainApp.promptLoadCodeFile();
+            },
           },
           {
-            label: '&Close',
-            accelerator: 'Ctrl+W',
+            label: '&Save',
+            accelerator: 'Ctrl+S',
             click: () => {
-              this.mainWindow.close();
+              this.mainApp.promptSaveCodeFile(false);
+            },
+          },
+          {
+            label: 'Save &As',
+            accelerator: 'Ctrl+Shift+S',
+            click: () => {
+              this.mainApp.promptSaveCodeFile(true);
             },
           },
         ],
@@ -234,7 +248,7 @@ export default class MenuBuilder {
                 },
                 {
                   label: 'Toggle &Developer Tools',
-                  accelerator: 'Alt+Ctrl+I',
+                  accelerator: 'Ctrl+Shift+I',
                   click: () => {
                     this.mainWindow.webContents.toggleDevTools();
                   },
@@ -252,7 +266,7 @@ export default class MenuBuilder {
                 },
               ],
       },
-      {
+      /* {
         label: 'Help',
         submenu: [
           {
@@ -282,7 +296,7 @@ export default class MenuBuilder {
             },
           },
         ],
-      },
+      }, */
     ];
 
     return templateDefault;

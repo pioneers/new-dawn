@@ -1,0 +1,28 @@
+.Modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border-radius: 5px;
+}
+.modal-active {
+  display: block;
+}
+.Modal-title-bar {
+  white-space: nowrap;
+  padding: 20px;
+  background-color: blue;
+  border-radius: inherit;
+}
+.Modal-title {
+  padding-right: 20vw;
+}
+.Modal-close-button {
+  background-color: transparent;
+  border: none;
+}
+.Modal-content {
+  padding: 20px;
+}

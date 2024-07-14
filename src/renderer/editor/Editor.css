@@ -1,0 +1,20 @@
+.Editor {
+  display: flex;
+  flex-direction: column;
+}
+.Editor-file-info {
+  display: flex;
+  padding-left: 15px;
+  flex-basis: 50px;
+  flex-direction: row;
+  align-items: center;
+}
+.Editor-file-name {
+  margin-right: 5px;
+}
+.Editor-file-status {
+  font-style: italic;
+}
+.Editor-ace-wrapper {
+  flex-grow: 1;
+}

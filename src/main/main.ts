@@ -9,11 +9,12 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import MainApp from './MainApp';
 
 class AppUpdater {
   constructor() {
@@ -24,12 +25,6 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -80,13 +75,14 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+  const mainApp = new MainApp(mainWindow);
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
-
   mainWindow.on('ready-to-show', () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
+    mainApp.onPresent();
     if (process.env.START_MINIMIZED) {
       mainWindow.minimize();
     } else {
@@ -98,7 +94,7 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
+  const menuBuilder = new MenuBuilder(mainApp, mainWindow);
   menuBuilder.buildMenu();
 
   // Open urls in the user's browser

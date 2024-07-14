@@ -1,0 +1,11 @@
+.AppConsole {
+  padding: 10px;
+  font-family: "Courier New", monospace;
+  height: 100%;
+}
+.AppConsole-inner {
+  height: 100%;
+  background-color: #eee;
+  overflow: hidden scroll;
+  overflow-wrap: break-word
+}

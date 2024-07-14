@@ -1,0 +1,25 @@
+.ResizeBar {
+  background-color: gray;
+  flex-shrink: 0;
+}
+.ResizeBar-axis-x {
+  width: 5px;
+  cursor: col-resize;
+}
+.ResizeBar-axis-y {
+  height: 5px;
+  cursor: row-resize;
+}
+.ResizeBar-active-area {
+  top: 0;
+  left: 0;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+.ResizeBar-axis-x .ResizeBar-active-area {
+  cursor: col-resize;
+}
+.ResizeBar-axis-y .ResizeBar-active-area {
+  cursor: row-resize;
+}
