@@ -4,6 +4,7 @@ import {
   useReducer,
   useEffect,
   useLayoutEffect,
+  ChangeEvent,
 } from 'react';
 import Topbar from './Topbar';
 import Editor from './editor/Editor';
@@ -78,6 +79,12 @@ export default function App() {
     },
     [-1, -1],
   );
+
+  // for the ConnectionConfigModal
+  const [IPAddress, setIPAddress] = useState('192.168.0.100');
+  const [SSHAddress, setSSHAddress] = useState('192.168.0.100');
+  const [FieldIPAddress, setFieldIPAddress] = useState('localhost');
+  const [FieldStationNum, setFieldStationNum] = useState('4');
 
   // Update windowSize:
   useLayoutEffect(() => {
@@ -229,6 +236,19 @@ export default function App() {
   };
   const closeModal = () => changeActiveModal('');
 
+  const handleConnectionChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { id, value } = event.target;
+    if (id == 'IPAddress') {
+      setIPAddress(value);
+    } else if (id == 'SSHAddress') {
+      setSSHAddress(value);
+    } else if (id == 'FieldIPAddress') {
+      setFieldIPAddress(value);
+    } else if (id == 'FieldStationNum') {
+      setFieldStationNum(value);
+    }
+  };
+
   return (
     <StrictMode>
       <div className="App">
@@ -268,6 +288,11 @@ export default function App() {
           <ConnectionConfigModal
             isActive={activeModal === 'ConnectionConfig'}
             onClose={closeModal}
+            onChange={handleConnectionChange}
+            IPAddress={IPAddress}
+            SSHAddress={SSHAddress}
+            FieldIPAddress={FieldIPAddress}
+            FieldStationNum={FieldStationNum}
           />
           <GamepadInfoModal
             isActive={activeModal === 'GamepadInfo'}
