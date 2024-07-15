@@ -16,6 +16,11 @@ const STATUS_TEXT = {
 };
 /**
  * Component holding the Ace editor and editor toolbar.
+ * @param props - props
+ * @param props.width - width in pixels of Editor container
+ * @param props.fileStatus - dirty status of the currently open file
+ * @param props.filePath - path of the currently open file
+ * @param props.content - the content that should be displayed in the code editor
  */
 export default function Editor({
   width,
@@ -25,6 +30,10 @@ export default function Editor({
   content,
 }: {
   width: number;
+  /**
+   * change handler for the content of the code editor
+   * @param content - the new content of the code editor
+   */
   onChange: (content: string) => void;
   fileStatus: 'clean' | 'dirty' | 'extDirty';
   filePath: string;
