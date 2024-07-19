@@ -6,6 +6,8 @@ import {
   useLayoutEffect,
   ChangeEvent,
 } from 'react';
+import type { FC } from 'react'; // Add this import statement
+import React from 'react';
 import Topbar from './Topbar';
 import Editor from './editor/Editor';
 import DeviceInfo from './DeviceInfo';
