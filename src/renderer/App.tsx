@@ -6,8 +6,6 @@ import {
   useLayoutEffect,
   ChangeEvent,
 } from 'react';
-import type { FC } from 'react'; // Add this import statement
-import React from 'react';
 import Topbar from './Topbar';
 import Editor from './editor/Editor';
 import DeviceInfo from './DeviceInfo';
@@ -240,13 +238,13 @@ export default function App() {
 
   const handleConnectionChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { id, value } = event.target;
-    if (id == 'IPAddress') {
+    if (id === 'IPAddress') {
       setIPAddress(value);
-    } else if (id == 'SSHAddress') {
+    } else if (id === 'SSHAddress') {
       setSSHAddress(value);
-    } else if (id == 'FieldIPAddress') {
+    } else if (id === 'FieldIPAddress') {
       setFieldIPAddress(value);
-    } else if (id == 'FieldStationNum') {
+    } else if (id === 'FieldStationNum') {
       setFieldStationNum(value);
     }
   };
