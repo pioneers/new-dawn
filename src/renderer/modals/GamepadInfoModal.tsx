@@ -2,6 +2,9 @@ import Modal from './Modal';
 
 /**
  * Modal component displaying info about a connected gamepad.
+ * @param props - props
+ * @param props.onClose - handler called when the modal is closed by any means
+ * @param props.isActive - whether to display the modal
  */
 export default function GamepadInfoModal({
   onClose,

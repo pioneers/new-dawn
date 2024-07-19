@@ -3,6 +3,16 @@ import './Topbar.css';
 
 /**
  * Component displaying Dawn version and connection info.
+ * @param props - props
+ * @param props.onConnectionConfigModalOpen - handler called when the ConnectionConfigModal should
+ * be opened
+ * @param props.robotLatencyMs - latency in milliseconds of the connection to the currently
+ * connected robot, or -1 if there is no robot connected
+ * @param props.runtimeVersion - version string of runtime running on currently connected robot. The
+ * value is not used if robotLatencyMs is -1
+ * @param props.robotBatteryVoltage - battery voltage in volts of the currently connected robot. The
+ * value is not used if robotLatencyMs is -1
+ * @param props.dawnVersion - version string of Dawn
  */
 export default function Topbar({
   onConnectionConfigModalOpen,

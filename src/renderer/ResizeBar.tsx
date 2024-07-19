@@ -3,6 +3,10 @@ import './ResizeBar.css';
 
 /**
  * Component allowing Editor to be resized.
+ * @param props - props
+ * @param props.onStartResize - handler called when the user initiates a resize
+ * @param props.onEndResize - handler called when the user ends a resize
+ * @param props.axis - the axis the bar moves along
  */
 export default function ResizeBar({
   onStartResize = () => {},
@@ -11,6 +15,10 @@ export default function ResizeBar({
   axis,
 }: {
   onStartResize: () => void;
+  /**
+   * handler called when the bar is dragged
+   * @param pos - the signed number of pixels the bar has been moved since the start of the resize
+   */
   onUpdateResize: (pos: number) => boolean;
   onEndResize: () => void;
   axis: 'x' | 'y';
