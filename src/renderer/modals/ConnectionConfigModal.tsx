@@ -13,7 +13,7 @@ import Modal from './Modal';
  * @param props.FieldIPAddress - displayed field IP address
  * @param props.FieldStationNum - displayed field station number
  */
-export default function ConnectionInfoModal({
+export default function ConnectionConfigModal({
   onClose,
   isActive,
   onChange,

@@ -6,6 +6,7 @@ logs
 pids
 *.pid
 *.seed
+dawn-config.json
 
 # Coverage directory used by tools like istanbul
 coverage
