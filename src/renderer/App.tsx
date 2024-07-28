@@ -1,6 +1,7 @@
 import {
   StrictMode,
   useState,
+  useCallback,
   useReducer,
   useEffect,
   useLayoutEffect,
@@ -15,6 +16,14 @@ import ConfirmModal from './modals/ConfirmModal';
 import ConnectionConfigModal from './modals/ConnectionConfigModal';
 import GamepadInfoModal from './modals/GamepadInfoModal';
 import ResizeBar from './ResizeBar';
+import type {
+  RendererInitData,
+  RendererFileControlData,
+  RendererPostConsoleData,
+  RendererRobotUpdateData,
+  MainFileControlData,
+  MainQuitData,
+} from '../common/IpcEventTypes';
 import './App.css';
 
 const INITIAL_EDITOR_WIDTH_PERCENT = 0.7;
@@ -99,7 +108,12 @@ export default function App() {
     // Tests, for example, won't run main/preload.ts
     if (window.electron) {
       window.electron.ipcRenderer.once('renderer-init', (data) => {
-        setDawnVersion((data as { dawnVersion: string }).dawnVersion);
+        const typedData = data as RendererInitData;
+        setDawnVersion(typedData.dawnVersion);
+        setIPAddress(typedData.robotIPAddress);
+        setSSHAddress(typedData.robotSSHAddress);
+        setFieldIPAddress(typedData.fieldIPAddress);
+        setFieldStationNum(typedData.fieldStationNumber);
       });
       const listenerDestructors = [
         window.electron.ipcRenderer.on('renderer-robot-update', (data) => {
@@ -107,11 +121,7 @@ export default function App() {
             newRuntimeVersion,
             newRobotBatteryVoltage,
             newRobotLatencyMs,
-          } = data as {
-            newRuntimeVersion?: string;
-            newRobotBatteryVoltage?: number;
-            newRobotLatencyMs?: number;
-          };
+          } = data as RendererRobotUpdateData;
           if (newRuntimeVersion !== undefined) {
             setRuntimeVersion(newRuntimeVersion);
           }
@@ -123,13 +133,23 @@ export default function App() {
           }
         }),
         window.electron.ipcRenderer.on('renderer-post-console', (data) => {
-          setConsoleMsgs((old) => [...old, data as AppConsoleMessage]);
+          setConsoleMsgs((old) => [...old, data as RendererPostConsoleData]);
         }),
       ];
       return () => listenerDestructors.forEach((destructor) => destructor());
     }
     return () => {};
   }, []);
+
+  const closeWindow = useCallback(() => {
+    const data: MainQuitData = {
+      robotIPAddress: IPAddress,
+      robotSSHAddress: SSHAddress,
+      fieldIPAddress: FieldIPAddress,
+      fieldStationNumber: FieldStationNum,
+    };
+    window.electron.ipcRenderer.sendMessage('main-quit', data);
+  }, [IPAddress, SSHAddress, FieldIPAddress, FieldStationNum]);
 
   const changeActiveModal = (newModalName: string) => {
     if (document.activeElement instanceof HTMLElement) {
@@ -140,17 +160,18 @@ export default function App() {
   useEffect(() => {
     if (window.electron) {
       return window.electron.ipcRenderer.on('renderer-file-control', (data) => {
-        if (!data || typeof data !== 'object' || !('type' in data)) {
-          throw new Error('Bad data for renderer-file-control.');
-        }
-        if (data.type === 'promptSave') {
-          window.electron.ipcRenderer.sendMessage('main-file-control', {
+        const typedData = data as RendererFileControlData;
+        if (typedData.type === 'promptSave') {
+          const mainFcData: MainFileControlData = {
             type: 'save',
             content: editorContent,
-            forceDialog: (data as { type: 'promptSave'; forceDialog: boolean })
-              .forceDialog,
-          });
-        } else if (data.type === 'promptLoad') {
+            forceDialog: typedData.forceDialog,
+          };
+          window.electron.ipcRenderer.sendMessage(
+            'main-file-control',
+            mainFcData,
+          );
+        } else if (typedData.type === 'promptLoad') {
           if (editorStatus === 'clean') {
             window.electron.ipcRenderer.sendMessage('main-file-control', {
               type: 'load',
@@ -158,21 +179,15 @@ export default function App() {
           } else {
             changeActiveModal('DirtyLoadConfirm');
           }
-        } else if (data.type === 'didSave') {
+        } else if (typedData.type === 'didSave') {
           setEditorStatus('clean');
-        } else if (data.type === 'didOpen') {
+        } else if (typedData.type === 'didOpen') {
           setEditorStatus('clean');
-          setEditorContent(
-            (data as { type: 'didOpen'; content: string }).content,
-          );
-        } else if (data.type === 'didExternalChange') {
+          setEditorContent(typedData.content);
+        } else if (typedData.type === 'didExternalChange') {
           setEditorStatus('extDirty');
-        } else if (data.type === 'didChangePath') {
-          setEditorPath((data as { type: 'didChangePath'; path: string }).path);
-        } else {
-          throw new Error(
-            `Unknown data.type for renderer-file-control ${data.type}`,
-          );
+        } else if (typedData.type === 'didChangePath') {
+          setEditorPath(typedData.path);
         }
       });
     }
@@ -185,12 +200,12 @@ export default function App() {
         if (activeModal !== 'DirtyQuitConfirm' && editorStatus !== 'clean') {
           changeActiveModal('DirtyQuitConfirm');
         } else {
-          window.electron.ipcRenderer.sendMessage('main-quit');
+          closeWindow();
         }
       });
     }
     return () => {};
-  }, [activeModal, editorStatus]);
+  }, [activeModal, editorStatus, closeWindow]);
 
   // Editor ResizeBar handlers:
   const startEditorResize = () => setEditorInitialSize(editorSize);
@@ -301,20 +316,20 @@ export default function App() {
           <ConfirmModal
             isActive={activeModal === 'DirtyLoadConfirm'}
             onClose={closeModal}
-            onConfirm={() =>
-              window.electron.ipcRenderer.sendMessage('main-file-control', {
-                type: 'load',
-              })
-            }
+            onConfirm={() => {
+              const data: MainFileControlData = { type: 'load' };
+              window.electron.ipcRenderer.sendMessage(
+                'main-file-control',
+                data,
+              );
+            }}
             queryText="You have unsaved changes. Really load?"
             modalTitle="Confirm load"
           />
           <ConfirmModal
             isActive={activeModal === 'DirtyQuitConfirm'}
             onClose={closeModal}
-            onConfirm={() =>
-              window.electron.ipcRenderer.sendMessage('main-quit')
-            }
+            onConfirm={closeWindow}
             queryText="You have unsaved changes. Really quit?"
             modalTitle="Confirm quit"
             noAutoClose

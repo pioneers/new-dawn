@@ -3,6 +3,15 @@ import type { BrowserWindow, FileFilter } from 'electron';
 import fs from 'fs';
 import { version as dawnVersion } from '../../package.json';
 import AppConsoleMessage from '../common/AppConsoleMessage';
+import type {
+  RendererInitData,
+  RendererFileControlData,
+  RendererPostConsoleData,
+  MainFileControlData,
+  MainQuitData,
+} from '../common/IpcEventTypes';
+import type Config from './Config';
+import { coerceToConfig } from './Config';
 
 /**
  * Cooldown time in milliseconds to wait between sending didExternalChange messages to the renderer
@@ -16,6 +25,7 @@ const CODE_FILE_FILTERS: FileFilter[] = [
   { name: 'Python Files', extensions: ['py'] },
   { name: 'All Files', extensions: ['*'] },
 ];
+const CONFIG_RELPATH = 'dawn-config.json';
 
 /**
  * Manages state owned by the main electron process.
@@ -50,6 +60,12 @@ export default class MainApp {
   #preventQuit: boolean;
 
   /**
+   * Persistent configuration loaded when MainApp is constructed and saved when the main window is
+   * closed.
+   */
+  #config: Config;
+
+  /**
    * @param mainWindow - the BrowserWindow.
    */
   constructor(mainWindow: BrowserWindow) {
@@ -65,19 +81,42 @@ export default class MainApp {
       }
     });
     ipcMain.on('main-file-control', (_event, data) => {
-      if (data.type === 'save') {
-        this.#saveCodeFile(data.content as string, data.forceDialog as boolean);
-      } else if (data.type === 'load') {
+      const typedData = data as MainFileControlData;
+      if (typedData.type === 'save') {
+        this.#saveCodeFile(typedData.content, typedData.forceDialog);
+      } else if (typedData.type === 'load') {
         this.#openCodeFile();
-      } else {
-        // eslint-disable-next-line no-console
-        console.error(`Unknown data.type for main-file-control ${data.type}`);
       }
     });
-    ipcMain.on('main-quit', () => {
+    ipcMain.on('main-quit', (_event, data) => {
+      const typedData = data as MainQuitData;
+      this.#config.robotIPAddress = typedData.robotIPAddress;
+      this.#config.robotSSHAddress = typedData.robotSSHAddress;
+      this.#config.fieldIPAddress = typedData.fieldIPAddress;
+      this.#config.fieldStationNumber = typedData.fieldStationNumber;
+      try {
+        fs.writeFileSync(CONFIG_RELPATH, JSON.stringify(this.#config));
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error(`Failed to write config on quit. ${String(e)}`);
+      }
       this.#preventQuit = false;
       this.#mainWindow.close();
     });
+
+    try {
+      this.#config = coerceToConfig(
+        JSON.parse(
+          fs.readFileSync(CONFIG_RELPATH, {
+            encoding: 'utf8',
+            flag: 'r',
+          }),
+        ),
+      );
+    } catch {
+      // Use all defaults if bad JSON or no config file
+      this.#config = coerceToConfig({});
+    }
   }
 
   /**
@@ -88,7 +127,15 @@ export default class MainApp {
   onPresent() {
     this.#watcher?.close();
     this.#savePath = null;
-    this.#mainWindow.webContents.send('renderer-init', { dawnVersion });
+    // TODO: add better typing for IPC instead of just adding checks before each call
+    const data: RendererInitData = {
+      dawnVersion,
+      robotIPAddress: this.#config.robotIPAddress,
+      robotSSHAddress: this.#config.robotSSHAddress,
+      fieldIPAddress: this.#config.fieldIPAddress,
+      fieldStationNumber: this.#config.fieldStationNumber,
+    };
+    this.#mainWindow.webContents.send('renderer-init', data);
   }
 
   /**
@@ -99,10 +146,11 @@ export default class MainApp {
   promptSaveCodeFile(forceDialog: boolean) {
     // We need a round trip to the renderer because that's where the code in the editor actually
     // lives
-    this.#mainWindow.webContents.send('renderer-file-control', {
+    const data: RendererFileControlData = {
       type: 'promptSave',
       forceDialog,
-    });
+    };
+    this.#mainWindow.webContents.send('renderer-file-control', data);
   }
 
   /**
@@ -110,9 +158,8 @@ export default class MainApp {
    * may delay or ignore this request (e.g. if the file currently beind edited is dirty).
    */
   promptLoadCodeFile() {
-    this.#mainWindow.webContents.send('renderer-file-control', {
-      type: 'promptLoad',
-    });
+    const data: RendererFileControlData = { type: 'promptLoad' };
+    this.#mainWindow.webContents.send('renderer-file-control', data);
   }
 
   /**
@@ -136,17 +183,14 @@ export default class MainApp {
         { encoding: 'utf8', flag: 'w' },
         (err) => {
           if (err) {
-            this.#mainWindow.webContents.send(
-              'renderer-post-console',
-              new AppConsoleMessage(
-                'dawn-err',
-                `Failed to save code to ${this.#savePath}. ${err}`,
-              ),
+            const data: RendererPostConsoleData = new AppConsoleMessage(
+              'dawn-err',
+              `Failed to save code to ${this.#savePath}. ${err}`,
             );
+            this.#mainWindow.webContents.send('renderer-post-console', data);
           } else {
-            this.#mainWindow.webContents.send('renderer-file-control', {
-              type: 'didSave',
-            });
+            const data: RendererFileControlData = { type: 'didSave' };
+            this.#mainWindow.webContents.send('renderer-file-control', data);
           }
           this.#watchCodeFile();
         },
@@ -160,13 +204,19 @@ export default class MainApp {
   #openCodeFile() {
     const success = this.#showCodePathDialog('load');
     if (success) {
-      this.#mainWindow.webContents.send('renderer-file-control', {
-        type: 'didOpen',
-        content: fs.readFileSync(this.#savePath as string, {
+      try {
+        const content = fs.readFileSync(this.#savePath as string, {
           encoding: 'utf8',
           flag: 'r',
-        }),
-      });
+        });
+        const data: RendererFileControlData = {
+          type: 'didOpen',
+          content,
+        };
+        this.#mainWindow.webContents.send('renderer-file-control', data);
+      } catch {
+        // Don't care
+      }
     }
   }
 
@@ -191,10 +241,11 @@ export default class MainApp {
     }
     if (result && result.length) {
       this.#savePath = typeof result === 'string' ? result : result[0];
-      this.#mainWindow.webContents.send('renderer-file-control', {
+      const data: RendererFileControlData = {
         type: 'didChangePath',
         path: this.#savePath,
-      });
+      };
+      this.#mainWindow.webContents.send('renderer-file-control', data);
       if (mode === 'load') {
         this.#watchCodeFile();
       }
@@ -220,9 +271,10 @@ export default class MainApp {
           setTimeout(() => {
             this.#watchDebounce = true;
           }, WATCH_DEBOUNCE_MS);
-          this.#mainWindow.webContents.send('renderer-file-control', {
+          const data: RendererFileControlData = {
             type: 'didExternalChange',
-          });
+          };
+          this.#mainWindow.webContents.send('renderer-file-control', data);
         }
       },
     );
