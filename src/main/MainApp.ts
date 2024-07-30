@@ -4,14 +4,18 @@ import fs from 'fs';
 import { version as dawnVersion } from '../../package.json';
 import AppConsoleMessage from '../common/AppConsoleMessage';
 import type {
+  RendererChannels,
   RendererInitData,
   RendererFileControlData,
   RendererPostConsoleData,
+  RendererRobotUpdateData,
+  MainChannels,
   MainFileControlData,
   MainQuitData,
 } from '../common/IpcEventTypes';
 import type Config from './Config';
 import { coerceToConfig } from './Config';
+import CodeTransfer from './network/CodeTransfer';
 
 /**
  * Cooldown time in milliseconds to wait between sending didExternalChange messages to the renderer
@@ -25,7 +29,41 @@ const CODE_FILE_FILTERS: FileFilter[] = [
   { name: 'Python Files', extensions: ['py'] },
   { name: 'All Files', extensions: ['*'] },
 ];
+/**
+ * Relative path to persistent configuration file.
+ */
 const CONFIG_RELPATH = 'dawn-config.json';
+/**
+ * Path on robot to upload student code to. $HOME is /home/${ROBOT_SSH_USER}.
+ */
+const REMOTE_CODE_PATH = '/home/tmptestuser/runtime/executor/studentcode.py';
+/**
+ * Port to use when connecting to robot with SSH.
+ */
+const ROBOT_SSH_PORT = 22;
+/**
+ * Username to log in as when connecting to robot with SSH.
+ */
+const ROBOT_SSH_USER = 'pi';
+/**
+ * Password to log in with when connecting to robot with SSH.
+ */
+const ROBOT_SSH_PASS = 'raspberry';
+
+function addRendererListener(
+  channel: 'main-quit',
+  func: (data: MainQuitData) => void,
+): void;
+function addRendererListener(
+  channel: 'main-file-control',
+  func: (data: MainFileControlData) => void,
+): void;
+function addRendererListener(
+  channel: MainChannels,
+  func: (data: any) => void,
+): void {
+  ipcMain.on(channel, (_event, data: any) => func(data));
+}
 
 /**
  * Manages state owned by the main electron process.
@@ -65,6 +103,8 @@ export default class MainApp {
    */
   #config: Config;
 
+  #codeTransfer: CodeTransfer;
+
   /**
    * @param mainWindow - the BrowserWindow.
    */
@@ -74,26 +114,35 @@ export default class MainApp {
     this.#watcher = null;
     this.#watchDebounce = true;
     this.#preventQuit = true;
+    this.#codeTransfer = new CodeTransfer(
+      REMOTE_CODE_PATH,
+      ROBOT_SSH_PORT,
+      ROBOT_SSH_USER,
+      ROBOT_SSH_PASS,
+    );
     mainWindow.on('close', (e) => {
       if (this.#preventQuit) {
         e.preventDefault();
-        this.#mainWindow.webContents.send('renderer-quit-request');
+        this.#sendToRenderer('renderer-quit-request');
       }
     });
-    ipcMain.on('main-file-control', (_event, data) => {
-      const typedData = data as MainFileControlData;
-      if (typedData.type === 'save') {
-        this.#saveCodeFile(typedData.content, typedData.forceDialog);
-      } else if (typedData.type === 'load') {
+    addRendererListener('main-file-control', (data) => {
+      if (data.type === 'save') {
+        this.#saveCodeFile(data.content, data.forceDialog);
+      } else if (data.type === 'load') {
         this.#openCodeFile();
+      } else if (data.type === 'upload') {
+        this.#uploadCodeFile(data.robotSSHAddress);
+      } else if (data.type === 'download') {
+        this.#downloadCodeFile(data.robotSSHAddress);
       }
     });
-    ipcMain.on('main-quit', (_event, data) => {
-      const typedData = data as MainQuitData;
-      this.#config.robotIPAddress = typedData.robotIPAddress;
-      this.#config.robotSSHAddress = typedData.robotSSHAddress;
-      this.#config.fieldIPAddress = typedData.fieldIPAddress;
-      this.#config.fieldStationNumber = typedData.fieldStationNumber;
+    addRendererListener('main-quit', (data) => {
+      this.#config.robotIPAddress = data.robotIPAddress;
+      this.#config.robotSSHAddress = data.robotSSHAddress;
+      this.#config.fieldIPAddress = data.fieldIPAddress;
+      this.#config.fieldStationNumber = data.fieldStationNumber;
+      this.#config.showDirtyUploadWarning = data.showDirtyUploadWarning;
       try {
         fs.writeFileSync(CONFIG_RELPATH, JSON.stringify(this.#config));
       } catch (e) {
@@ -127,15 +176,14 @@ export default class MainApp {
   onPresent() {
     this.#watcher?.close();
     this.#savePath = null;
-    // TODO: add better typing for IPC instead of just adding checks before each call
-    const data: RendererInitData = {
+    this.#sendToRenderer('renderer-init', {
       dawnVersion,
       robotIPAddress: this.#config.robotIPAddress,
       robotSSHAddress: this.#config.robotSSHAddress,
       fieldIPAddress: this.#config.fieldIPAddress,
       fieldStationNumber: this.#config.fieldStationNumber,
-    };
-    this.#mainWindow.webContents.send('renderer-init', data);
+      showDirtyUploadWarning: this.#config.showDirtyUploadWarning,
+    });
   }
 
   /**
@@ -146,20 +194,44 @@ export default class MainApp {
   promptSaveCodeFile(forceDialog: boolean) {
     // We need a round trip to the renderer because that's where the code in the editor actually
     // lives
-    const data: RendererFileControlData = {
+    this.#sendToRenderer('renderer-file-control', {
       type: 'promptSave',
       forceDialog,
-    };
-    this.#mainWindow.webContents.send('renderer-file-control', data);
+    });
   }
 
   /**
    * Requests that the renderer process start to load code from a file into the editor. The renderer
-   * may delay or ignore this request (e.g. if the file currently beind edited is dirty).
+   * may delay or ignore this request (e.g. if the editor has unsaved changes).
    */
   promptLoadCodeFile() {
-    const data: RendererFileControlData = { type: 'promptLoad' };
-    this.#mainWindow.webContents.send('renderer-file-control', data);
+    this.#sendToRenderer('renderer-file-control', { type: 'promptLoad' });
+  }
+
+  /**
+   * Requests that the renderer process start to upload the last loaded file to the robot. The round
+   * trip is needed to notify the user that unsaved changes in the editor will not be uploaded.
+   */
+  promptUploadCodeFile() {
+    if (this.#savePath === null) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          'Code must be saved to a file before it can be uploaded to the robot.',
+        ),
+      );
+    } else {
+      this.#sendToRenderer('renderer-file-control', { type: 'promptUpload' });
+    }
+  }
+
+  /**
+   * Requests that the renderer process start to download code from the robot into the editor. The
+   * renderer may delay or ignore this request (e.g. if the editor has unsaved changes).
+   */
+  promptDownloadCodeFile() {
+    this.#sendToRenderer('renderer-file-control', { type: 'promptDownload' });
   }
 
   /**
@@ -183,14 +255,15 @@ export default class MainApp {
         { encoding: 'utf8', flag: 'w' },
         (err) => {
           if (err) {
-            const data: RendererPostConsoleData = new AppConsoleMessage(
-              'dawn-err',
-              `Failed to save code to ${this.#savePath}. ${err}`,
+            this.#sendToRenderer(
+              'renderer-post-console',
+              new AppConsoleMessage(
+                'dawn-err',
+                `Failed to save code to ${this.#savePath}. ${err}`,
+              ),
             );
-            this.#mainWindow.webContents.send('renderer-post-console', data);
           } else {
-            const data: RendererFileControlData = { type: 'didSave' };
-            this.#mainWindow.webContents.send('renderer-file-control', data);
+            this.#sendToRenderer('renderer-file-control', { type: 'didSave' });
           }
           this.#watchCodeFile();
         },
@@ -209,15 +282,72 @@ export default class MainApp {
           encoding: 'utf8',
           flag: 'r',
         });
-        const data: RendererFileControlData = {
+        this.#sendToRenderer('renderer-file-control', {
           type: 'didOpen',
           content,
-        };
-        this.#mainWindow.webContents.send('renderer-file-control', data);
+          isCleanFile: true,
+        });
       } catch {
         // Don't care
       }
     }
+  }
+
+  #uploadCodeFile(ip: string) {
+    if (this.#savePath) {
+      this.#codeTransfer
+        .upload(this.#savePath, ip)
+        .then(() => {
+          this.#sendToRenderer(
+            'renderer-post-console',
+            new AppConsoleMessage('dawn-info', 'Code uploaded successfully.'),
+          );
+          return null;
+        })
+        .catch((e) => {
+          this.#sendToRenderer(
+            'renderer-post-console',
+            new AppConsoleMessage(
+              'dawn-err',
+              `Failed to upload code. ${this.#getErrorDetails(e)}`,
+            ),
+          );
+        });
+    }
+  }
+
+  #downloadCodeFile(ip: string) {
+    this.#codeTransfer
+      .download(ip)
+      .then((content: string) => {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage('dawn-info', 'Code downloaded successfully.'),
+        );
+        this.#sendToRenderer('renderer-file-control', {
+          type: 'didOpen',
+          content,
+          isCleanFile: false,
+        });
+        return null;
+      })
+      .catch((e) => {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            `Failed to download code. ${this.#getErrorDetails(e)}`,
+          ),
+        );
+      });
+  }
+
+  #getErrorDetails(e: any) {
+    let msg = e instanceof Error ? e.stack : String(e);
+    if (e.cause) {
+      msg += `\nCaused by: ${this.#getErrorDetails(e.cause)}`;
+    }
+    return msg;
   }
 
   /**
@@ -245,7 +375,7 @@ export default class MainApp {
         type: 'didChangePath',
         path: this.#savePath,
       };
-      this.#mainWindow.webContents.send('renderer-file-control', data);
+      this.#sendToRenderer('renderer-file-control', data);
       if (mode === 'load') {
         this.#watchCodeFile();
       }
@@ -274,9 +404,32 @@ export default class MainApp {
           const data: RendererFileControlData = {
             type: 'didExternalChange',
           };
-          this.#mainWindow.webContents.send('renderer-file-control', data);
+          this.#sendToRenderer('renderer-file-control', data);
         }
       },
     );
+  }
+
+  #sendToRenderer(channel: 'renderer-quit-request'): void;
+
+  #sendToRenderer(channel: 'renderer-init', data: RendererInitData): void;
+
+  #sendToRenderer(
+    channel: 'renderer-file-control',
+    data: RendererFileControlData,
+  ): void;
+
+  #sendToRenderer(
+    channel: 'renderer-post-console',
+    data: RendererPostConsoleData,
+  ): void;
+
+  #sendToRenderer(
+    channel: 'renderer-robot-update',
+    data: RendererRobotUpdateData,
+  ): void;
+
+  #sendToRenderer(channel: RendererChannels, data?: any): void {
+    this.#mainWindow.webContents.send(channel, data);
   }
 }

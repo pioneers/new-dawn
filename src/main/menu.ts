@@ -88,6 +88,46 @@ export default class MenuBuilder {
         },
       ],
     };
+    const subMenuFile: DarwinMenuItemConstructorOptions = {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Open',
+          accelerator: 'Command+O',
+          click: () => {
+            this.mainApp.promptLoadCodeFile();
+          },
+        },
+        {
+          label: 'Save',
+          accelerator: 'Command+S',
+          click: () => {
+            this.mainApp.promptSaveCodeFile(false);
+          },
+        },
+        {
+          label: 'Save As',
+          accelerator: 'Command+Shift+S',
+          click: () => {
+            this.mainApp.promptSaveCodeFile(true);
+          },
+        },
+        { type: 'separator' },
+        {
+          label: 'Upload open file to robot',
+          accelerator: 'Command+U',
+          click: () => {
+            this.mainApp.promptUploadCodeFile();
+          },
+        },
+        {
+          label: 'Download code from robot',
+          click: () => {
+            this.mainApp.promptDownloadCodeFile();
+          },
+        },
+      ],
+    };
     const subMenuEdit: DarwinMenuItemConstructorOptions = {
       label: 'Edit',
       submenu: [
@@ -193,7 +233,14 @@ export default class MenuBuilder {
         ? subMenuViewDev
         : subMenuViewProd;
 
-    return [subMenuAbout, subMenuEdit, subMenuView, subMenuWindow, subMenuHelp];
+    return [
+      subMenuAbout,
+      subMenuFile,
+      subMenuEdit,
+      subMenuView,
+      subMenuWindow,
+      subMenuHelp,
+    ];
   }
 
   buildDefaultTemplate() {
@@ -220,6 +267,19 @@ export default class MenuBuilder {
             accelerator: 'Ctrl+Shift+S',
             click: () => {
               this.mainApp.promptSaveCodeFile(true);
+            },
+          },
+          {
+            label: '&Upload open file to robot',
+            accelerator: 'Ctrl+U',
+            click: () => {
+              this.mainApp.promptUploadCodeFile();
+            },
+          },
+          {
+            label: 'Download code from robot',
+            click: () => {
+              this.mainApp.promptDownloadCodeFile();
             },
           },
         ],

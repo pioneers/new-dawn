@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import Modal from './Modal';
 
 /**
@@ -14,16 +15,16 @@ export default function ConfirmModal({
   onClose,
   onConfirm,
   isActive,
-  queryText,
   modalTitle,
   noAutoClose = false,
+  children,
 }: {
   onClose: () => void;
   onConfirm: () => void;
   isActive: boolean;
-  queryText: string;
   modalTitle: string;
   noAutoClose?: boolean;
+  children: ReactNode;
 }) {
   const handleConfirm = () => {
     onConfirm();
@@ -33,7 +34,7 @@ export default function ConfirmModal({
   };
   return (
     <Modal modalTitle={modalTitle} onClose={onClose} isActive={isActive}>
-      <p>{queryText}</p>
+      {children}
       <button type="button" onClick={handleConfirm}>
         Confirm
       </button>
