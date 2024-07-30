@@ -7,7 +7,6 @@ import Modal from './Modal';
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.onConfirm - handler called when the confirm button is clicked
  * @param props.isActive - whether to display the modal
- * @param props.queryText - question text in the modal
  * @param props.modalTitle - displayed title of the modal
  * @param props.noAutoClose - whether the modal should not call onClose after confirmation
  */

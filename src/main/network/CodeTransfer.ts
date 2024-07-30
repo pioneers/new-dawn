@@ -1,5 +1,5 @@
 import { Client as SSHClient } from 'ssh2';
-import type { SFTP as SFTPConnection } from 'ssh2/protocol/SFTP';
+import type { SFTPWrapper as SFTPConnection } from 'ssh2';
 
 export default class CodeTransfer {
   readonly #remoteCodePath: string;
@@ -24,17 +24,21 @@ export default class CodeTransfer {
 
   upload(localCodePath: string, ip: string): Promise<null> {
     return this.#doSftp(ip, (sftp, resolve, reject) => {
-      sftp.fastPut(localCodePath, this.#remoteCodePath, (err: Error) => {
-        if (err) {
-          reject(
-            new Error('SFTP fastPut error when uploading student code.', {
-              cause: err,
-            }),
-          );
-        } else {
-          resolve(null);
-        }
-      });
+      sftp.fastPut(
+        localCodePath,
+        this.#remoteCodePath,
+        (err: Error | undefined | null) => {
+          if (err) {
+            reject(
+              new Error('SFTP fastPut error when uploading student code.', {
+                cause: err,
+              }),
+            );
+          } else {
+            resolve(null);
+          }
+        },
+      );
     });
   }
 
@@ -78,7 +82,7 @@ export default class CodeTransfer {
           );
         })
         .on('ready', () => {
-          client.sftp((err: Error, sftp: SFTPConnection) => {
+          client.sftp((err: Error | undefined, sftp: SFTPConnection) => {
             if (err) {
               reject(
                 new Error(
