@@ -1,15 +1,36 @@
 import { Client as SSHClient } from 'ssh2';
 import type { SFTPWrapper as SFTPConnection } from 'ssh2';
 
+/**
+ * Transfers code to and from a robot with SFTP.
+ */
 export default class CodeTransfer {
+  /**
+   * The path to the code file on the robot.
+   */
   readonly #remoteCodePath: string;
 
+  /**
+   * Robot SSH port.
+   */
   readonly #sshPort: number;
 
+  /**
+   * Robot SSH username.
+   */
   readonly #sshUser: string;
 
+  /**
+   * Robot SSH password.
+   */
   readonly #sshPass: string;
 
+  /**
+   * @param remoteCodePath - The path to the code file on the robot
+   * @param sshPort - the port to use for SSH connections to the robot
+   * @param sshUser - the user to log in as for SSH connections to the robot
+   * @param sshPass - the password to use for SSH connections to the robot
+   */
   constructor(
     remoteCodePath: string,
     sshPort: number,
@@ -22,6 +43,12 @@ export default class CodeTransfer {
     this.#sshPass = sshPass;
   }
 
+  /**
+   * Uploads the contents of a local file to the robot.
+   * @param localCodePath - the path of the local file to upload
+   * @param ip - the IP of the robot to connect to via SSH
+   * @returns A Promise that resolves when the upload is complete.
+   */
   upload(localCodePath: string, ip: string): Promise<null> {
     return this.#doSftp(ip, (sftp, resolve, reject) => {
       sftp.fastPut(
@@ -42,6 +69,11 @@ export default class CodeTransfer {
     });
   }
 
+  /**
+   * Fetches the contents of the code file on the robot.
+   * @param ip - the IP of the robot to connect to via SSH
+   * @returns A Promise that resolves with the content of the file.
+   */
   download(ip: string): Promise<string> {
     return this.#doSftp(ip, (sftp, resolve, reject) => {
       let buffer = '';
@@ -63,8 +95,19 @@ export default class CodeTransfer {
     });
   }
 
+  /**
+   * Opens an SSH connection and starts an SFTP session, then executes a callback.
+   * @param ip - the IP of the robot to connect to via SSH
+   * @returns A Promise created from the callback.
+   */
   #doSftp<T>(
     ip: string,
+    /**
+     * a function to call during the created SFTP session
+     * @param sftp - the SFTP session handle
+     * @param resolve - function to resolve the returned Promise, optionally with some data
+     * @param reject - function to reject the returned Promise
+     */
     callback: (
       sftp: SFTPConnection,
       resolve: (data: T) => void,

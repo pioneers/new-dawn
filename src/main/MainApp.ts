@@ -58,6 +58,11 @@ function addRendererListener(
   channel: 'main-file-control',
   func: (data: MainFileControlData) => void,
 ): void;
+/**
+ * Typed wrapper function to listen to IPC events from the renderer.
+ * @param channel - the event channel to listen to
+ * @param func - the listener to attach
+ */
 function addRendererListener(
   channel: MainChannels,
   func: (data: any) => void,
@@ -103,6 +108,9 @@ export default class MainApp {
    */
   #config: Config;
 
+  /**
+   * CodeTransfer used to upload/download code to/from the robot.
+   */
   #codeTransfer: CodeTransfer;
 
   /**
@@ -293,6 +301,11 @@ export default class MainApp {
     }
   }
 
+  /**
+   * Uploads the last saved or opened file (which doesn't necessarily match the current editor
+   * contents) to the robot at the given IP. Does nothing if no file has been opened yet.
+   * @param ip - the IP address to connect to via SSH
+   */
   #uploadCodeFile(ip: string) {
     if (this.#savePath) {
       this.#codeTransfer
@@ -316,6 +329,10 @@ export default class MainApp {
     }
   }
 
+  /**
+   * Downloads code from the robot at the given IP into the editor.
+   * @param ip - the IP address to connect to via SSH
+   */
   #downloadCodeFile(ip: string) {
     this.#codeTransfer
       .download(ip)
@@ -342,6 +359,13 @@ export default class MainApp {
       });
   }
 
+  /**
+   * Utility method that converts a value to a string. If given an Error, prints its stack and
+   * recurses into its cause. Exclusively used so the nested errors thrown by CodeTransfer can be
+   * shown in the AppConsole.
+   * @param e - the value
+   * @returns A string representation of the value.
+   */
   #getErrorDetails(e: any) {
     let msg = e instanceof Error ? e.stack : String(e);
     if (e.cause) {
@@ -429,6 +453,11 @@ export default class MainApp {
     data: RendererRobotUpdateData,
   ): void;
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   * @param data - an optional payload for the event
+   */
   #sendToRenderer(channel: RendererChannels, data?: any): void {
     this.#mainWindow.webContents.send(channel, data);
   }
