@@ -106,12 +106,12 @@ export default class MainApp {
    * Persistent configuration loaded when MainApp is constructed and saved when the main window is
    * closed.
    */
-  #config: Config;
+  readonly #config: Config;
 
   /**
    * CodeTransfer used to upload/download code to/from the robot.
    */
-  #codeTransfer: CodeTransfer;
+  readonly #codeTransfer: CodeTransfer;
 
   /**
    * @param mainWindow - the BrowserWindow.
@@ -460,20 +460,44 @@ export default class MainApp {
     );
   }
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   */
   #sendToRenderer(channel: 'renderer-quit-request'): void;
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   * @param data - a payload for the renderer-init event
+   */
   #sendToRenderer(channel: 'renderer-init', data: RendererInitData): void;
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   * @param data - a payload for the renderer-file-control event
+   */
   #sendToRenderer(
     channel: 'renderer-file-control',
     data: RendererFileControlData,
   ): void;
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   * @param data - a payload for the renderer-post-console event
+   */
   #sendToRenderer(
     channel: 'renderer-post-console',
     data: RendererPostConsoleData,
   ): void;
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   * @param data - a payload for the renderer-robot-update event
+   */
   #sendToRenderer(
     channel: 'renderer-robot-update',
     data: RendererRobotUpdateData,

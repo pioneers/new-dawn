@@ -41,8 +41,13 @@ export default function ConfirmModal({
     </Modal>
   );
 }
-// Not sure why we need this if we have the default deconstruction parameter but the linter cries if
-// we leave it out
+/**
+ * Default properties for ConfirmModal. Not sure why we need this if we have the default
+ * deconstruction parameter but the linter cries if we leave it out.
+ */
 ConfirmModal.defaultProps = {
+  /**
+   * Disables the implied close behavior after confirmation.
+   */
   noAutoClose: false,
 };
