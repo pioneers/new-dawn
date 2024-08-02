@@ -11,6 +11,7 @@
 }
 .Editor-file-name {
   margin-right: 5px;
+  font-family: Verdana, monospace;
 }
 .Editor-file-status {
   font-style: italic;

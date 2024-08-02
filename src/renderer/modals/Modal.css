@@ -4,7 +4,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: white;
+  background-color: var(--body-color);
   border-radius: 5px;
 }
 .modal-active {
@@ -12,9 +12,11 @@
 }
 .Modal-title-bar {
   white-space: nowrap;
-  padding: 20px;
-  background-color: blue;
+  padding: 10px 10px 10px 20px;
+  background-color: var(--window-head-color);
   border-radius: inherit;
+  color: var(--window-head-text-color);
+  font-family: Tahoma, sans-serif;
 }
 .Modal-title {
   padding-right: 20vw;
@@ -22,6 +24,11 @@
 .Modal-close-button {
   background-color: transparent;
   border: none;
+  color: var(--window-head-text-color);
+  font-weight: bold;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
 }
 .Modal-content {
   padding: 20px;

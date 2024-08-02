@@ -3,6 +3,13 @@ body {
 }
 
 .App {
+  --window-head-color: blue;
+  --window-head-text-color: white;
+  --window-accent-color: grey;
+  --body-color: white;
+  --body-text-color: black;
+  --body-accent-color: white;
+
   display: flex;
   flex-direction: column;
   height: 100vh;

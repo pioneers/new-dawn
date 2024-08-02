@@ -1,5 +1,6 @@
 import { ChangeEvent } from 'react';
 import Modal from './Modal';
+import './ConnectionConfigModal.css';
 
 /**
  * Modal component exposing info about the connection to the robot (IP address, port, etc.)
@@ -31,33 +32,49 @@ export default function ConnectionConfigModal({
   FieldStationNum: string;
 }) {
   return (
-    <Modal modalTitle="Connection info" onClose={onClose} isActive={isActive}>
-      <div>
+    <Modal
+      modalTitle="Connection settings"
+      onClose={onClose}
+      isActive={isActive}
+      className="ConnectionConfigModal-content"
+    >
+      <label htmlFor="IPAddress" className="ConnectionConfigModal-config-field">
         IP Address:
-        <input id="IPAddress" onChange={onChange} value={IPAddress} />
-      </div>
-      <div>
+        <input name="IPAddress" onChange={onChange} value={IPAddress} />
+      </label>
+      <label
+        htmlFor="SSHAddress"
+        className="ConnectionConfigModal-config-field"
+      >
         SSH Address:
-        <input id="SSHAddress" onChange={onChange} value={SSHAddress} />
-      </div>
-      <div>
-        Field Control Settings
-        <div>
+        <input name="SSHAddress" onChange={onChange} value={SSHAddress} />
+      </label>
+      <div className="ConnectionConfigModal-section">
+        <div className="ConnectionConfigModal-section-header">
+          Field Control Settings
+        </div>
+        <label
+          htmlFor="FieldIPAddress"
+          className="ConnectionConfigModal-config-field"
+        >
           Field Control IP Address:
           <input
-            id="FieldIPAddress"
+            name="FieldIPAddress"
             onChange={onChange}
             value={FieldIPAddress}
           />
-        </div>
-        <div>
+        </label>
+        <label
+          htmlFor="FieldStationNum"
+          className="ConnectionConfigModal-config-field"
+        >
           Field Control Station Number:
           <input
-            id="FieldStationNum"
+            name="FieldStationNum"
             onChange={onChange}
             value={FieldStationNum}
           />
-        </div>
+        </label>
       </div>
     </Modal>
   );

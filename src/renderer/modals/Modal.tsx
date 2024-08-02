@@ -7,17 +7,20 @@ import './Modal.css';
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.isActive - whether to display the modal
  * @param props.modalTitle - displayed title of the modal
+ * @param props.className - additional className given to the modal content wrapper
  */
 export default function Modal({
   onClose,
   isActive,
   modalTitle,
   children,
+  className = '',
 }: {
   onClose: () => void;
   isActive: boolean;
   modalTitle: string;
   children: ReactNode;
+  className?: string;
 }) {
   return (
     <div className={`Modal${isActive ? ' modal-active' : ''}`}>
@@ -27,7 +30,10 @@ export default function Modal({
           X
         </button>
       </div>
-      <div className="Modal-content">{children}</div>
+      <div className={`Modal-content ${className}`}>{children}</div>
     </div>
   );
 }
+Modal.defaultProps = {
+  className: '',
+};

@@ -7,14 +7,22 @@ import './AppConsole.css';
  * @param props.messages - array of console messages to display
  */
 export default function AppConsole({
-  // eslint-disable-next-line
   messages,
 }: {
   messages: AppConsoleMessage[];
 }) {
   return (
     <div className="AppConsole">
-      <div className="AppConsole-inner">Test</div>
+      <pre className="AppConsole-inner">
+        {messages.map((msg: AppConsoleMessage) => (
+          <div
+            key={msg.uuid}
+            className={`AppConsole-message AppConsole-message-${msg.type}`}
+          >
+            {msg.text}
+          </div>
+        ))}
+      </pre>
     </div>
   );
 }
