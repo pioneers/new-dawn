@@ -16,14 +16,6 @@ import ConfirmModal from './modals/ConfirmModal';
 import ConnectionConfigModal from './modals/ConnectionConfigModal';
 import GamepadInfoModal from './modals/GamepadInfoModal';
 import ResizeBar from './ResizeBar';
-import type {
-  RendererInitData,
-  RendererFileControlData,
-  RendererPostConsoleData,
-  RendererRobotUpdateData,
-  MainFileControlData,
-  MainQuitData,
-} from '../common/IpcEventTypes';
 import './App.css';
 
 const INITIAL_EDITOR_WIDTH_PERCENT = 0.7;
@@ -61,6 +53,8 @@ export default function App() {
   const [editorStatus, setEditorStatus] = useState(
     'clean' as 'clean' | 'dirty' | 'extDirty',
   );
+  // Whether to warn the user that their changes to the open file will not be uploaded
+  const [showDirtyUploadWarning, setShowDirtyUploadWarning] = useState(true);
   // Path to file in editor, empty if no save path
   const [editorPath, setEditorPath] = useState('');
   // AppConsoleMessages displayed in AppConsole
@@ -107,33 +101,28 @@ export default function App() {
   useEffect(() => {
     // Tests, for example, won't run main/preload.ts
     if (window.electron) {
-      window.electron.ipcRenderer.once('renderer-init', (data) => {
-        const typedData = data as RendererInitData;
-        setDawnVersion(typedData.dawnVersion);
-        setIPAddress(typedData.robotIPAddress);
-        setSSHAddress(typedData.robotSSHAddress);
-        setFieldIPAddress(typedData.fieldIPAddress);
-        setFieldStationNum(typedData.fieldStationNumber);
-      });
       const listenerDestructors = [
+        window.electron.ipcRenderer.on('renderer-init', (data) => {
+          setDawnVersion(data.dawnVersion);
+          setIPAddress(data.robotIPAddress);
+          setSSHAddress(data.robotSSHAddress);
+          setFieldIPAddress(data.fieldIPAddress);
+          setFieldStationNum(data.fieldStationNumber);
+          setShowDirtyUploadWarning(data.showDirtyUploadWarning);
+        }),
         window.electron.ipcRenderer.on('renderer-robot-update', (data) => {
-          const {
-            newRuntimeVersion,
-            newRobotBatteryVoltage,
-            newRobotLatencyMs,
-          } = data as RendererRobotUpdateData;
-          if (newRuntimeVersion !== undefined) {
-            setRuntimeVersion(newRuntimeVersion);
+          if (data.runtimeVersion !== undefined) {
+            setRuntimeVersion(data.runtimeVersion);
           }
-          if (newRobotBatteryVoltage !== undefined) {
-            setRobotBatteryVoltage(newRobotBatteryVoltage);
+          if (data.robotBatteryVoltage !== undefined) {
+            setRobotBatteryVoltage(data.robotBatteryVoltage);
           }
-          if (newRobotLatencyMs !== undefined) {
-            setRobotLatencyMs(newRobotLatencyMs);
+          if (data.robotLatencyMs !== undefined) {
+            setRobotLatencyMs(data.robotLatencyMs);
           }
         }),
         window.electron.ipcRenderer.on('renderer-post-console', (data) => {
-          setConsoleMsgs((old) => [...old, data as RendererPostConsoleData]);
+          setConsoleMsgs((old) => [...old, data]);
         }),
       ];
       return () => listenerDestructors.forEach((destructor) => destructor());
@@ -142,14 +131,20 @@ export default function App() {
   }, []);
 
   const closeWindow = useCallback(() => {
-    const data: MainQuitData = {
+    window.electron.ipcRenderer.sendMessage('main-quit', {
       robotIPAddress: IPAddress,
       robotSSHAddress: SSHAddress,
       fieldIPAddress: FieldIPAddress,
       fieldStationNumber: FieldStationNum,
-    };
-    window.electron.ipcRenderer.sendMessage('main-quit', data);
-  }, [IPAddress, SSHAddress, FieldIPAddress, FieldStationNum]);
+      showDirtyUploadWarning,
+    });
+  }, [
+    IPAddress,
+    SSHAddress,
+    FieldIPAddress,
+    FieldStationNum,
+    showDirtyUploadWarning,
+  ]);
 
   const changeActiveModal = (newModalName: string) => {
     if (document.activeElement instanceof HTMLElement) {
@@ -160,18 +155,13 @@ export default function App() {
   useEffect(() => {
     if (window.electron) {
       return window.electron.ipcRenderer.on('renderer-file-control', (data) => {
-        const typedData = data as RendererFileControlData;
-        if (typedData.type === 'promptSave') {
-          const mainFcData: MainFileControlData = {
+        if (data.type === 'promptSave') {
+          window.electron.ipcRenderer.sendMessage('main-file-control', {
             type: 'save',
             content: editorContent,
-            forceDialog: typedData.forceDialog,
-          };
-          window.electron.ipcRenderer.sendMessage(
-            'main-file-control',
-            mainFcData,
-          );
-        } else if (typedData.type === 'promptLoad') {
+            forceDialog: data.forceDialog,
+          });
+        } else if (data.type === 'promptLoad') {
           if (editorStatus === 'clean') {
             window.electron.ipcRenderer.sendMessage('main-file-control', {
               type: 'load',
@@ -179,20 +169,45 @@ export default function App() {
           } else {
             changeActiveModal('DirtyLoadConfirm');
           }
-        } else if (typedData.type === 'didSave') {
+        } else if (data.type === 'didSave') {
           setEditorStatus('clean');
-        } else if (typedData.type === 'didOpen') {
-          setEditorStatus('clean');
-          setEditorContent(typedData.content);
-        } else if (typedData.type === 'didExternalChange') {
+        } else if (data.type === 'didOpen') {
+          if (data.isCleanFile) {
+            // Set status to clean if the new editor content came from an opened file
+            setEditorStatus('clean');
+          } else if (editorStatus === 'clean') {
+            // Even if the new editor content was downloaded, don't change the status from extDirty
+            // to dirty
+            setEditorStatus('dirty');
+          }
+          setEditorContent(data.content);
+        } else if (data.type === 'didExternalChange') {
           setEditorStatus('extDirty');
-        } else if (typedData.type === 'didChangePath') {
-          setEditorPath(typedData.path);
+        } else if (data.type === 'didChangePath') {
+          setEditorPath(data.path);
+        } else if (data.type === 'promptUpload') {
+          if (editorStatus === 'clean') {
+            window.electron.ipcRenderer.sendMessage('main-file-control', {
+              type: 'upload',
+              robotSSHAddress: SSHAddress,
+            });
+          } else {
+            changeActiveModal('DirtyUploadConfirm');
+          }
+        } else if (data.type === 'promptDownload') {
+          if (editorStatus === 'clean') {
+            window.electron.ipcRenderer.sendMessage('main-file-control', {
+              type: 'download',
+              robotSSHAddress: SSHAddress,
+            });
+          } else {
+            changeActiveModal('DirtyDownloadConfirm');
+          }
         }
       });
     }
     return () => {};
-  }, [editorContent, editorStatus]);
+  }, [editorContent, editorStatus, SSHAddress]);
 
   useEffect(() => {
     if (window.electron) {
@@ -317,23 +332,62 @@ export default function App() {
             isActive={activeModal === 'DirtyLoadConfirm'}
             onClose={closeModal}
             onConfirm={() => {
-              const data: MainFileControlData = { type: 'load' };
-              window.electron.ipcRenderer.sendMessage(
-                'main-file-control',
-                data,
-              );
+              window.electron.ipcRenderer.sendMessage('main-file-control', {
+                type: 'load',
+              });
             }}
-            queryText="You have unsaved changes. Really load?"
             modalTitle="Confirm load"
-          />
+          >
+            <p>You have unsaved changes. Really load?</p>
+          </ConfirmModal>
           <ConfirmModal
             isActive={activeModal === 'DirtyQuitConfirm'}
             onClose={closeModal}
             onConfirm={closeWindow}
-            queryText="You have unsaved changes. Really quit?"
             modalTitle="Confirm quit"
             noAutoClose
-          />
+          >
+            <p>You have unsaved changes. Really quit?</p>
+          </ConfirmModal>
+          <ConfirmModal
+            isActive={activeModal === 'DirtyUploadConfirm'}
+            onClose={closeModal}
+            onConfirm={() => {
+              window.electron.ipcRenderer.sendMessage('main-file-control', {
+                type: 'upload',
+                robotSSHAddress: SSHAddress,
+              });
+            }}
+            modalTitle="Confirm upload"
+          >
+            <p>
+              Unsaved changes in the editor will not be uploaded. Really upload?
+            </p>
+            <label htmlFor="show-dirty-upload-warning">
+              <input
+                type="checkbox"
+                name="show-dirty-upload-warning"
+                onChange={(e) => setShowDirtyUploadWarning(!e.target.checked)}
+              />
+              Don&apos;t show this warning again
+            </label>
+          </ConfirmModal>
+          <ConfirmModal
+            isActive={activeModal === 'DirtyDownloadConfirm'}
+            onClose={closeModal}
+            onConfirm={() => {
+              window.electron.ipcRenderer.sendMessage('main-file-control', {
+                type: 'download',
+                robotSSHAddress: SSHAddress,
+              });
+            }}
+            modalTitle="Confirm download"
+          >
+            <p>
+              You have unsaved changes. Really replace editor contents with
+              downloaded code?
+            </p>
+          </ConfirmModal>
         </div>
       </div>
     </StrictMode>

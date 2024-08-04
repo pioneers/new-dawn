@@ -13,6 +13,7 @@ module.exports = {
     '@typescript-eslint/no-shadow': 'error',
     'no-unused-vars': 'off',
     '@typescript-eslint/no-unused-vars': 'error',
+    'no-redeclare': 'off', // False positives on typescript's function overloads
   },
   parserOptions: {
     ecmaVersion: 2022,

@@ -6,6 +6,7 @@ export default interface Config {
   robotSSHAddress: string;
   fieldIPAddress: string;
   fieldStationNumber: string;
+  showDirtyUploadWarning: boolean;
 }
 
 /**
@@ -47,6 +48,12 @@ export function coerceToConfig(template: unknown): Config {
     typeof config.fieldStationNumber !== 'string'
   ) {
     config.fieldStationNumber = '4';
+  }
+  if (
+    !('showDirtyUploadWarning' in config) ||
+    typeof config.showDirtyUploadWarning !== 'boolean'
+  ) {
+    config.showDirtyUploadWarning = true;
   }
   return config as Config; // By now we're sure all the fields (and maybe some more) are set
 }
