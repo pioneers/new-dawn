@@ -48,7 +48,8 @@
     "start:main": "cross-env NODE_ENV=development electronmon -r ts-node/register/transpile-only .",
     "start:preload": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.preload.dev.ts",
     "start:renderer": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts",
-    "test": "jest"
+    "test": "jest",
+    "build-protos": "pbjs -t static-module -w es6 -o protos-main/protos.js protos-main/protos/*.proto && pbts -o protos-main/protos.d.ts protos-main/protos.js "
   },
   "browserslist": [],
   "prettier": {
@@ -104,6 +105,7 @@
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
     "electron-updater": "^6.1.4",
+    "protobufjs": "^6.10.3",
     "react": "^18.2.0",
     "react-ace": "^12.0.0",
     "react-dom": "^18.2.0",
@@ -158,6 +160,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "mini-css-extract-plugin": "^2.7.6",
     "prettier": "^3.0.3",
+    "protobufjs": "git://github.com/VitalyName/protobuf.js.git#236a7c757a5eada7926fdff149d0b49ada838275",
     "react-refresh": "^0.14.0",
     "react-test-renderer": "^18.2.0",
     "rimraf": "^5.0.1",
