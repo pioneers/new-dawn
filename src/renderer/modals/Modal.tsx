@@ -34,6 +34,12 @@ export default function Modal({
     </div>
   );
 }
+/**
+ * Default props for Modal.
+ */
 Modal.defaultProps = {
+  /**
+   * Doesn't give the modal content wrapper any additional classNames.
+   */
   className: '',
 };

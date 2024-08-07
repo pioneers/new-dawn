@@ -259,6 +259,9 @@ export interface MainFileControlDownloadData {
  * the user for a new path).
  */
 export interface MainFileControlClearSavePathData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'clearSavePath';
 }
 /**

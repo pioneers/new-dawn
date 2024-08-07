@@ -3,8 +3,14 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import './Editor.css';
 
+/**
+ * A status of the Editor's content.
+ */
 export type EditorContentStatus = 'clean' | 'dirty' | 'extDirty';
 
+/**
+ * Tooltips to display over the editor status indicator.
+ */
 const STATUS_TOOLTIPS: { [k in EditorContentStatus]: string } = {
   clean: '',
   dirty:
@@ -12,6 +18,9 @@ const STATUS_TOOLTIPS: { [k in EditorContentStatus]: string } = {
   extDirty:
     'The code that will be uploaded to the robot was last changed in an external program.',
 };
+/**
+ * Content of the editor status indicator (next to the file name).
+ */
 const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
   clean: '',
   dirty: 'Modified',

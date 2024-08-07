@@ -14,7 +14,13 @@ export type ConfigName =
  * Event data for ConnectionConfigModal onChange handler.
  */
 export interface ConnectionConfigChangeEvent {
+  /**
+   * The name of the field that was changed.
+   */
   name: ConfigName;
+  /**
+   * The new value of the field.
+   */
   value: string;
 }
 
@@ -38,6 +44,10 @@ export default function ConnectionConfigModal({
   FieldStationNum,
 }: {
   onClose: () => void;
+  /**
+   * change handler for connection configuration
+   * @param e - event describing the changed field and its new value
+   */
   onChange: (e: ConnectionConfigChangeEvent) => void;
   isActive: boolean;
   IPAddress: string;
