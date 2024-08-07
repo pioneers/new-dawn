@@ -167,8 +167,7 @@ export type RendererFileControlData =
   | RendererFileControlExtChangeData
   | RendererFileControlPromptUploadData
   | RendererFileControlPromptDownloadData
-  | RendererFileControlPromptCreateNewFile
-  ;
+  | RendererFileControlPromptCreateNewFile;
 /**
  * Data for the renderer-post-console event sent by the main process to add a console message to the
  * AppConsole.
@@ -273,8 +272,7 @@ export type MainFileControlData =
   | MainFileControlLoadData
   | MainFileControlUploadData
   | MainFileControlDownloadData
-  | MainFileControlClearSavePathData
-  ;
+  | MainFileControlClearSavePathData;
 /**
  * Data for the main-quit event sent by the renderer both to authorize a request to quit and to send
  * updated configuration data that should be saved before the program closes.
