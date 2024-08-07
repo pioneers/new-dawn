@@ -169,7 +169,6 @@ export type RendererFileControlData =
   | RendererFileControlPromptDownloadData
   | RendererFileControlPromptCreateNewFile
   ;
->>>>>>> 69c0059 (Add docs for everything non-boilerplate)
 /**
  * Data for the renderer-post-console event sent by the main process to add a console message to the
  * AppConsole.
@@ -267,18 +266,12 @@ export interface MainFileControlClearSavePathData {
  * to the code file and editor.
  */
 export type MainFileControlData =
-<<<<<<< HEAD
-  | MainFcSaveData
-  | MainFcLoadData
-  | MainFcUploadData
-  | MainFcDownloadData
-  | MainFileControlClearSavePathData;
-=======
   | MainFileControlSaveData
   | MainFileControlLoadData
   | MainFileControlUploadData
-  | MainFileControlDownloadData;
->>>>>>> 69c0059 (Add docs for everything non-boilerplate)
+  | MainFileControlDownloadData
+  | MainFileControlClearSavePathData
+  ;
 /**
  * Data for the main-quit event sent by the renderer both to authorize a request to quit and to send
  * updated configuration data that should be saved before the program closes.
