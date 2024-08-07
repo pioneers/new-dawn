@@ -1,0 +1,60 @@
+.Editor {
+  display: flex;
+  flex-direction: column;
+}
+.Editor-file-info {
+  display: flex;
+  padding-left: 15px;
+  flex-basis: 50px;
+  flex-direction: row;
+  align-items: center;
+}
+.Editor-file-name {
+  margin-right: 5px;
+  font-family: Verdana, monospace;
+}
+.Editor-file-status {
+  font-style: italic;
+}
+.Editor-ace-wrapper {
+  flex-grow: 1;
+  user-select: auto;
+}
+.Editor-toolbar {
+  display: flex;
+  flex-direction: row;
+  padding: 5px 0 5px 20px;
+  overflow-x: auto;
+}
+.Editor-toolbar-group {
+  margin-right: 20px;
+  border: 1px solid lightgray;
+  padding: 4px;
+  border-radius: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+}
+.Editor-toolbar-group > *:not(:last-child) {
+  margin-right: 4px;
+}
+.Editor-toolbar-group:last-child {
+  margin-left: auto;
+}
+.Editor-toolbar button {
+  outline: none;
+  border: none;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+.Editor-tbopmode {
+  font-family: Verdana, monospace;
+}
+.Editor-tbopmode select {
+  margin-left: 5px;
+  outline: none;
+}

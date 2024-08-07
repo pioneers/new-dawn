@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import Modal from './Modal';
+import './ConfirmModal.css';
 
 /**
  * Generic confirmation modal component.
@@ -33,7 +34,7 @@ export default function ConfirmModal({
   };
   return (
     <Modal modalTitle={modalTitle} onClose={onClose} isActive={isActive}>
-      {children}
+      <div className="ConfirmModal-content">{children}</div>
       <button type="button" onClick={handleConfirm}>
         Confirm
       </button>

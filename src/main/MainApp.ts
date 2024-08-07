@@ -143,6 +143,9 @@ export default class MainApp {
         this.#uploadCodeFile(data.robotSSHAddress);
       } else if (data.type === 'download') {
         this.#downloadCodeFile(data.robotSSHAddress);
+      } else if (data.type === 'clearSavePath') {
+        this.#savePath = null;
+        this.#watcher?.close();
       }
     });
     addRendererListener('main-quit', (data) => {
@@ -221,17 +224,7 @@ export default class MainApp {
    * trip is needed to notify the user that unsaved changes in the editor will not be uploaded.
    */
   promptUploadCodeFile() {
-    if (this.#savePath === null) {
-      this.#sendToRenderer(
-        'renderer-post-console',
-        new AppConsoleMessage(
-          'dawn-err',
-          'Code must be saved to a file before it can be uploaded to the robot.',
-        ),
-      );
-    } else {
-      this.#sendToRenderer('renderer-file-control', { type: 'promptUpload' });
-    }
+    this.#sendToRenderer('renderer-file-control', { type: 'promptUpload' });
   }
 
   /**
@@ -240,6 +233,16 @@ export default class MainApp {
    */
   promptDownloadCodeFile() {
     this.#sendToRenderer('renderer-file-control', { type: 'promptDownload' });
+  }
+
+  /**
+   * Requests that the renderer process close the open file in the editor. The renderer may delay or
+   * ignore this request (e.g. if there are unsaved changes).
+   */
+  promptCreateNewCodeFile() {
+    this.#sendToRenderer('renderer-file-control', {
+      type: 'promptCreateNewFile',
+    });
   }
 
   /**
@@ -308,24 +311,47 @@ export default class MainApp {
    */
   #uploadCodeFile(ip: string) {
     if (this.#savePath) {
-      this.#codeTransfer
-        .upload(this.#savePath, ip)
-        .then(() => {
-          this.#sendToRenderer(
-            'renderer-post-console',
-            new AppConsoleMessage('dawn-info', 'Code uploaded successfully.'),
-          );
-          return null;
-        })
-        .catch((e) => {
-          this.#sendToRenderer(
-            'renderer-post-console',
-            new AppConsoleMessage(
-              'dawn-err',
-              `Failed to upload code. ${this.#getErrorDetails(e)}`,
-            ),
-          );
-        });
+      if (
+        fs
+          .readFileSync(this.#savePath, { encoding: 'utf8', flag: 'r' })
+          .split('')
+          .some((c) => c.charCodeAt(0) > 127)
+      ) {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            'Robot code may not contain non-ASCII characters.',
+          ),
+        );
+      } else {
+        this.#codeTransfer
+          .upload(this.#savePath, ip)
+          .then(() => {
+            this.#sendToRenderer(
+              'renderer-post-console',
+              new AppConsoleMessage('dawn-info', 'Code uploaded successfully.'),
+            );
+            return null;
+          })
+          .catch((e) => {
+            this.#sendToRenderer(
+              'renderer-post-console',
+              new AppConsoleMessage(
+                'dawn-err',
+                `Failed to upload code. ${this.#getErrorDetails(e)}`,
+              ),
+            );
+          });
+      }
+    } else {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          'Code must be saved to a file before it can be uploaded to the robot.',
+        ),
+      );
     }
   }
 

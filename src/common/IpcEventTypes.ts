@@ -98,6 +98,13 @@ interface RendererFcPrmtDownloadData {
   type: 'promptDownload';
 }
 /**
+ * Data for a specialization of the renderer-file-control event, sent when the main process wants to
+ * close the file open in the editor.
+ */
+interface RendererFileControlPromptCreateNewFile {
+  type: 'promptCreateNewFile';
+}
+/**
  * Data for the renderer-file-control event sent by the main process to request or submit
  * information related to the code file and editor.
  */
@@ -109,7 +116,8 @@ export type RendererFileControlData =
   | RendererFcPathData
   | RendererFcExtChangeData
   | RendererFcPrmtUploadData
-  | RendererFcPrmtDownloadData;
+  | RendererFcPrmtDownloadData
+  | RendererFileControlPromptCreateNewFile;
 /**
  * Data for the renderer-post-console event sent by the main process to add a console message to the
  * AppConsole.
@@ -158,6 +166,14 @@ interface MainFcDownloadData {
   robotSSHAddress: string;
 }
 /**
+ * Data for a specialization of the main-file-control event, sent by the renderer to
+ * inititate/respond to a request to clear the save path (so the next request to save must prompt
+ * the user for a new path).
+ */
+export interface MainFileControlClearSavePathData {
+  type: 'clearSavePath';
+}
+/**
  * Data for the main-file-control event sent by the renderer process to submit information related
  * to the code file and editor.
  */
@@ -165,7 +181,8 @@ export type MainFileControlData =
   | MainFcSaveData
   | MainFcLoadData
   | MainFcUploadData
-  | MainFcDownloadData;
+  | MainFcDownloadData
+  | MainFileControlClearSavePathData;
 /**
  * Data for the main-quit event sent by the renderer both to authorize a request to quit and to send
  * updated configuration data that should be saved before the program closes.

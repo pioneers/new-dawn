@@ -1,7 +1,6 @@
 .Topbar {
   width: calc(100% - 20px);
   padding: 10px;
-  user-select: none;
   font-family: Arial, sans-serif;
 }
 .Topbar-left-group {

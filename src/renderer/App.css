@@ -13,11 +13,12 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  user-select: none;
 }
 .App-cols {
   display: flex;
   flex-direction: row;
-  flex-shrink: 0;
+  height: 100%;
 }
 .App-modal-container {
   position: fixed;
@@ -31,4 +32,7 @@ body {
 }
 .App-modal-container:has(.modal-active) {
   display: block;
+}
+.App-confirm-dialog-text {
+  margin-top: 0;
 }
