@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import Modal from './Modal';
 
 /**
@@ -6,7 +7,6 @@ import Modal from './Modal';
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.onConfirm - handler called when the confirm button is clicked
  * @param props.isActive - whether to display the modal
- * @param props.queryText - question text in the modal
  * @param props.modalTitle - displayed title of the modal
  * @param props.noAutoClose - whether the modal should not call onClose after confirmation
  */
@@ -14,16 +14,16 @@ export default function ConfirmModal({
   onClose,
   onConfirm,
   isActive,
-  queryText,
   modalTitle,
   noAutoClose = false,
+  children,
 }: {
   onClose: () => void;
   onConfirm: () => void;
   isActive: boolean;
-  queryText: string;
   modalTitle: string;
   noAutoClose?: boolean;
+  children: ReactNode;
 }) {
   const handleConfirm = () => {
     onConfirm();
@@ -33,7 +33,7 @@ export default function ConfirmModal({
   };
   return (
     <Modal modalTitle={modalTitle} onClose={onClose} isActive={isActive}>
-      <p>{queryText}</p>
+      {children}
       <button type="button" onClick={handleConfirm}>
         Confirm
       </button>
