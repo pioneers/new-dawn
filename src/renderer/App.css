@@ -3,14 +3,22 @@ body {
 }
 
 .App {
+  --window-head-color: blue;
+  --window-head-text-color: white;
+  --window-accent-color: grey;
+  --body-color: white;
+  --body-text-color: black;
+  --body-accent-color: white;
+
   display: flex;
   flex-direction: column;
   height: 100vh;
+  user-select: none;
 }
 .App-cols {
   display: flex;
   flex-direction: row;
-  flex-shrink: 0;
+  height: 100%;
 }
 .App-modal-container {
   position: fixed;
@@ -24,4 +32,7 @@ body {
 }
 .App-modal-container:has(.modal-active) {
   display: block;
+}
+.App-confirm-dialog-text {
+  margin-top: 0;
 }

@@ -106,12 +106,12 @@ export default class MainApp {
    * Persistent configuration loaded when MainApp is constructed and saved when the main window is
    * closed.
    */
-  #config: Config;
+  readonly #config: Config;
 
   /**
    * CodeTransfer used to upload/download code to/from the robot.
    */
-  #codeTransfer: CodeTransfer;
+  readonly #codeTransfer: CodeTransfer;
 
   /**
    * @param mainWindow - the BrowserWindow.
@@ -143,6 +143,9 @@ export default class MainApp {
         this.#uploadCodeFile(data.robotSSHAddress);
       } else if (data.type === 'download') {
         this.#downloadCodeFile(data.robotSSHAddress);
+      } else if (data.type === 'clearSavePath') {
+        this.#savePath = null;
+        this.#watcher?.close();
       }
     });
     addRendererListener('main-quit', (data) => {
@@ -221,17 +224,7 @@ export default class MainApp {
    * trip is needed to notify the user that unsaved changes in the editor will not be uploaded.
    */
   promptUploadCodeFile() {
-    if (this.#savePath === null) {
-      this.#sendToRenderer(
-        'renderer-post-console',
-        new AppConsoleMessage(
-          'dawn-err',
-          'Code must be saved to a file before it can be uploaded to the robot.',
-        ),
-      );
-    } else {
-      this.#sendToRenderer('renderer-file-control', { type: 'promptUpload' });
-    }
+    this.#sendToRenderer('renderer-file-control', { type: 'promptUpload' });
   }
 
   /**
@@ -240,6 +233,16 @@ export default class MainApp {
    */
   promptDownloadCodeFile() {
     this.#sendToRenderer('renderer-file-control', { type: 'promptDownload' });
+  }
+
+  /**
+   * Requests that the renderer process close the open file in the editor. The renderer may delay or
+   * ignore this request (e.g. if there are unsaved changes).
+   */
+  promptCreateNewCodeFile() {
+    this.#sendToRenderer('renderer-file-control', {
+      type: 'promptCreateNewFile',
+    });
   }
 
   /**
@@ -308,24 +311,47 @@ export default class MainApp {
    */
   #uploadCodeFile(ip: string) {
     if (this.#savePath) {
-      this.#codeTransfer
-        .upload(this.#savePath, ip)
-        .then(() => {
-          this.#sendToRenderer(
-            'renderer-post-console',
-            new AppConsoleMessage('dawn-info', 'Code uploaded successfully.'),
-          );
-          return null;
-        })
-        .catch((e) => {
-          this.#sendToRenderer(
-            'renderer-post-console',
-            new AppConsoleMessage(
-              'dawn-err',
-              `Failed to upload code. ${this.#getErrorDetails(e)}`,
-            ),
-          );
-        });
+      if (
+        fs
+          .readFileSync(this.#savePath, { encoding: 'utf8', flag: 'r' })
+          .split('')
+          .some((c) => c.charCodeAt(0) > 127)
+      ) {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            'Robot code may not contain non-ASCII characters.',
+          ),
+        );
+      } else {
+        this.#codeTransfer
+          .upload(this.#savePath, ip)
+          .then(() => {
+            this.#sendToRenderer(
+              'renderer-post-console',
+              new AppConsoleMessage('dawn-info', 'Code uploaded successfully.'),
+            );
+            return null;
+          })
+          .catch((e) => {
+            this.#sendToRenderer(
+              'renderer-post-console',
+              new AppConsoleMessage(
+                'dawn-err',
+                `Failed to upload code. ${this.#getErrorDetails(e)}`,
+              ),
+            );
+          });
+      }
+    } else {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          'Code must be saved to a file before it can be uploaded to the robot.',
+        ),
+      );
     }
   }
 
@@ -434,20 +460,44 @@ export default class MainApp {
     );
   }
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   */
   #sendToRenderer(channel: 'renderer-quit-request'): void;
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   * @param data - a payload for the renderer-init event
+   */
   #sendToRenderer(channel: 'renderer-init', data: RendererInitData): void;
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   * @param data - a payload for the renderer-file-control event
+   */
   #sendToRenderer(
     channel: 'renderer-file-control',
     data: RendererFileControlData,
   ): void;
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   * @param data - a payload for the renderer-post-console event
+   */
   #sendToRenderer(
     channel: 'renderer-post-console',
     data: RendererPostConsoleData,
   ): void;
 
+  /**
+   * Typed wrapper function for sending an event to the main window.
+   * @param channel - the channel to send the event on
+   * @param data - a payload for the renderer-robot-update event
+   */
   #sendToRenderer(
     channel: 'renderer-robot-update',
     data: RendererRobotUpdateData,

@@ -1,0 +1,26 @@
+.ConnectionConfigModal-content {
+  font-family: Arial, sans-serif;
+}
+.ConnectionConfigModal-config-field {
+  display: block;
+  padding: 2px 0 2px;
+}
+.ConnectionConfigModal-section .ConnectionConfigModal-config-field {
+  padding-left: 12px;
+}
+.ConnectionConfigModal-config-field input {
+  margin-left: 4px;
+  border: none;
+  border-bottom: 1px solid var(--window-accent-color);
+  outline: none;
+  font-size: 16px;
+}
+.ConnectionConfigModal-config-field input:focus{
+  border-color: var(--window-head-color);
+}
+.ConnectionConfigModal-section:not(:first-child) {
+  margin-top: 8px;
+}
+.ConnectionConfigModal-section-header {
+  padding: 4px 0 4px 0;
+}

@@ -19,19 +19,45 @@ export type MainChannels = 'main-file-control' | 'main-quit';
  * 'ready-to-show'.
  */
 export interface RendererInitData {
+  /**
+   * User-presentable Dawn version string.
+   */
   dawnVersion: string;
+  /**
+   * The IP address used to communicate with the robot's runtime, retrieved from persistent config.
+   */
   robotIPAddress: string;
+  /**
+   * The IP address used to upload code to the robot, retrieved from persistent config.
+   */
   robotSSHAddress: string;
+  /**
+   * The IP address of the field controller, retrieved from persistent config.
+   */
   fieldIPAddress: string;
+  /**
+   * The field station number to connect to, retrieved from persistent config.
+   */
   fieldStationNumber: string;
+  /**
+   * Whether the user should be warned when uploading code with unsaved changes in the editor (since
+   * these won't be uploaded), retrieved from persistent config.
+   */
   showDirtyUploadWarning: boolean;
 }
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process wants to
  * try saving the code and needs to ask the renderer process for the content of the editor.
  */
-interface RendererFcPrmtSaveData {
+export interface RendererFileControlPromptSaveData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'promptSave';
+  /**
+   * Whether the user should be prompted to choose a save path even if one is remembered from the
+   * last save or load.
+   */
   forceDialog: boolean;
 }
 /**
@@ -39,21 +65,30 @@ interface RendererFcPrmtSaveData {
  * try loading a file into the editor and needs to ask the renderer process if this is ok (if there
  * are no unsaved changes).
  */
-interface RendererFcPrmtLoadData {
+export interface RendererFileControlPromptLoadData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'promptLoad';
 }
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process has
  * successfully saved the code and the renderer should clear the dirty editor indicator.
  */
-interface RendererFcSaveData {
+export interface RendererFileControlSaveData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'didSave';
 }
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process has
  * successfully loaded code and the renderer should store the retrieved content in the editor.
  */
-interface RendererFcOpenData {
+export interface RendererFileControlOpenData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'didOpen';
   /**
    * The loaded code.
@@ -69,8 +104,14 @@ interface RendererFcOpenData {
  * Data for a specialization of the renderer-file-control event, sent when the main process has
  * successfully saved or loaded code and the renderer should update the path shown in the editor.
  */
-interface RendererFcPathData {
+export interface RendererFileControlPathData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'didChangePath';
+  /**
+   * The new save path to display in the editor.
+   */
   path: string;
 }
 /**
@@ -78,7 +119,10 @@ interface RendererFcPathData {
  * external changes to the currently open file and the renderer should set the dirty editor
  * indicator.
  */
-interface RendererFcExtChangeData {
+export interface RendererFileControlExtChangeData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'didExternalChange';
 }
 /**
@@ -86,7 +130,10 @@ interface RendererFcExtChangeData {
  * upload code from the last saved file to the robot and needs to ask the renderer process to notify
  * the user in case this would ignore unsaved changes in the editor.
  */
-interface RendererFcPrmtUploadData {
+export interface RendererFileControlPromptUploadData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'promptUpload';
 }
 /**
@@ -94,22 +141,33 @@ interface RendererFcPrmtUploadData {
  * download code from the robot into the editor and needs to ask the renderer if this is ok (if
  * there are no unsaved changes).
  */
-interface RendererFcPrmtDownloadData {
+export interface RendererFileControlPromptDownloadData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'promptDownload';
+}
+/**
+ * Data for a specialization of the renderer-file-control event, sent when the main process wants to
+ * close the file open in the editor.
+ */
+interface RendererFileControlPromptCreateNewFile {
+  type: 'promptCreateNewFile';
 }
 /**
  * Data for the renderer-file-control event sent by the main process to request or submit
  * information related to the code file and editor.
  */
 export type RendererFileControlData =
-  | RendererFcPrmtSaveData
-  | RendererFcPrmtLoadData
-  | RendererFcSaveData
-  | RendererFcOpenData
-  | RendererFcPathData
-  | RendererFcExtChangeData
-  | RendererFcPrmtUploadData
-  | RendererFcPrmtDownloadData;
+  | RendererFileControlPromptSaveData
+  | RendererFileControlPromptLoadData
+  | RendererFileControlSaveData
+  | RendererFileControlOpenData
+  | RendererFileControlPathData
+  | RendererFileControlExtChangeData
+  | RendererFileControlPromptUploadData
+  | RendererFileControlPromptDownloadData
+  | RendererFileControlPromptCreateNewFile;
 /**
  * Data for the renderer-post-console event sent by the main process to add a console message to the
  * AppConsole.
@@ -120,8 +178,20 @@ export type RendererPostConsoleData = AppConsoleMessage;
  * changes.
  */
 export interface RendererRobotUpdateData {
+  /**
+   * User-presentable runtime version string. May be omitted if the value has not changed since the
+   * last update.
+   */
   runtimeVersion?: string;
+  /**
+   * Robot battery voltage in volts. May be omitted if the value has not changed since the last
+   * update.
+   */
   robotBatteryVoltage?: number;
+  /**
+   * Robot connection latency in milliseconds. May be omitted if the value has not changed since the
+   * last update.
+   */
   robotLatencyMs?: number;
 }
 
@@ -129,51 +199,104 @@ export interface RendererRobotUpdateData {
  * Data for a specialization of the main-file-control event, sent by the renderer to
  * initiate/respond to a request to save the code.
  */
-interface MainFcSaveData {
+export interface MainFileControlSaveData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'save';
+  /**
+   * Whether the user should be prompted to choose a save path even if one is remembered from the
+   * last save or load.
+   */
   forceDialog: boolean;
+  /**
+   * The content to save to the file.
+   */
   content: string;
 }
 /**
  * Data for a specialization of the main-file-control event, sent by the renderer to
  * initiate/authorize a request to load code into the editor.
  */
-interface MainFcLoadData {
+export interface MainFileControlLoadData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'load';
 }
 /**
  * Data for a specialization of the main-file-control event, sent by the renderer to
  * initiate/respond to a request to upload the last opened file to the robot.
  */
-interface MainFcUploadData {
+export interface MainFileControlUploadData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'upload';
+  /**
+   * The IP address to connect to via SSH when uploading code.
+   */
   robotSSHAddress: string;
 }
 /**
  * Data for a specialization of the main-file-control event, sent by the renderer to
  * initiate/respond to a request to download the code on the robot into the editor.
  */
-interface MainFcDownloadData {
+export interface MainFileControlDownloadData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'download';
+  /**
+   * The IP address to connect to via SSH when uploading code.
+   */
   robotSSHAddress: string;
+}
+/**
+ * Data for a specialization of the main-file-control event, sent by the renderer to
+ * inititate/respond to a request to clear the save path (so the next request to save must prompt
+ * the user for a new path).
+ */
+export interface MainFileControlClearSavePathData {
+  /**
+   * The subtype of file control event.
+   */
+  type: 'clearSavePath';
 }
 /**
  * Data for the main-file-control event sent by the renderer process to submit information related
  * to the code file and editor.
  */
 export type MainFileControlData =
-  | MainFcSaveData
-  | MainFcLoadData
-  | MainFcUploadData
-  | MainFcDownloadData;
+  | MainFileControlSaveData
+  | MainFileControlLoadData
+  | MainFileControlUploadData
+  | MainFileControlDownloadData
+  | MainFileControlClearSavePathData;
 /**
  * Data for the main-quit event sent by the renderer both to authorize a request to quit and to send
  * updated configuration data that should be saved before the program closes.
  */
 export interface MainQuitData {
+  /**
+   * The IP address used to communicate with the robot's runtime, to be saved to persistent config.
+   */
   robotIPAddress: string;
+  /**
+   * The IP address used to upload code to the robot, to be saved to persistent config.
+   */
   robotSSHAddress: string;
+  /**
+   * The IP address of the field controller, to be saved to persistent config.
+   */
   fieldIPAddress: string;
+  /**
+   * The field station number to connect to, to be saved to persistent config.
+   */
   fieldStationNumber: string;
+  /**
+   * Whether the user should be warned when uploading code with unsaved changes in the editor (since
+   * these won't be uploaded), to be saved to persistent config.
+   */
   showDirtyUploadWarning: boolean;
 }

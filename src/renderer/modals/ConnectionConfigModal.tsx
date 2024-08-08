@@ -1,13 +1,34 @@
 import { ChangeEvent } from 'react';
 import Modal from './Modal';
+import './ConnectionConfigModal.css';
+
+/**
+ * Names of fields in ConnectionConfigModal.
+ */
+export type ConfigName =
+  | 'IPAddress'
+  | 'SSHAddress'
+  | 'FieldIPAddress'
+  | 'FieldStationNum';
+/**
+ * Event data for ConnectionConfigModal onChange handler.
+ */
+export interface ConnectionConfigChangeEvent {
+  /**
+   * The name of the field that was changed.
+   */
+  name: ConfigName;
+  /**
+   * The new value of the field.
+   */
+  value: string;
+}
 
 /**
  * Modal component exposing info about the connection to the robot (IP address, port, etc.)
  * @param props - props
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.isActive - whether to display the modal
- * @param props.onChange - change handler used for all connection info input elements. Possible ids
- * of event targets are 'IPAddress', 'SSHAddress', 'FieldIPAddress', and 'FieldStationNum'.
  * @param props.IPAddress - displayed robot IP address
  * @param props.SSHAddress - displayed robot SSH address
  * @param props.FieldIPAddress - displayed field IP address
@@ -23,41 +44,79 @@ export default function ConnectionConfigModal({
   FieldStationNum,
 }: {
   onClose: () => void;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  /**
+   * change handler for connection configuration
+   * @param e - event describing the changed field and its new value
+   */
+  onChange: (e: ConnectionConfigChangeEvent) => void;
   isActive: boolean;
   IPAddress: string;
   SSHAddress: string;
   FieldIPAddress: string;
   FieldStationNum: string;
 }) {
+  const handleConfigChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const name = e.target.name.replace(/^ConnectionConfigModal-/, '');
+    onChange({
+      name: name as ConfigName,
+      value: e.target.value,
+    });
+  };
   return (
-    <Modal modalTitle="Connection info" onClose={onClose} isActive={isActive}>
-      <div>
+    <Modal
+      modalTitle="Connection settings"
+      onClose={onClose}
+      isActive={isActive}
+      className="ConnectionConfigModal-content"
+    >
+      <label
+        htmlFor="ConnectionConfigModal-IPAddress"
+        className="ConnectionConfigModal-config-field"
+      >
         IP Address:
-        <input id="IPAddress" onChange={onChange} value={IPAddress} />
-      </div>
-      <div>
+        <input
+          name="ConnectionConfigModal-IPAddress"
+          onChange={handleConfigChange}
+          value={IPAddress}
+        />
+      </label>
+      <label
+        htmlFor="ConnectionConfigModal-SSHAddress"
+        className="ConnectionConfigModal-config-field"
+      >
         SSH Address:
-        <input id="SSHAddress" onChange={onChange} value={SSHAddress} />
-      </div>
-      <div>
-        Field Control Settings
-        <div>
+        <input
+          name="ConnectionConfigModal-SSHAddress"
+          onChange={handleConfigChange}
+          value={SSHAddress}
+        />
+      </label>
+      <div className="ConnectionConfigModal-section">
+        <div className="ConnectionConfigModal-section-header">
+          Field Control Settings
+        </div>
+        <label
+          htmlFor="ConnectionConfigModal-FieldIPAddress"
+          className="ConnectionConfigModal-config-field"
+        >
           Field Control IP Address:
           <input
-            id="FieldIPAddress"
-            onChange={onChange}
+            name="ConnectionConfigModal-FieldIPAddress"
+            onChange={handleConfigChange}
             value={FieldIPAddress}
           />
-        </div>
-        <div>
+        </label>
+        <label
+          htmlFor="ConnectionConfigModal-FieldStationNum"
+          className="ConnectionConfigModal-config-field"
+        >
           Field Control Station Number:
           <input
-            id="FieldStationNum"
-            onChange={onChange}
+            name="ConnectionConfigModal-FieldStationNum"
+            onChange={handleConfigChange}
             value={FieldStationNum}
           />
-        </div>
+        </label>
       </div>
     </Modal>
   );
