@@ -27,7 +27,7 @@ const MIN_EDITOR_WIDTH_PERCENT = 0.6;
 const MIN_CONSOLE_HEIGHT_PERCENT = 0.3;
 
 /**
- * Top-level component that communicates with main process and contains all renderer state.
+ * Top-level component that communicates with main process and contains most renderer state.
  */
 export default function App() {
   // Current width of editor in pixels
@@ -62,6 +62,9 @@ export default function App() {
   const [consoleMsgs, setConsoleMsgs] = useState([] as AppConsoleMessage[]);
   // Whether the AppConsole is open
   const [consoleIsOpen, setConsoleIsOpen] = useState(true);
+  // Whether a new message has been added to the AppConsole since it has been closed (if it is
+  // closed)
+  const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
   const [windowSize, setWindowSize] = useReducer(
     (oldSize: [number, number], newSize: [number, number]) => {
@@ -246,14 +249,22 @@ export default function App() {
             setRobotLatencyMs(data.robotLatencyMs);
           }
         }),
-        window.electron.ipcRenderer.on('renderer-post-console', (data) => {
-          setConsoleMsgs((old) => [...old, data]);
-        }),
       ];
       return () => listenerDestructors.forEach((destructor) => destructor());
     }
     return () => {};
   }, []);
+  useEffect(() => {
+    if (window.electron) {
+      return window.electron.ipcRenderer.on('renderer-post-console', (data) => {
+        setConsoleMsgs((old) => [...old, data]);
+        if (!consoleIsOpen) {
+          setConsoleIsAlerted(true);
+        }
+      });
+    }
+    return () => {};
+  }, [consoleIsOpen]);
   useEffect(() => {
     if (window.electron) {
       return window.electron.ipcRenderer.on('renderer-file-control', (data) => {
@@ -321,6 +332,7 @@ export default function App() {
             fileStatus={editorStatus}
             filePath={editorPath}
             content={editorContent}
+            consoleAlert={consoleIsAlerted}
             onOpen={loadFile}
             onSave={saveFile}
             onNewFile={createNewFile}
@@ -332,8 +344,14 @@ export default function App() {
             onStopRobot={() => {
               throw new Error('Not implemented.');
             }}
-            onToggleConsole={() => setConsoleIsOpen((v) => !v)}
-            onClearConsole={() => setConsoleMsgs([])}
+            onToggleConsole={() => {
+              setConsoleIsOpen((v) => !v);
+              setConsoleIsAlerted(false);
+            }}
+            onClearConsole={() => {
+              setConsoleMsgs([]);
+              setConsoleIsAlerted(false);
+            }}
             onToggleKeyboardControls={() => {
               throw new Error('Not implemented.');
             }}
