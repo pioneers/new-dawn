@@ -6,15 +6,15 @@ import uploadSvg from '../../assets/upload.svg';
 import downloadSvg from '../../assets/download.svg';
 import openSvg from '../../assets/open.svg';
 import saveSvg from '../../assets/save.svg';
-import saveAsSvg from '../../assets/saveAs.svg';
-import newFileSvg from '../../assets/newFile.svg';
+import saveAsSvg from '../../assets/save-as.svg';
+import newFileSvg from '../../assets/new-file.svg';
 import consoleSvg from '../../assets/console.svg';
-import consoleAlertSvg from '../../assets/consoleAlert.svg';
-import consoleClearSvg from '../../assets/consoleClear.svg';
-import zoomInSvg from '../../assets/zoomIn.svg';
-import zoomOutSvg from '../../assets/zoomOut.svg';
-import startRobot from '../../assets/startRobot.svg';
-import stopRobot from '../../assets/stopRobot.svg';
+import consoleAlertSvg from '../../assets/console-alert.svg';
+import consoleClearSvg from '../../assets/console-clear.svg';
+import zoomInSvg from '../../assets/zoom-in.svg';
+import zoomOutSvg from '../../assets/zoom-out.svg';
+import startRobot from '../../assets/start-robot.svg';
+import stopRobot from '../../assets/stop-robot.svg';
 
 /**
  * A status of the Editor's content.
