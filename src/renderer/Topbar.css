@@ -2,6 +2,7 @@
   width: calc(100% - 20px);
   padding: 10px;
   font-family: Arial, sans-serif;
+  border-bottom: 1px solid var(--body-accent-color);
 }
 .Topbar-left-group {
   float: left;

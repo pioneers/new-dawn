@@ -8,7 +8,7 @@ import {
 } from 'react';
 import Topbar from './Topbar';
 import Editor, { EditorContentStatus } from './Editor';
-import DeviceInfo from './DeviceInfo';
+import DeviceInfo, { Device as DeviceInfoState } from './DeviceInfo';
 import AppConsole from './AppConsole';
 import type AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
 import ConfirmModal from './modals/ConfirmModal';
@@ -90,6 +90,8 @@ export default function App() {
   const [SSHAddress, setSSHAddress] = useState('192.168.0.100');
   const [FieldIPAddress, setFieldIPAddress] = useState('localhost');
   const [FieldStationNum, setFieldStationNum] = useState('4');
+  // Information about periperhals connected to the robot
+  const [deviceInfoState, setDeviceInfoState] = useState([] as DeviceInfoState[]);
 
   const changeActiveModal = (newModalName: string) => {
     if (document.activeElement instanceof HTMLElement) {
@@ -244,6 +246,9 @@ export default function App() {
           }
           if (data.robotLatencyMs !== undefined) {
             setRobotLatencyMs(data.robotLatencyMs);
+            if (data.robotLatencyMs === -1) {
+              setDeviceInfoState([]); // Disconnect everything
+            }
           }
         }),
         window.electron.ipcRenderer.on('renderer-post-console', (data) => {
@@ -344,7 +349,7 @@ export default function App() {
             onEndResize={endEditorResize}
             axis="x"
           />
-          <DeviceInfo />
+          <DeviceInfo deviceStates={deviceInfoState} />
         </div>
         {consoleIsOpen ? (
           <>

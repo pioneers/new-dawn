@@ -1,4 +1,28 @@
 .DeviceInfo {
   flex-grow: 1;
   overflow: auto scroll;
+  padding: 10px;
+}
+.DeviceInfo-device {
+  border: 1px solid var(--body-accent-color);
+  border-radius: 20px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.DeviceInfo-device-id {
+  font: bold 20px Verdana, sans-serif;
+  user-select: all;
+  margin-bottom: 2px;
+}
+.DeviceInfo-device-type {
+  font-style: italic;
+}
+.DeviceInfo-device-props {
+  font-family: Verdana, sans-serif;
+  margin: 5px 0 0 10px;
+  width: 75%;
+  user-select: text;
+}
+.DeviceInfo-disconnected {
+  font: 15px Verdana, sans-serif;
 }
