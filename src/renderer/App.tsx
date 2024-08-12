@@ -91,7 +91,9 @@ export default function App() {
   const [FieldIPAddress, setFieldIPAddress] = useState('localhost');
   const [FieldStationNum, setFieldStationNum] = useState('4');
   // Information about periperhals connected to the robot
-  const [deviceInfoState, setDeviceInfoState] = useState([] as DeviceInfoState[]);
+  const [deviceInfoState, setDeviceInfoState] = useState(
+    [] as DeviceInfoState[],
+  );
 
   const changeActiveModal = (newModalName: string) => {
     if (document.activeElement instanceof HTMLElement) {
@@ -351,7 +353,7 @@ export default function App() {
           />
           <DeviceInfo deviceStates={deviceInfoState} />
         </div>
-        {consoleIsOpen ? (
+        {consoleIsOpen && (
           <>
             <ResizeBar
               onStartResize={startColsResize}
@@ -361,7 +363,7 @@ export default function App() {
             />
             <AppConsole height={consoleSize} messages={consoleMsgs} />
           </>
-        ) : undefined}
+        )}
         <div className="App-modal-container">
           <ConnectionConfigModal
             isActive={activeModal === 'ConnectionConfig'}
