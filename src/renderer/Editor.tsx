@@ -167,7 +167,7 @@ export default function Editor({
             className={consoleIsOpen ? 'Editor-tbbtn-toggled' : undefined}
             title="Toggle console"
           >
-            { consoleAlert && <div className="Editor-tbbtn-alert" /> }
+            {consoleAlert && <div className="Editor-tbbtn-alert" />}
             <img src={consoleSvg} alt="Stop robot" />
           </button>
           <button type="button" onClick={onClearConsole} title="Clear console">
@@ -192,7 +192,9 @@ export default function Editor({
           <button
             type="button"
             onClick={onToggleKeyboardControls}
-            className={keyboardControlsEnabled ? 'Editor-tbbtn-toggled' : undefined}
+            className={
+              keyboardControlsEnabled ? 'Editor-tbbtn-toggled' : undefined
+            }
             title="Toggle keyboard controls"
           >
             <img src={keyboardKeySvg} alt="Toggle keyboard controls" />
