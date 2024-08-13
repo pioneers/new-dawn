@@ -39,12 +39,13 @@
   flex-shrink: 0;
 }
 .Editor-toolbar-group > *:not(:last-child) {
-  margin-right: 4px;
+  margin-right: 6px;
 }
 .Editor-toolbar-group:last-child {
   margin-left: auto;
 }
 .Editor-toolbar button {
+  position: relative;
   outline: none;
   border: none;
   width: 20px;
@@ -56,6 +57,22 @@
 .Editor-toolbar img {
   width: 100%;
   height: 100%;
+  transition: filter 0.25s;
+  /* Fix other filter variables so transition is directly from black to blue: */
+  filter: invert(0%) sepia(100%) hue-rotate(180deg) saturate(10);
+}
+.Editor-tbbtn-toggled img {
+  /* CSS filter witchcraft producing #0088ff */
+  filter: invert(40%) sepia(100%) hue-rotate(180deg) saturate(10);
+}
+.Editor-tbbtn-alert {
+  position: absolute;
+  transform: translate(50%, 50%);
+  margin: -20% 0 0 50%;
+  border-radius: 100%;
+  width: 40%;
+  height: 40%;
+  background-color: red;
 }
 .Editor-tbopmode {
   font-family: Verdana, monospace;

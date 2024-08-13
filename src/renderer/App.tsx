@@ -65,6 +65,8 @@ export default function App() {
   // Whether a new message has been added to the AppConsole since it has been closed (if it is
   // closed)
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
+  // Whether keyboard controls are enabled
+  const [kbCtrlEnabled, setKbCtrlEnabled] = useState(false);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
   const [windowSize, setWindowSize] = useReducer(
     (oldSize: [number, number], newSize: [number, number]) => {
@@ -333,6 +335,8 @@ export default function App() {
             filePath={editorPath}
             content={editorContent}
             consoleAlert={consoleIsAlerted}
+            consoleIsOpen={consoleIsOpen}
+            keyboardControlsEnabled={kbCtrlEnabled}
             onOpen={loadFile}
             onSave={saveFile}
             onNewFile={createNewFile}
@@ -353,7 +357,7 @@ export default function App() {
               setConsoleIsAlerted(false);
             }}
             onToggleKeyboardControls={() => {
-              throw new Error('Not implemented.');
+              setKbCtrlEnabled((v) => !v);
             }}
           />
           <ResizeBar

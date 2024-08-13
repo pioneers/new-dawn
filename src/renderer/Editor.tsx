@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
-import './Editor.css';
 import uploadSvg from '../../assets/upload.svg';
 import downloadSvg from '../../assets/download.svg';
 import openSvg from '../../assets/open.svg';
@@ -9,12 +8,13 @@ import saveSvg from '../../assets/save.svg';
 import saveAsSvg from '../../assets/save-as.svg';
 import newFileSvg from '../../assets/new-file.svg';
 import consoleSvg from '../../assets/console.svg';
-import consoleAlertSvg from '../../assets/console-alert.svg';
 import consoleClearSvg from '../../assets/console-clear.svg';
 import zoomInSvg from '../../assets/zoom-in.svg';
 import zoomOutSvg from '../../assets/zoom-out.svg';
 import startRobot from '../../assets/start-robot.svg';
 import stopRobot from '../../assets/stop-robot.svg';
+import keyboardKeySvg from '../../assets/keyboard-key.svg';
+import './Editor.css';
 
 /**
  * A status of the Editor's content.
@@ -47,8 +47,12 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
  * @param props.fileStatus - dirty status of the currently open file
  * @param props.filePath - path of the currently open file, or an empty string if no file is open
  * @param props.content - the content that should be displayed in the code editor
- * @param props.consoleAlert - whether to show a different icon for the toggle console button that
- * indicates the user's attention is needed
+ * @param props.consoleAlert - whether to show a different icon for the toggle console button
+ * indicating the user's attention is needed
+ * @param props.consoleIsOpen - whether to show a different icon for the toggle console button
+ * indicating the console is open
+ * @param props.keyboardControlsEnabled - whether to show a different icon for the toggle keyboard
+ * control button indicating keyboard control is enabled
  * @param props.onOpen - handler called when the user wants to open a file in the editor
  * @param props.onNewFile - handler called when the user wants to close the current file
  * @param props.onRobotUpload - handler called when the user wants to upload the open file to the
@@ -67,6 +71,8 @@ export default function Editor({
   filePath,
   content,
   consoleAlert,
+  consoleIsOpen,
+  keyboardControlsEnabled,
   onOpen,
   onSave,
   onNewFile,
@@ -88,6 +94,8 @@ export default function Editor({
   filePath: string;
   content: string;
   consoleAlert: boolean;
+  consoleIsOpen: boolean;
+  keyboardControlsEnabled: boolean;
   onOpen: () => void;
   /**
    * handler called when the user wants to save the contents of the editor
@@ -156,12 +164,11 @@ export default function Editor({
           <button
             type="button"
             onClick={onToggleConsole}
+            className={consoleIsOpen ? 'Editor-tbbtn-toggled' : undefined}
             title="Toggle console"
           >
-            <img
-              src={consoleAlert ? consoleAlertSvg : consoleSvg}
-              alt="Stop robot"
-            />
+            { consoleAlert && <div className="Editor-tbbtn-alert" /> }
+            <img src={consoleSvg} alt="Stop robot" />
           </button>
           <button type="button" onClick={onClearConsole} title="Clear console">
             <img src={consoleClearSvg} alt="Clear console" />
@@ -185,9 +192,10 @@ export default function Editor({
           <button
             type="button"
             onClick={onToggleKeyboardControls}
+            className={keyboardControlsEnabled ? 'Editor-tbbtn-toggled' : undefined}
             title="Toggle keyboard controls"
           >
-            {/* icon */}
+            <img src={keyboardKeySvg} alt="Toggle keyboard controls" />
           </button>
         </div>
         <div className="Editor-toolbar-group">
