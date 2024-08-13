@@ -1,5 +1,6 @@
 .DeviceInfo {
   flex-grow: 1;
+  flex-basis: 0;
   overflow: auto scroll;
   padding: 10px;
 }
