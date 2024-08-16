@@ -1,6 +1,19 @@
 import { useState } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
+import uploadSvg from '../../assets/upload.svg';
+import downloadSvg from '../../assets/download.svg';
+import openSvg from '../../assets/open.svg';
+import saveSvg from '../../assets/save.svg';
+import saveAsSvg from '../../assets/save-as.svg';
+import newFileSvg from '../../assets/new-file.svg';
+import consoleSvg from '../../assets/console.svg';
+import consoleClearSvg from '../../assets/console-clear.svg';
+import zoomInSvg from '../../assets/zoom-in.svg';
+import zoomOutSvg from '../../assets/zoom-out.svg';
+import startRobot from '../../assets/start-robot.svg';
+import stopRobot from '../../assets/stop-robot.svg';
+import keyboardKeySvg from '../../assets/keyboard-key.svg';
 import './Editor.css';
 
 /**
@@ -34,6 +47,12 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
  * @param props.fileStatus - dirty status of the currently open file
  * @param props.filePath - path of the currently open file, or an empty string if no file is open
  * @param props.content - the content that should be displayed in the code editor
+ * @param props.consoleAlert - whether to show a different icon for the toggle console button
+ * indicating the user's attention is needed
+ * @param props.consoleIsOpen - whether to show a different icon for the toggle console button
+ * indicating the console is open
+ * @param props.keyboardControlsEnabled - whether to show a different icon for the toggle keyboard
+ * control button indicating keyboard control is enabled
  * @param props.onOpen - handler called when the user wants to open a file in the editor
  * @param props.onNewFile - handler called when the user wants to close the current file
  * @param props.onRobotUpload - handler called when the user wants to upload the open file to the
@@ -51,6 +70,9 @@ export default function Editor({
   fileStatus,
   filePath,
   content,
+  consoleAlert,
+  consoleIsOpen,
+  keyboardControlsEnabled,
   onOpen,
   onSave,
   onNewFile,
@@ -71,6 +93,9 @@ export default function Editor({
   fileStatus: EditorContentStatus;
   filePath: string;
   content: string;
+  consoleAlert: boolean;
+  consoleIsOpen: boolean;
+  keyboardControlsEnabled: boolean;
   onOpen: () => void;
   /**
    * handler called when the user wants to save the contents of the editor
@@ -111,40 +136,42 @@ export default function Editor({
       <div className="Editor-toolbar">
         <div className="Editor-toolbar-group">
           <button type="button" onClick={onOpen} title="Open">
-            {/* icon */}
+            <img src={openSvg} alt="Open" />
           </button>
           <button type="button" onClick={() => onSave(false)} title="Save">
-            {/* icon */}
+            <img src={saveSvg} alt="Save" />
           </button>
           <button type="button" onClick={() => onSave(true)} title="Save As">
-            {/* icon */}
+            <img src={saveAsSvg} alt="Save As" />
           </button>
           <button type="button" onClick={onNewFile} title="New File">
-            {/* icon */}
+            <img src={newFileSvg} alt="New File" />
           </button>
         </div>
         <div className="Editor-toolbar-group">
           <button type="button" onClick={onRobotUpload} title="Upload to robot">
-            {/* icon */}
+            <img src={uploadSvg} alt="Upload to robot" />
           </button>
           <button
             type="button"
             onClick={onRobotDownload}
             title="Download code from robot"
           >
-            {/* icon */}
+            <img src={downloadSvg} alt="Download code from robot" />
           </button>
         </div>
         <div className="Editor-toolbar-group">
           <button
             type="button"
             onClick={onToggleConsole}
+            className={consoleIsOpen ? 'Editor-tbbtn-toggled' : undefined}
             title="Toggle console"
           >
-            {/* icon */}
+            {consoleAlert && <div className="Editor-tbbtn-alert" />}
+            <img src={consoleSvg} alt="Stop robot" />
           </button>
           <button type="button" onClick={onClearConsole} title="Clear console">
-            {/* icon */}
+            <img src={consoleClearSvg} alt="Clear console" />
           </button>
         </div>
         <div className="Editor-toolbar-group">
@@ -153,21 +180,24 @@ export default function Editor({
             onClick={() => zoomEditor(true)}
             title="Zoom in"
           >
-            {/* icon */}
+            <img src={zoomInSvg} alt="Zoom in" />
           </button>
           <button
             type="button"
             onClick={() => zoomEditor(false)}
             title="Zoom out"
           >
-            {/* icon */}
+            <img src={zoomOutSvg} alt="Zoom out" />
           </button>
           <button
             type="button"
             onClick={onToggleKeyboardControls}
+            className={
+              keyboardControlsEnabled ? 'Editor-tbbtn-toggled' : undefined
+            }
             title="Toggle keyboard controls"
           >
-            {/* icon */}
+            <img src={keyboardKeySvg} alt="Toggle keyboard controls" />
           </button>
         </div>
         <div className="Editor-toolbar-group">
@@ -186,10 +216,10 @@ export default function Editor({
             onClick={() => onStartRobot(opmode as 'auto' | 'teleop')}
             title="Run robot code"
           >
-            {/* icon */}
+            <img src={startRobot} alt="Run robot code" />
           </button>
           <button type="button" onClick={onStopRobot} title="Stop robot">
-            {/* icon */}
+            <img src={stopRobot} alt="Stop robot" />
           </button>
         </div>
       </div>

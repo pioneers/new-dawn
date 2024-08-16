@@ -8,7 +8,7 @@ body {
   --window-accent-color: grey;
   --body-color: white;
   --body-text-color: black;
-  --body-accent-color: white;
+  --body-accent-color: lightgray;
 
   display: flex;
   flex-direction: column;
