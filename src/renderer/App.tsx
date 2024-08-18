@@ -5,38 +5,39 @@ import {
   useReducer,
   useEffect,
   useLayoutEffect,
-  ChangeEvent,
 } from 'react';
 import Topbar from './Topbar';
-import Editor from './editor/Editor';
+import Editor, { EditorContentStatus } from './Editor';
 import DeviceInfo from './DeviceInfo';
 import AppConsole from './AppConsole';
-import AppConsoleMessage from '../common/AppConsoleMessage';
+import type AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
 import ConfirmModal from './modals/ConfirmModal';
-import ConnectionConfigModal from './modals/ConnectionConfigModal';
+import ConnectionConfigModal, {
+  ConnectionConfigChangeEvent,
+} from './modals/ConnectionConfigModal';
 import GamepadInfoModal from './modals/GamepadInfoModal';
 import ResizeBar from './ResizeBar';
 import './App.css';
 
 const INITIAL_EDITOR_WIDTH_PERCENT = 0.7;
-const INITIAL_COLS_HEIGHT_PERCENT = 0.7;
+const INITIAL_CONSOLE_HEIGHT_PERCENT = 0.3;
 const MAX_EDITOR_WIDTH_PERCENT = 0.9;
-const MAX_COLS_HEIGHT_PERCENT = 0.7;
+const MAX_CONSOLE_HEIGHT_PERCENT = 0.6;
 const MIN_EDITOR_WIDTH_PERCENT = 0.6;
-const MIN_COLS_HEIGHT_PERCENT = 0.25;
+const MIN_CONSOLE_HEIGHT_PERCENT = 0.3;
 
 /**
- * Top-level component handling layout.
+ * Top-level component that communicates with main process and contains most renderer state.
  */
 export default function App() {
   // Current width of editor in pixels
   const [editorSize, setEditorSize] = useState(-1);
   // Width of editor before ongoing resize in pixels, -1 if no resize
   const [editorInitialSize, setEditorInitialSize] = useState(-1);
-  // Current height of cols in pixels
-  const [colsSize, setColsSize] = useState(-1);
-  // Height of cols before ongoing resize in pixels, -1 if no resize
-  const [colsInitialSize, setColsInitialSize] = useState(-1);
+  // Current height of console in pixels
+  const [consoleSize, setConsoleSize] = useState(-1);
+  // Height of console before ongoing resize in pixels, -1 if no resize
+  const [consoleInitialSize, setConsoleInitSize] = useState(-1);
   // Name of active modal, empty if no modal is active
   const [activeModal, setActiveModal] = useState('');
   // Dawn version string, received from main process
@@ -51,7 +52,7 @@ export default function App() {
   const [editorContent, setEditorContent] = useState('');
   // Clean/dirty/extDirty status of edited file
   const [editorStatus, setEditorStatus] = useState(
-    'clean' as 'clean' | 'dirty' | 'extDirty',
+    'clean' as EditorContentStatus,
   );
   // Whether to warn the user that their changes to the open file will not be uploaded
   const [showDirtyUploadWarning, setShowDirtyUploadWarning] = useState(true);
@@ -59,6 +60,13 @@ export default function App() {
   const [editorPath, setEditorPath] = useState('');
   // AppConsoleMessages displayed in AppConsole
   const [consoleMsgs, setConsoleMsgs] = useState([] as AppConsoleMessage[]);
+  // Whether the AppConsole is open
+  const [consoleIsOpen, setConsoleIsOpen] = useState(true);
+  // Whether a new message has been added to the AppConsole since it has been closed (if it is
+  // closed)
+  const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
+  // Whether keyboard controls are enabled
+  const [kbCtrlEnabled, setKbCtrlEnabled] = useState(false);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
   const [windowSize, setWindowSize] = useReducer(
     (oldSize: [number, number], newSize: [number, number]) => {
@@ -69,25 +77,148 @@ export default function App() {
         // Resize proportionally
         return (old * newSize[0]) / oldSize[0];
       });
-      setColsSize((old) => {
-        if (colsSize === -1) {
-          return INITIAL_COLS_HEIGHT_PERCENT * newSize[1];
+      setConsoleSize((old) => {
+        if (consoleSize === -1) {
+          return INITIAL_CONSOLE_HEIGHT_PERCENT * newSize[1];
         }
         return (old * newSize[1]) / oldSize[1];
       });
       // Cancel any current resize
       setEditorInitialSize(-1);
-      setColsInitialSize(-1);
+      setConsoleInitSize(-1);
       return newSize;
     },
     [-1, -1],
   );
-
-  // for the ConnectionConfigModal
+  // Connection configuration
   const [IPAddress, setIPAddress] = useState('192.168.0.100');
   const [SSHAddress, setSSHAddress] = useState('192.168.0.100');
   const [FieldIPAddress, setFieldIPAddress] = useState('localhost');
   const [FieldStationNum, setFieldStationNum] = useState('4');
+
+  const changeActiveModal = (newModalName: string) => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    setActiveModal(newModalName);
+  };
+  const changeEditorContent = (newContent: string) => {
+    setEditorContent(newContent);
+    if (editorStatus === 'clean') {
+      setEditorStatus('dirty');
+    }
+  };
+  const closeModal = () => changeActiveModal('');
+  const handleConnectionChange = (event: ConnectionConfigChangeEvent) => {
+    if (event.name === 'IPAddress') {
+      setIPAddress(event.value);
+    } else if (event.name === 'SSHAddress') {
+      setSSHAddress(event.value);
+    } else if (event.name === 'FieldIPAddress') {
+      setFieldIPAddress(event.value);
+    } else if (event.name === 'FieldStationNum') {
+      setFieldStationNum(event.value);
+    }
+  };
+  const startEditorResize = () => setEditorInitialSize(editorSize);
+  const updateEditorResize = (d: number) => {
+    if (editorInitialSize === -1) {
+      // Drop update, the window was just resized
+      return false;
+    }
+    setEditorSize(
+      Math.max(
+        Math.min(
+          editorInitialSize + d,
+          MAX_EDITOR_WIDTH_PERCENT * windowSize[0],
+        ),
+        MIN_EDITOR_WIDTH_PERCENT * windowSize[0],
+      ),
+    );
+    return true;
+  };
+  const endEditorResize = () => setEditorInitialSize(-1);
+  const startColsResize = () => setConsoleInitSize(consoleSize);
+  const updateColsResize = (d: number) => {
+    if (consoleInitialSize === -1) {
+      return false;
+    }
+    // Subtract d because this ResizeBar controls the console's upper edge
+    setConsoleSize(
+      Math.max(
+        Math.min(
+          consoleInitialSize - d,
+          MAX_CONSOLE_HEIGHT_PERCENT * windowSize[1],
+        ),
+        MIN_CONSOLE_HEIGHT_PERCENT * windowSize[1],
+      ),
+    );
+    return true;
+  };
+  const endColsResize = () => setConsoleInitSize(-1);
+
+  const closeWindow = useCallback(() => {
+    window.electron.ipcRenderer.sendMessage('main-quit', {
+      robotIPAddress: IPAddress,
+      robotSSHAddress: SSHAddress,
+      fieldIPAddress: FieldIPAddress,
+      fieldStationNumber: FieldStationNum,
+      showDirtyUploadWarning,
+    });
+  }, [
+    IPAddress,
+    SSHAddress,
+    FieldIPAddress,
+    FieldStationNum,
+    showDirtyUploadWarning,
+  ]);
+  const saveFile = useCallback(
+    (forceDialog: boolean) => {
+      window.electron.ipcRenderer.sendMessage('main-file-control', {
+        type: 'save',
+        content: editorContent,
+        forceDialog,
+      });
+    },
+    [editorContent],
+  );
+  const loadFile = useCallback(() => {
+    if (editorStatus === 'clean') {
+      window.electron.ipcRenderer.sendMessage('main-file-control', {
+        type: 'load',
+      });
+    } else {
+      changeActiveModal('DirtyLoadConfirm');
+    }
+  }, [editorStatus]);
+  const uploadDownloadFile = useCallback(
+    (isUpload: boolean) => {
+      const modalName = isUpload
+        ? 'DirtyUploadConfirm'
+        : 'DirtyDownloadConfirm';
+      if (editorStatus === 'clean' || activeModal === modalName) {
+        window.electron.ipcRenderer.sendMessage('main-file-control', {
+          type: isUpload ? 'upload' : 'download',
+          robotSSHAddress: SSHAddress,
+        });
+      } else {
+        changeActiveModal(modalName);
+      }
+    },
+    [editorStatus, SSHAddress, activeModal],
+  );
+  const createNewFile = useCallback(() => {
+    if (editorStatus === 'clean' || activeModal === 'DirtyNewFileConfirm') {
+      setEditorPath('');
+      setEditorContent('');
+      setEditorStatus('clean');
+      window.electron.ipcRenderer.sendMessage('main-file-control', {
+        type: 'clearSavePath',
+      });
+    } else {
+      changeActiveModal('DirtyNewFileConfirm');
+    }
+  }, [activeModal, editorStatus]);
 
   // Update windowSize:
   useLayoutEffect(() => {
@@ -97,9 +228,8 @@ export default function App() {
     onResize();
     return () => window.removeEventListener('resize', onResize);
   }, []);
-
   useEffect(() => {
-    // Tests, for example, won't run main/preload.ts
+    // Tests won't run main/preload.ts
     if (window.electron) {
       const listenerDestructors = [
         window.electron.ipcRenderer.on('renderer-init', (data) => {
@@ -121,54 +251,29 @@ export default function App() {
             setRobotLatencyMs(data.robotLatencyMs);
           }
         }),
-        window.electron.ipcRenderer.on('renderer-post-console', (data) => {
-          setConsoleMsgs((old) => [...old, data]);
-        }),
       ];
       return () => listenerDestructors.forEach((destructor) => destructor());
     }
     return () => {};
   }, []);
-
-  const closeWindow = useCallback(() => {
-    window.electron.ipcRenderer.sendMessage('main-quit', {
-      robotIPAddress: IPAddress,
-      robotSSHAddress: SSHAddress,
-      fieldIPAddress: FieldIPAddress,
-      fieldStationNumber: FieldStationNum,
-      showDirtyUploadWarning,
-    });
-  }, [
-    IPAddress,
-    SSHAddress,
-    FieldIPAddress,
-    FieldStationNum,
-    showDirtyUploadWarning,
-  ]);
-
-  const changeActiveModal = (newModalName: string) => {
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
+  useEffect(() => {
+    if (window.electron) {
+      return window.electron.ipcRenderer.on('renderer-post-console', (data) => {
+        setConsoleMsgs((old) => [...old, data]);
+        if (!consoleIsOpen) {
+          setConsoleIsAlerted(true);
+        }
+      });
     }
-    setActiveModal(newModalName);
-  };
+    return () => {};
+  }, [consoleIsOpen]);
   useEffect(() => {
     if (window.electron) {
       return window.electron.ipcRenderer.on('renderer-file-control', (data) => {
         if (data.type === 'promptSave') {
-          window.electron.ipcRenderer.sendMessage('main-file-control', {
-            type: 'save',
-            content: editorContent,
-            forceDialog: data.forceDialog,
-          });
+          saveFile(data.forceDialog);
         } else if (data.type === 'promptLoad') {
-          if (editorStatus === 'clean') {
-            window.electron.ipcRenderer.sendMessage('main-file-control', {
-              type: 'load',
-            });
-          } else {
-            changeActiveModal('DirtyLoadConfirm');
-          }
+          loadFile();
         } else if (data.type === 'didSave') {
           setEditorStatus('clean');
         } else if (data.type === 'didOpen') {
@@ -186,28 +291,16 @@ export default function App() {
         } else if (data.type === 'didChangePath') {
           setEditorPath(data.path);
         } else if (data.type === 'promptUpload') {
-          if (editorStatus === 'clean') {
-            window.electron.ipcRenderer.sendMessage('main-file-control', {
-              type: 'upload',
-              robotSSHAddress: SSHAddress,
-            });
-          } else {
-            changeActiveModal('DirtyUploadConfirm');
-          }
+          uploadDownloadFile(true);
         } else if (data.type === 'promptDownload') {
-          if (editorStatus === 'clean') {
-            window.electron.ipcRenderer.sendMessage('main-file-control', {
-              type: 'download',
-              robotSSHAddress: SSHAddress,
-            });
-          } else {
-            changeActiveModal('DirtyDownloadConfirm');
-          }
+          uploadDownloadFile(false);
+        } else if (data.type === 'promptCreateNewFile') {
+          createNewFile();
         }
       });
     }
     return () => {};
-  }, [editorContent, editorStatus, SSHAddress]);
+  }, [editorStatus, saveFile, loadFile, uploadDownloadFile, createNewFile]);
 
   useEffect(() => {
     if (window.electron) {
@@ -222,63 +315,6 @@ export default function App() {
     return () => {};
   }, [activeModal, editorStatus, closeWindow]);
 
-  // Editor ResizeBar handlers:
-  const startEditorResize = () => setEditorInitialSize(editorSize);
-  const updateEditorResize = (d: number) => {
-    if (editorInitialSize === -1) {
-      // Drop update, the window was just resized
-      return false;
-    }
-    setEditorSize(
-      Math.max(
-        Math.min(
-          editorInitialSize + d,
-          MAX_EDITOR_WIDTH_PERCENT * windowSize[0],
-        ),
-        MIN_EDITOR_WIDTH_PERCENT * windowSize[0],
-      ),
-    );
-    return true;
-  };
-  const endEditorResize = () => setEditorInitialSize(-1);
-
-  // Cols ResizeBar handlers:
-  const startColsResize = () => setColsInitialSize(colsSize);
-  const updateColsResize = (d: number) => {
-    if (colsInitialSize === -1) {
-      return false;
-    }
-    setColsSize(
-      Math.max(
-        Math.min(colsInitialSize + d, MAX_COLS_HEIGHT_PERCENT * windowSize[1]),
-        MIN_COLS_HEIGHT_PERCENT * windowSize[1],
-      ),
-    );
-    return true;
-  };
-  const endColsResize = () => setColsInitialSize(-1);
-
-  const changeEditorContent = (newContent: string) => {
-    setEditorContent(newContent);
-    if (editorStatus === 'clean') {
-      setEditorStatus('dirty');
-    }
-  };
-  const closeModal = () => changeActiveModal('');
-
-  const handleConnectionChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { id, value } = event.target;
-    if (id === 'IPAddress') {
-      setIPAddress(value);
-    } else if (id === 'SSHAddress') {
-      setSSHAddress(value);
-    } else if (id === 'FieldIPAddress') {
-      setFieldIPAddress(value);
-    } else if (id === 'FieldStationNum') {
-      setFieldStationNum(value);
-    }
-  };
-
   return (
     <StrictMode>
       <div className="App">
@@ -291,13 +327,38 @@ export default function App() {
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}
         />
-        <div className="App-cols" style={{ height: colsSize }}>
+        <div className="App-cols">
           <Editor
             width={editorSize}
             onChange={changeEditorContent}
             fileStatus={editorStatus}
             filePath={editorPath}
             content={editorContent}
+            consoleAlert={consoleIsAlerted}
+            consoleIsOpen={consoleIsOpen}
+            keyboardControlsEnabled={kbCtrlEnabled}
+            onOpen={loadFile}
+            onSave={saveFile}
+            onNewFile={createNewFile}
+            onRobotUpload={() => uploadDownloadFile(true)}
+            onRobotDownload={() => uploadDownloadFile(false)}
+            onStartRobot={() => {
+              throw new Error('Not implemented.');
+            }}
+            onStopRobot={() => {
+              throw new Error('Not implemented.');
+            }}
+            onToggleConsole={() => {
+              setConsoleIsOpen((v) => !v);
+              setConsoleIsAlerted(false);
+            }}
+            onClearConsole={() => {
+              setConsoleMsgs([]);
+              setConsoleIsAlerted(false);
+            }}
+            onToggleKeyboardControls={() => {
+              setKbCtrlEnabled((v) => !v);
+            }}
           />
           <ResizeBar
             onStartResize={startEditorResize}
@@ -307,13 +368,17 @@ export default function App() {
           />
           <DeviceInfo />
         </div>
-        <ResizeBar
-          onStartResize={startColsResize}
-          onUpdateResize={updateColsResize}
-          onEndResize={endColsResize}
-          axis="y"
-        />
-        <AppConsole messages={consoleMsgs} />
+        {consoleIsOpen ? (
+          <>
+            <ResizeBar
+              onStartResize={startColsResize}
+              onUpdateResize={updateColsResize}
+              onEndResize={endColsResize}
+              axis="y"
+            />
+            <AppConsole height={consoleSize} messages={consoleMsgs} />
+          </>
+        ) : undefined}
         <div className="App-modal-container">
           <ConnectionConfigModal
             isActive={activeModal === 'ConnectionConfig'}
@@ -338,7 +403,9 @@ export default function App() {
             }}
             modalTitle="Confirm load"
           >
-            <p>You have unsaved changes. Really load?</p>
+            <p className="App-confirm-dialog-text">
+              You have unsaved changes. Really load?
+            </p>
           </ConfirmModal>
           <ConfirmModal
             isActive={activeModal === 'DirtyQuitConfirm'}
@@ -347,20 +414,17 @@ export default function App() {
             modalTitle="Confirm quit"
             noAutoClose
           >
-            <p>You have unsaved changes. Really quit?</p>
+            <p className="App-confirm-dialog-text">
+              You have unsaved changes. Really quit?
+            </p>
           </ConfirmModal>
           <ConfirmModal
             isActive={activeModal === 'DirtyUploadConfirm'}
             onClose={closeModal}
-            onConfirm={() => {
-              window.electron.ipcRenderer.sendMessage('main-file-control', {
-                type: 'upload',
-                robotSSHAddress: SSHAddress,
-              });
-            }}
+            onConfirm={() => uploadDownloadFile(true)}
             modalTitle="Confirm upload"
           >
-            <p>
+            <p className="App-confirm-dialog-text">
               Unsaved changes in the editor will not be uploaded. Really upload?
             </p>
             <label htmlFor="show-dirty-upload-warning">
@@ -375,17 +439,22 @@ export default function App() {
           <ConfirmModal
             isActive={activeModal === 'DirtyDownloadConfirm'}
             onClose={closeModal}
-            onConfirm={() => {
-              window.electron.ipcRenderer.sendMessage('main-file-control', {
-                type: 'download',
-                robotSSHAddress: SSHAddress,
-              });
-            }}
+            onConfirm={() => uploadDownloadFile(false)}
             modalTitle="Confirm download"
           >
-            <p>
+            <p className="App-confirm-dialog-text">
               You have unsaved changes. Really replace editor contents with
               downloaded code?
+            </p>
+          </ConfirmModal>
+          <ConfirmModal
+            isActive={activeModal === 'DirtyNewFileConfirm'}
+            onClose={closeModal}
+            onConfirm={createNewFile}
+            modalTitle="Confirm create new file"
+          >
+            <p className="App-confirm-dialog-text">
+              You have unsaved changes. Really close file?
             </p>
           </ConfirmModal>
         </div>

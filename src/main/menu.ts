@@ -92,6 +92,13 @@ export default class MenuBuilder {
       label: 'File',
       submenu: [
         {
+          label: 'New',
+          accelerator: 'Command+N',
+          click: () => {
+            this.mainApp.promptCreateNewCodeFile();
+          },
+        },
+        {
           label: 'Open',
           accelerator: 'Command+O',
           click: () => {
@@ -115,7 +122,7 @@ export default class MenuBuilder {
         { type: 'separator' },
         {
           label: 'Upload open file to robot',
-          accelerator: 'Command+U',
+          accelerator: 'Command+Shift+U',
           click: () => {
             this.mainApp.promptUploadCodeFile();
           },
@@ -249,6 +256,13 @@ export default class MenuBuilder {
         label: '&File',
         submenu: [
           {
+            label: '&New',
+            accelerator: 'Ctrl+N',
+            click: () => {
+              this.mainApp.promptCreateNewCodeFile();
+            },
+          },
+          {
             label: '&Open',
             accelerator: 'Ctrl+O',
             click: () => {
@@ -271,7 +285,7 @@ export default class MenuBuilder {
           },
           {
             label: '&Upload open file to robot',
-            accelerator: 'Ctrl+U',
+            accelerator: 'Ctrl+Alt+U',
             click: () => {
               this.mainApp.promptUploadCodeFile();
             },

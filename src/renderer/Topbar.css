@@ -1,8 +1,7 @@
 .Topbar {
   width: calc(100% - 20px);
-  font-family: Tahoma, sans-serif;
   padding: 10px;
-  user-select: none;
+  font-family: Arial, sans-serif;
 }
 .Topbar-left-group {
   float: left;
@@ -19,6 +18,7 @@
 .Topbar-dawn-version {
   font-size: 25px;
   margin-right: 40px;
+  font-family: Tahoma, sans-serif;
 }
 .Topbar-info-card {
   margin-right: 10px;

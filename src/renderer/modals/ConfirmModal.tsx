@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import Modal from './Modal';
+import './ConfirmModal.css';
 
 /**
  * Generic confirmation modal component.
@@ -33,15 +34,20 @@ export default function ConfirmModal({
   };
   return (
     <Modal modalTitle={modalTitle} onClose={onClose} isActive={isActive}>
-      {children}
+      <div className="ConfirmModal-content">{children}</div>
       <button type="button" onClick={handleConfirm}>
         Confirm
       </button>
     </Modal>
   );
 }
-// Not sure why we need this if we have the default deconstruction parameter but the linter cries if
-// we leave it out
+/**
+ * Default properties for ConfirmModal. Not sure why we need this if we have the default
+ * deconstruction parameter but the linter cries if we leave it out.
+ */
 ConfirmModal.defaultProps = {
+  /**
+   * Disables the implied close behavior after confirmation.
+   */
   noAutoClose: false,
 };

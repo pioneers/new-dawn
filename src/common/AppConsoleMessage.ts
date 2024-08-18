@@ -1,3 +1,5 @@
+import { randomUUID } from 'crypto';
+
 /**
  * A type of AppConsoleMessage.
  */
@@ -18,11 +20,17 @@ export default class AppConsoleMessage {
   readonly text: string;
 
   /**
+   * The unique id of the message for use by React.
+   */
+  readonly uuid: string;
+
+  /**
    * @param type - the type of the message
    * @param text - the text content of the message
    */
   constructor(type: MessageType, text: string) {
     this.type = type;
     this.text = text;
+    this.uuid = randomUUID();
   }
 }
