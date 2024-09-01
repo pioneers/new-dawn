@@ -285,7 +285,7 @@ export default class MenuBuilder {
           },
           {
             label: '&Upload open file to robot',
-            accelerator: 'Ctrl+Shift+U',
+            accelerator: 'Ctrl+Alt+U',
             click: () => {
               this.mainApp.promptUploadCodeFile();
             },
