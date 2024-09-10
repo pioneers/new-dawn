@@ -3,12 +3,15 @@ import type { BrowserWindow, FileFilter } from 'electron';
 import fs from 'fs';
 import { version as dawnVersion } from '../../package.json';
 import AppConsoleMessage from '../common/AppConsoleMessage';
+import DeviceInfoState from '../common/DeviceInfoState';
 import type {
   RendererChannels,
   RendererInitData,
   RendererFileControlData,
   RendererPostConsoleData,
-  RendererRobotUpdateData,
+  RendererBatteryUpdateData,
+  RendererLatencyUpdateData,
+  RendererDevicesUpdateData,
   MainChannels,
   MainFileControlData,
   MainQuitData,
@@ -16,6 +19,8 @@ import type {
 import type Config from './Config';
 import { coerceToConfig } from './Config';
 import CodeTransfer from './network/CodeTransfer';
+import RuntimeComms, { RuntimeCommsListener } from './network/RuntimeComms';
+import type { MenuHandler } from './menu';
 
 /**
  * Cooldown time in milliseconds to wait between sending didExternalChange messages to the renderer
@@ -34,9 +39,9 @@ const CODE_FILE_FILTERS: FileFilter[] = [
  */
 const CONFIG_RELPATH = 'dawn-config.json';
 /**
- * Path on robot to upload student code to. $HOME is /home/${ROBOT_SSH_USER}.
+ * Path on robot to upload student code to.
  */
-const REMOTE_CODE_PATH = '/home/tmptestuser/runtime/executor/studentcode.py';
+const REMOTE_CODE_PATH = '/home/pi/runtime/executor/studentcode.py';
 /**
  * Port to use when connecting to robot with SSH.
  */
@@ -50,30 +55,10 @@ const ROBOT_SSH_USER = 'pi';
  */
 const ROBOT_SSH_PASS = 'raspberry';
 
-function addRendererListener(
-  channel: 'main-quit',
-  func: (data: MainQuitData) => void,
-): void;
-function addRendererListener(
-  channel: 'main-file-control',
-  func: (data: MainFileControlData) => void,
-): void;
-/**
- * Typed wrapper function to listen to IPC events from the renderer.
- * @param channel - the event channel to listen to
- * @param func - the listener to attach
- */
-function addRendererListener(
-  channel: MainChannels,
-  func: (data: any) => void,
-): void {
-  ipcMain.on(channel, (_event, data: any) => func(data));
-}
-
 /**
  * Manages state owned by the main electron process.
  */
-export default class MainApp {
+export default class MainApp implements MenuHandler, RuntimeCommsListener {
   /**
    * The BrowserWindow.
    */
@@ -114,6 +99,11 @@ export default class MainApp {
   readonly #codeTransfer: CodeTransfer;
 
   /**
+   * Object used to communicate with Runtime.
+   */
+  readonly #runtimeComms: RuntimeComms;
+
+  /**
    * @param mainWindow - the BrowserWindow.
    */
   constructor(mainWindow: BrowserWindow) {
@@ -128,13 +118,15 @@ export default class MainApp {
       ROBOT_SSH_USER,
       ROBOT_SSH_PASS,
     );
+    this.#runtimeComms = new RuntimeComms(this);
+
     mainWindow.on('close', (e) => {
       if (this.#preventQuit) {
         e.preventDefault();
         this.#sendToRenderer('renderer-quit-request');
       }
     });
-    addRendererListener('main-file-control', (data) => {
+    this.#addRendererListener('main-file-control', (data) => {
       if (data.type === 'save') {
         this.#saveCodeFile(data.content, data.forceDialog);
       } else if (data.type === 'load') {
@@ -148,7 +140,8 @@ export default class MainApp {
         this.#watcher?.close();
       }
     });
-    addRendererListener('main-quit', (data) => {
+    this.#addRendererListener('main-quit', (data) => {
+      // Save config that may have been changed while the program was running
       this.#config.robotIPAddress = data.robotIPAddress;
       this.#config.robotSSHAddress = data.robotSSHAddress;
       this.#config.fieldIPAddress = data.fieldIPAddress;
@@ -195,6 +188,40 @@ export default class MainApp {
       fieldStationNumber: this.#config.fieldStationNumber,
       showDirtyUploadWarning: this.#config.showDirtyUploadWarning,
     });
+  }
+
+  onReceiveRobotLogs(msgs: string[]) {
+    msgs.forEach((msg) => {
+      this.#sendToRenderer('renderer-post-console', new AppConsoleMessage('robot-info', msg));
+    });
+  }
+
+  onReceiveLatency(latency: number) {
+    this.#sendToRenderer('renderer-latency-update', latency);
+  }
+
+  onReceiveDevices(deviceInfoState: DeviceInfoState[]) {
+    this.#sendToRenderer('renderer-devices-update', deviceInfoState);
+  }
+
+  onRuntimeTcpError(err: Error) {
+    this.#sendToRenderer('renderer-post-console', new AppConsoleMessage('dawn-err',
+      `Encountered TCP error when communicating with Runtime. ${err.toString()}`))
+  }
+
+  onRuntimeUdpError(err: Error) {
+    this.#sendToRenderer('renderer-post-console', new AppConsoleMessage('dawn-err',
+      `Encountered UDP error when communicating with Runtime. ${err.toString()}`))
+  }
+
+  onRuntimeError(err: Error) {
+    this.#sendToRenderer('renderer-post-console', new AppConsoleMessage('dawn-err',
+      `Encountered error when communicating with Runtime. ${err.toString()}`))
+  }
+
+  onRuntimeDisconnect() {
+    this.#sendToRenderer('renderer-post-console', new AppConsoleMessage('dawn-info',
+      'Disconnected from robot.'));
   }
 
   /**
@@ -461,20 +488,50 @@ export default class MainApp {
   }
 
   /**
-   * Typed wrapper function for sending an event to the main window.
+   * Adds a listener for the main-quit IPC event fired by the renderer.
+   * @param channel - the event channel to listen to
+   * @param func - the listener to attach
+   */
+  #addRendererListener(
+    channel: 'main-quit',
+    func: (data: MainQuitData) => void,
+  ): void;
+  /**
+   * Adds a listener for the main-file-control IPC event fired by the renderer.
+   * @param channel - the event channel to listen to
+   * @param func - the listener to attach
+   */
+  #addRendererListener(
+    channel: 'main-file-control',
+    func: (data: MainFileControlData) => void,
+  ): void;
+  /**
+   * Typed wrapper function to listen to IPC events from the renderer.
+   * @param channel - the event channel to listen to
+   * @param func - the listener to attach
+   */
+  #addRendererListener(
+    channel: MainChannels,
+    func: (data: any) => void,
+  ): void {
+    ipcMain.on(channel, (_event, data: any) => func(data));
+  }
+
+  /**
+   * Sends a renderer-quit-request IPC event to the renderer.
    * @param channel - the channel to send the event on
    */
   #sendToRenderer(channel: 'renderer-quit-request'): void;
 
   /**
-   * Typed wrapper function for sending an event to the main window.
+   * Sends a renderer-init IPC event to the renderer.
    * @param channel - the channel to send the event on
    * @param data - a payload for the renderer-init event
    */
   #sendToRenderer(channel: 'renderer-init', data: RendererInitData): void;
 
   /**
-   * Typed wrapper function for sending an event to the main window.
+   * Sends a renderer-file-control IPC event to the renderer.
    * @param channel - the channel to send the event on
    * @param data - a payload for the renderer-file-control event
    */
@@ -484,7 +541,7 @@ export default class MainApp {
   ): void;
 
   /**
-   * Typed wrapper function for sending an event to the main window.
+   * Sends a renderer-post-console IPC event to the renderer.
    * @param channel - the channel to send the event on
    * @param data - a payload for the renderer-post-console event
    */
@@ -494,13 +551,33 @@ export default class MainApp {
   ): void;
 
   /**
-   * Typed wrapper function for sending an event to the main window.
+   * Sends a renderer-battery-update IPC event to the renderer.
    * @param channel - the channel to send the event on
-   * @param data - a payload for the renderer-robot-update event
+   * @param data - a payload for the renderer-battery-update event
    */
   #sendToRenderer(
-    channel: 'renderer-robot-update',
-    data: RendererRobotUpdateData,
+    channel: 'renderer-battery-update',
+    data: RendererBatteryUpdateData,
+  ): void;
+
+  /**
+   * Sends a renderer-latency-update IPC event to the renderer.
+   * @param channel - the channel to send the event on
+   * @param data - a payload for the renderer-latency-update event
+   */
+  #sendToRenderer(
+    channel: 'renderer-latency-update',
+    data: RendererLatencyUpdateData,
+  ): void;
+
+  /**
+   * Sends a renderer-devices-update IPC event to the renderer.
+   * @param channel - the channel to send the event on
+   * @param data - a payload for the renderer-devices-update event
+   */
+  #sendToRenderer(
+    channel: 'renderer-devices-update',
+    data: RendererDevicesUpdateData,
   ): void;
 
   /**

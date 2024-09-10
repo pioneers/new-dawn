@@ -8,9 +8,10 @@ import {
 } from 'react';
 import Topbar from './Topbar';
 import Editor, { EditorContentStatus } from './Editor';
-import DeviceInfo, { Device as DeviceInfoState } from './DeviceInfo';
+import DeviceInfo from './DeviceInfo';
 import AppConsole from './AppConsole';
 import type AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
+import type DeviceInfoState from '../common/DeviceInfoState';
 import ConfirmModal from './modals/ConfirmModal';
 import ConnectionConfigModal, {
   ConnectionConfigChangeEvent,
@@ -244,20 +245,14 @@ export default function App() {
           setFieldStationNum(data.fieldStationNumber);
           setShowDirtyUploadWarning(data.showDirtyUploadWarning);
         }),
-        window.electron.ipcRenderer.on('renderer-robot-update', (data) => {
-          if (data.runtimeVersion !== undefined) {
-            setRuntimeVersion(data.runtimeVersion);
-          }
-          if (data.robotBatteryVoltage !== undefined) {
-            setRobotBatteryVoltage(data.robotBatteryVoltage);
-          }
-          if (data.robotLatencyMs !== undefined) {
-            setRobotLatencyMs(data.robotLatencyMs);
-            if (data.robotLatencyMs === -1) {
-              setDeviceInfoState([]); // Disconnect everything
-            }
+        window.electron.ipcRenderer.on('renderer-battery-update', setRobotBatteryVoltage),
+        window.electron.ipcRenderer.on('renderer-latency-update', (latency) => {
+          setRobotLatencyMs(latency);
+          if (latency === -1) {
+            setDeviceInfoState([]); // Disconnect everything
           }
         }),
+        window.electron.ipcRenderer.on('renderer-devices-update', setDeviceInfoState),
       ];
       return () => listenerDestructors.forEach((destructor) => destructor());
     }

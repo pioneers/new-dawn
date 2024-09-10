@@ -1,11 +1,14 @@
 import type AppConsoleMessage from './AppConsoleMessage';
+import type DeviceInfoState from './DeviceInfoState';
 
 /**
  * IPC event channels used for communication from the main process to the renderer.
  */
 export type RendererChannels =
   | 'renderer-init'
-  | 'renderer-robot-update'
+  | 'renderer-battery-update'
+  | 'renderer-latency-update'
+  | 'renderer-devices-update'
   | 'renderer-post-console'
   | 'renderer-file-control'
   | 'renderer-quit-request';
@@ -174,27 +177,20 @@ export type RendererFileControlData =
  */
 export type RendererPostConsoleData = AppConsoleMessage;
 /**
- * Data for the renderer-robot-update event when some info related to the robot or its connection
- * changes.
+ * Data for the renderer-battery-update event sent by the main process to update the robot's battery
+ * voltage.
  */
-export interface RendererRobotUpdateData {
-  /**
-   * User-presentable runtime version string. May be omitted if the value has not changed since the
-   * last update.
-   */
-  runtimeVersion?: string;
-  /**
-   * Robot battery voltage in volts. May be omitted if the value has not changed since the last
-   * update.
-   */
-  robotBatteryVoltage?: number;
-  /**
-   * Robot connection latency in milliseconds. May be omitted if the value has not changed since the
-   * last update.
-   */
-  robotLatencyMs?: number;
-}
-
+export type RendererBatteryUpdateData = number;
+/**
+ * Data for the renderer-latency-update event sent by the main process to update the displayed robot
+ * connection latency.
+ */
+export type RendererLatencyUpdateData = number;
+/**
+ * Data for the renderer-devices-update event sent by the main process to update the state of
+ * connected lowcar devices.
+ */
+export type RendererDevicesUpdateData = DeviceInfoState[];
 /**
  * Data for a specialization of the main-file-control event, sent by the renderer to
  * initiate/respond to a request to save the code.

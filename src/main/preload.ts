@@ -6,7 +6,9 @@ import type {
   MainChannels,
   MainFileControlData,
   RendererInitData,
-  RendererRobotUpdateData,
+  RendererBatteryUpdateData,
+  RendererLatencyUpdateData,
+  RendererDevicesUpdateData,
   RendererPostConsoleData,
   RendererFileControlData,
   MainQuitData,
@@ -26,8 +28,16 @@ function on(
   func: (arg: RendererInitData) => void,
 ): () => void;
 function on(
-  channel: 'renderer-robot-update',
-  func: (arg: RendererRobotUpdateData) => void,
+  channel: 'renderer-battery-update',
+  func: (arg: RendererBatteryUpdateData) => void,
+): () => void;
+function on(
+  channel: 'renderer-latency-update',
+  func: (arg: RendererLatencyUpdateData) => void,
+): () => void;
+function on(
+  channel: 'renderer-devices-update',
+  func: (arg: RendererDevicesUpdateData) => void,
 ): () => void;
 function on(
   channel: 'renderer-post-console',
@@ -53,8 +63,16 @@ function once(
   func: (arg: RendererInitData) => void,
 ): void;
 function once(
-  channel: 'renderer-robot-update',
-  func: (arg: RendererRobotUpdateData) => void,
+  channel: 'renderer-battery-update',
+  func: (arg: RendererBatteryUpdateData) => void,
+): void;
+function once(
+  channel: 'renderer-latency-update',
+  func: (arg: RendererLatencyUpdateData) => void,
+): void;
+function once(
+  channel: 'renderer-devices-update',
+  func: (arg: RendererDevicesUpdateData) => void,
 ): void;
 function once(
   channel: 'renderer-post-console',

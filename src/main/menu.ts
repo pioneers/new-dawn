@@ -5,20 +5,44 @@ import {
   BrowserWindow,
   MenuItemConstructorOptions,
 } from 'electron';
-import type MainApp from './MainApp';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
   submenu?: DarwinMenuItemConstructorOptions[] | Menu;
 }
 
+export interface MenuHandler {
+  /**
+   * Requests that the file open in the editor be closed.
+   */
+  promptCreateNewCodeFile: () => void;
+  /**
+   * Requests that a different file is opened in the editor.
+   */
+  promptLoadCodeFile: () => void;
+  /**
+   * Requests that the contents of the editor are saved to a file.
+   * @param forceDialog - whether the user should be prompted for a save path even if the editor is
+   * already associated with an existing file.
+   */
+  promptSaveCodeFile: (forceDialog: boolean) => void;
+  /**
+   * Requests that the open file be uploaded to the robot.
+   */
+  promptUploadCodeFile: () => void;
+  /**
+   * Requests that student code on the robot be downloaded into the editor.
+   */
+  promptDownloadCodeFile: () => void;
+}
+
 export default class MenuBuilder {
-  mainApp: MainApp;
+  menuHandler: MenuHandler;
 
   mainWindow: BrowserWindow;
 
-  constructor(mainApp: MainApp, mainWindow: BrowserWindow) {
-    this.mainApp = mainApp;
+  constructor(menuHandler: MenuHandler, mainWindow: BrowserWindow) {
+    this.menuHandler = menuHandler;
     this.mainWindow = mainWindow;
   }
 
@@ -95,28 +119,28 @@ export default class MenuBuilder {
           label: 'New',
           accelerator: 'Command+N',
           click: () => {
-            this.mainApp.promptCreateNewCodeFile();
+            this.menuHandler.promptCreateNewCodeFile();
           },
         },
         {
           label: 'Open',
           accelerator: 'Command+O',
           click: () => {
-            this.mainApp.promptLoadCodeFile();
+            this.menuHandler.promptLoadCodeFile();
           },
         },
         {
           label: 'Save',
           accelerator: 'Command+S',
           click: () => {
-            this.mainApp.promptSaveCodeFile(false);
+            this.menuHandler.promptSaveCodeFile(false);
           },
         },
         {
           label: 'Save As',
           accelerator: 'Command+Shift+S',
           click: () => {
-            this.mainApp.promptSaveCodeFile(true);
+            this.menuHandler.promptSaveCodeFile(true);
           },
         },
         { type: 'separator' },
@@ -124,13 +148,13 @@ export default class MenuBuilder {
           label: 'Upload open file to robot',
           accelerator: 'Command+Shift+U',
           click: () => {
-            this.mainApp.promptUploadCodeFile();
+            this.menuHandler.promptUploadCodeFile();
           },
         },
         {
           label: 'Download code from robot',
           click: () => {
-            this.mainApp.promptDownloadCodeFile();
+            this.menuHandler.promptDownloadCodeFile();
           },
         },
       ],
@@ -259,41 +283,41 @@ export default class MenuBuilder {
             label: '&New',
             accelerator: 'Ctrl+N',
             click: () => {
-              this.mainApp.promptCreateNewCodeFile();
+              this.menuHandler.promptCreateNewCodeFile();
             },
           },
           {
             label: '&Open',
             accelerator: 'Ctrl+O',
             click: () => {
-              this.mainApp.promptLoadCodeFile();
+              this.menuHandler.promptLoadCodeFile();
             },
           },
           {
             label: '&Save',
             accelerator: 'Ctrl+S',
             click: () => {
-              this.mainApp.promptSaveCodeFile(false);
+              this.menuHandler.promptSaveCodeFile(false);
             },
           },
           {
             label: 'Save &As',
             accelerator: 'Ctrl+Shift+S',
             click: () => {
-              this.mainApp.promptSaveCodeFile(true);
+              this.menuHandler.promptSaveCodeFile(true);
             },
           },
           {
             label: '&Upload open file to robot',
             accelerator: 'Ctrl+Alt+U',
             click: () => {
-              this.mainApp.promptUploadCodeFile();
+              this.menuHandler.promptUploadCodeFile();
             },
           },
           {
             label: 'Download code from robot',
             click: () => {
-              this.mainApp.promptDownloadCodeFile();
+              this.menuHandler.promptDownloadCodeFile();
             },
           },
         ],
