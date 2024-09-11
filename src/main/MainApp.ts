@@ -56,6 +56,38 @@ const ROBOT_SSH_USER = 'pi';
 const ROBOT_SSH_PASS = 'raspberry';
 
 /**
+ * Adds a listener for the main-quit IPC event fired by the renderer.
+ * @param channel - the event channel to listen to
+ * @param func - the listener to attach
+ */
+function addRendererListener(
+  channel: 'main-quit',
+  func: (data: MainQuitData) => void,
+): void;
+
+/**
+ * Adds a listener for the main-file-control IPC event fired by the renderer.
+ * @param channel - the event channel to listen to
+ * @param func - the listener to attach
+ */
+function addRendererListener(
+  channel: 'main-file-control',
+  func: (data: MainFileControlData) => void,
+): void;
+
+/**
+ * Typed wrapper function to listen to IPC events from the renderer.
+ * @param channel - the event channel to listen to
+ * @param func - the listener to attach
+ */
+function addRendererListener(
+  channel: MainChannels,
+  func: (data: any) => void,
+): void {
+  ipcMain.on(channel, (_event, data: any) => func(data));
+}
+
+/**
  * Manages state owned by the main electron process.
  */
 export default class MainApp implements MenuHandler, RuntimeCommsListener {
@@ -126,7 +158,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
         this.#sendToRenderer('renderer-quit-request');
       }
     });
-    this.#addRendererListener('main-file-control', (data) => {
+    addRendererListener('main-file-control', (data) => {
       if (data.type === 'save') {
         this.#saveCodeFile(data.content, data.forceDialog);
       } else if (data.type === 'load') {
@@ -140,7 +172,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
         this.#watcher?.close();
       }
     });
-    this.#addRendererListener('main-quit', (data) => {
+    addRendererListener('main-quit', (data) => {
       // Save config that may have been changed while the program was running
       this.#config.robotIPAddress = data.robotIPAddress;
       this.#config.robotSSHAddress = data.robotSSHAddress;
@@ -505,35 +537,6 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
         }
       },
     );
-  }
-
-  /**
-   * Adds a listener for the main-quit IPC event fired by the renderer.
-   * @param channel - the event channel to listen to
-   * @param func - the listener to attach
-   */
-  #addRendererListener(
-    channel: 'main-quit',
-    func: (data: MainQuitData) => void,
-  ): void;
-
-  /**
-   * Adds a listener for the main-file-control IPC event fired by the renderer.
-   * @param channel - the event channel to listen to
-   * @param func - the listener to attach
-   */
-  #addRendererListener(
-    channel: 'main-file-control',
-    func: (data: MainFileControlData) => void,
-  ): void;
-
-  /**
-   * Typed wrapper function to listen to IPC events from the renderer.
-   * @param channel - the event channel to listen to
-   * @param func - the listener to attach
-   */
-  #addRendererListener(channel: MainChannels, func: (data: any) => void): void {
-    ipcMain.on(channel, (_event, data: any) => func(data));
   }
 
   /**

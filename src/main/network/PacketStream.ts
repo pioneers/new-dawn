@@ -38,9 +38,10 @@ export default class PacketStream extends Transform {
    * @param callback - a callback function to be called with the consumed chunk or an error
    * following processing.
    */
+  // eslint-disable-next-line no-underscore-dangle
   _transform(
     chunk: any,
-    encoding: BufferEncoding,
+    encoding: NodeJS.BufferEncoding,
     callback: TransformCallback,
   ) {
     let chunkBuf: Buffer;

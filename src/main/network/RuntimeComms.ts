@@ -150,10 +150,11 @@ export default class RuntimeComms {
    * @returns Whether the given IP forms a valid address.
    */
   setRobotIp(ip: string) {
-    this.#runtimeAddr = ip.split(':')[0];
+    [this.#runtimeAddr] = ip.split(':');
     const portStr: string | undefined = ip.split(':')[1];
     this.#runtimePort = portStr ? Number(portStr) : DEFAULT_RUNTIME_PORT;
     try {
+      // eslint-disable-next-line no-new
       new SocketAddress({
         address: this.#runtimeAddr,
         port: this.#runtimePort,
@@ -345,8 +346,8 @@ export default class RuntimeComms {
           protos.DevData.decode(data).devices.map(
             (
               deviceProps: protos.IDevice,
-              _index: number,
-              _array: protos.IDevice[],
+              _devIdx: number,
+              _devArr: protos.IDevice[],
             ) => {
               const device = new protos.Device(deviceProps);
               return {
@@ -355,8 +356,8 @@ export default class RuntimeComms {
                   device.params.map(
                     (
                       paramProps: protos.IParam,
-                      _index: number,
-                      _array: protos.IParam[],
+                      _paramIdx: number,
+                      _paramArr: protos.IParam[],
                     ) => {
                       const param = new protos.Param(paramProps);
                       return param.val
