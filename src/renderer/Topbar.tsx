@@ -8,21 +8,17 @@ import './Topbar.css';
  * be opened
  * @param props.robotLatencyMs - latency in milliseconds of the connection to the currently
  * connected robot, or -1 if there is no robot connected
- * @param props.runtimeVersion - version string of runtime running on currently connected robot. The
- * value is not used if robotLatencyMs is -1
  * @param props.robotBatteryVoltage - battery voltage in volts of the currently connected robot. The
  * value is not used if robotLatencyMs is -1
  * @param props.dawnVersion - version string of Dawn
  */
 export default function Topbar({
   onConnectionConfigModalOpen,
-  runtimeVersion,
   robotBatteryVoltage,
   robotLatencyMs,
   dawnVersion,
 }: {
   onConnectionConfigModalOpen: () => void;
-  runtimeVersion: string;
   robotBatteryVoltage: number;
   robotLatencyMs: number;
   dawnVersion: string;
@@ -34,9 +30,6 @@ export default function Topbar({
       </div>
     ) : (
       <>
-        <div className="Topbar-runtime-version Topbar-info-card">
-          Runtime v{runtimeVersion}
-        </div>
         <div className="Topbar-info-card">Battery: {robotBatteryVoltage} V</div>
         <div className="Topbar-info-card">Latency: {robotLatencyMs} ms</div>
       </>

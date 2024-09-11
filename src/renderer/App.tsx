@@ -43,8 +43,6 @@ export default function App() {
   const [activeModal, setActiveModal] = useState('');
   // Dawn version string, received from main process
   const [dawnVersion, setDawnVersion] = useState('');
-  // Runtime version string, empty if disconnected from robot
-  const [runtimeVersion, setRuntimeVersion] = useState('');
   // Robot battery voltage, -1 if disconnected from robot
   const [robotBatteryVoltage, setRobotBatteryVoltage] = useState(-1);
   // Robot latency, -1 if disconnected from robot
@@ -331,7 +329,6 @@ export default function App() {
             changeActiveModal('ConnectionConfig')
           }
           dawnVersion={dawnVersion}
-          runtimeVersion={runtimeVersion}
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}
         />
