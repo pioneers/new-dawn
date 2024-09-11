@@ -9,7 +9,14 @@ const HEADER_LENGTH = 3;
  * Transform stream that splits a stream into Runtime packets: { type: number; data: Buffer }.
  */
 export default class PacketStream extends Transform {
+  /**
+   * An array of buffers that together contain all the data yet to be output as packets.
+   */
   #buf: Buffer[];
+
+  /**
+   * The current number of unoutput bytes.
+   */
   #bufLen: number;
 
   constructor(options?: TransformOptions) {
@@ -23,6 +30,14 @@ export default class PacketStream extends Transform {
     this.#buf = [];
     this.#bufLen = 0;
   }
+
+  /**
+   * Handles input data and outputs packets if possible.
+   * @param chunk - the input data.
+   * @param encoding - the encoding of the input data.
+   * @param callback - a callback function to be called with the consumed chunk or an error
+   * following processing.
+   */
   _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback) {
     let chunkBuf: Buffer;
     if (chunk instanceof Buffer) {
@@ -30,7 +45,8 @@ export default class PacketStream extends Transform {
     } else if (typeof chunk === 'string') {
       chunkBuf = Buffer.from(chunk, encoding);
     } else {
-      throw new Error('PacketStream does not support writable object mode.');
+      callback(new Error('PacketStream does not support writable object mode.'), null);
+      return;
     }
     this.#buf.push(chunkBuf);
     let shouldConcatHeader = this.#bufLen < HEADER_LENGTH;
@@ -38,7 +54,18 @@ export default class PacketStream extends Transform {
     while (this.#tryReadPacket(shouldConcatHeader)) {
       shouldConcatHeader = false;
     }
+    callback(null, chunk);
   }
+
+  /**
+   * Tries to output a packet from the data currently in the buffer. Regardless of whether data from
+   * the buffer is consumed, the buffer will always either be left empty or start with a packet
+   * header.
+   * @param shouldConcatHeader - whether the 3 byte packet header at the beginning of the buffer may
+   * be split into multiple Buffers.
+   * @returns Whether a full packet was read and output and the next packet is ready to be attempted
+   * to be read.
+   */
   #tryReadPacket(shouldConcatHeader: boolean) {
     if (this.#bufLen < HEADER_LENGTH) {
       // Wait for complete header before reading packet

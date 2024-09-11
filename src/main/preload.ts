@@ -87,14 +87,32 @@ function once(channel: RendererChannels, func: (arg?: any) => void): void {
   ipcRenderer.once(channel, (_event, ...args) => func(...args));
 }
 
+/**
+ * Object whose contents are injected into renderer global contexts.
+ */
 const electronHandler = {
+  /**
+   * Object containing main process functions exposed to the renderer processes.
+   */
   ipcRenderer: {
+    /**
+     * Sends an IPC event to the main process.
+     */
     sendMessage,
+    /**
+     * Listens to IPC events from the main process.
+     */
     on,
+    /**
+     * Listens for the first firing of an IPC event from the main process.
+     */
     once,
   },
 };
 
 contextBridge.exposeInMainWorld('electron', electronHandler);
 
+/**
+ * The interface through which Electron renderer processes may communicate with the main process.
+ */
 export type ElectronHandler = typeof electronHandler;

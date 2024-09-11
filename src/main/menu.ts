@@ -11,6 +11,9 @@ interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   submenu?: DarwinMenuItemConstructorOptions[] | Menu;
 }
 
+/**
+ * Interface for objects that can handle user input from the menu.
+ */
 export interface MenuHandler {
   /**
    * Requests that the file open in the editor be closed.
@@ -36,16 +39,32 @@ export interface MenuHandler {
   promptDownloadCodeFile: () => void;
 }
 
+/**
+ * Creates an Electron Menu for the appropriate platform and build type.
+ */
 export default class MenuBuilder {
+  /**
+   * The handler for menu options related to app logic.
+   */
   menuHandler: MenuHandler;
 
+  /**
+   * The target window for view-controlling menu options.
+   */
   mainWindow: BrowserWindow;
 
+  /**
+   * @param menuHandler - menu option handler for options related to app logic.
+   * @param mainWindow - target window for view-controlling menu options.
+   */
   constructor(menuHandler: MenuHandler, mainWindow: BrowserWindow) {
     this.menuHandler = menuHandler;
     this.mainWindow = mainWindow;
   }
 
+  /**
+   * Creates an appropriate Electron menu for the current platform and build type.
+   */
   buildMenu(): Menu {
     if (
       process.env.NODE_ENV === 'development' ||
@@ -65,6 +84,9 @@ export default class MenuBuilder {
     return menu;
   }
 
+  /**
+   * Called when menu is built and debug tools are enabled.
+   */
   setupDevelopmentEnvironment(): void {
     this.mainWindow.webContents.on('context-menu', (_, props) => {
       const { x, y } = props;
@@ -80,6 +102,9 @@ export default class MenuBuilder {
     });
   }
 
+  /**
+   * Returns a menu template for the OSX Darwin environment.
+   */
   buildDarwinTemplate(): MenuItemConstructorOptions[] {
     const subMenuAbout: DarwinMenuItemConstructorOptions = {
       label: 'Electron',
@@ -274,6 +299,9 @@ export default class MenuBuilder {
     ];
   }
 
+  /**
+   * Returns a menu template used for environments besides Darwin.
+   */
   buildDefaultTemplate(): MenuItemConstructorOptions[] {
     const templateDefault = [
       {

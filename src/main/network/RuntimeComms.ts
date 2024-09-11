@@ -83,12 +83,39 @@ export interface RuntimeCommsListener {
  * Responsible for all communications with Runtime.
  */
 export default class RuntimeComms {
+  /**
+   * Handler for robot data and transmission errors.
+   */
   readonly #commsListener: RuntimeCommsListener;
+
+  /**
+   * IP address of robot running Runtime to connect to.
+   */
   #runtimeAddr: string;
+
+  /**
+   * Port Runtime is listening on on the connected robot.
+   */
   #runtimePort: number;
+
+  /**
+   * The TCP connection used to send and receive transmission-guarenteed data from Runtime.
+   */
   #tcpSock: TCPSocket | null;
+
+  /**
+   * The UDP socket listening for realtime data from Runtime.
+   */
   #udpSock: UDPSocket | null;
+
+  /**
+   * Whether communications are paused and reconnection should not be attempted automatically.
+   */
   #tcpDisconnected: boolean;
+
+  /**
+   * The JavaScript interval id for the periodic ping.
+   */
   #pingInterval: NodeJS.Timeout | null;
 
   constructor(commsListener: RuntimeCommsListener) {
@@ -143,7 +170,7 @@ export default class RuntimeComms {
   }
   /**
    * Sends device preferences.
-   * @param deviceInfoState - device preferences to send.
+   * @param deviceData - device preferences to send.
    */
   sendDevicePreferences(deviceData: protos.IDevData) {
     if (this.#tcpSock) {
@@ -152,7 +179,7 @@ export default class RuntimeComms {
   }
   /**
    * Sends challenge data.
-   * @param data - the textual challenge data to send
+   * @param data - the textual challenge data to send.
    */
   sendChallengeInputs(data: protos.IText) {
     if (this.#tcpSock) {
@@ -161,12 +188,18 @@ export default class RuntimeComms {
   }
   /**
    * Sends the robot's starting position.
+   * @param startPos - the robot's starting position index to send.
    */
   sendRobotStartPos(startPos: protos.IStartPos) {
     if (this.#tcpSock) {
       this.#tcpSock.write(this.#createPacket(MsgType.START_POS, startPos));
     }
   }
+  /**
+   * Sends control inputs to the robot.
+   * @param inputs - the inputs to send.
+   * @param source - the device that is the source of the inputs.
+   */
   sendInputs(inputs: protos.Input[], source: protos.Source) {
     //if (this.#udpSock) {
     //  this.udpSock.send(protos.UserInputs.encode({
@@ -253,7 +286,8 @@ export default class RuntimeComms {
    * Processes a received packet.
    * @param packet - the received packet.
    */
-  #handlePacket({ type, data }: Packet) {
+  #handlePacket(packet: Packet) {
+    const {type, data} = packet;
     switch (type) {
       case MsgType.LOG:
         this.#commsListener.onReceiveRobotLogs(protos.Text.decode(data).payload);
@@ -289,7 +323,7 @@ export default class RuntimeComms {
   /**
    * Processes a Buffer assumed to be the payload of a device data packet with some error checking
    * code because UDP packets might not be well-formed.
-   * @param packet - the received packet.
+   * @param data - the payload of the received packet.
    */
   #handleUdpMessage(data: Buffer) {
     try {
