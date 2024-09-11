@@ -38,14 +38,21 @@ export default class PacketStream extends Transform {
    * @param callback - a callback function to be called with the consumed chunk or an error
    * following processing.
    */
-  _transform(chunk: any, encoding: BufferEncoding, callback: TransformCallback) {
+  _transform(
+    chunk: any,
+    encoding: BufferEncoding,
+    callback: TransformCallback,
+  ) {
     let chunkBuf: Buffer;
     if (chunk instanceof Buffer) {
       chunkBuf = chunk;
     } else if (typeof chunk === 'string') {
       chunkBuf = Buffer.from(chunk, encoding);
     } else {
-      callback(new Error('PacketStream does not support writable object mode.'), null);
+      callback(
+        new Error('PacketStream does not support writable object mode.'),
+        null,
+      );
       return;
     }
     this.#buf.push(chunkBuf);
@@ -83,7 +90,10 @@ export default class PacketStream extends Transform {
     }
     this.#buf[0] = this.#buf[0].subarray(HEADER_LENGTH); // Trim off header
     this.#buf = [Buffer.concat(this.#buf)]; // Get packet data in one Buffer
-    this.push({ type: packetType, data: this.#buf[0].subarray(0, packetLength) });
+    this.push({
+      type: packetType,
+      data: this.#buf[0].subarray(0, packetLength),
+    });
     this.#buf[0] = this.#buf[0].subarray(packetLength); // Trim off packet data
     this.#bufLen -= HEADER_LENGTH + packetLength;
     return true; // Packet successfully read, more may follow

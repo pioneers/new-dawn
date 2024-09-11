@@ -192,7 +192,10 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
 
   onReceiveRobotLogs(msgs: string[]) {
     msgs.forEach((msg) => {
-      this.#sendToRenderer('renderer-post-console', new AppConsoleMessage('robot-info', msg));
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage('robot-info', msg),
+      );
     });
   }
 
@@ -205,23 +208,40 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   }
 
   onRuntimeTcpError(err: Error) {
-    this.#sendToRenderer('renderer-post-console', new AppConsoleMessage('dawn-err',
-      `Encountered TCP error when communicating with Runtime. ${err.toString()}`))
+    this.#sendToRenderer(
+      'renderer-post-console',
+      new AppConsoleMessage(
+        'dawn-err',
+        `Encountered TCP error when communicating with Runtime. ${err.toString()}`,
+      ),
+    );
   }
 
   onRuntimeUdpError(err: Error) {
-    this.#sendToRenderer('renderer-post-console', new AppConsoleMessage('dawn-err',
-      `Encountered UDP error when communicating with Runtime. ${err.toString()}`))
+    this.#sendToRenderer(
+      'renderer-post-console',
+      new AppConsoleMessage(
+        'dawn-err',
+        `Encountered UDP error when communicating with Runtime. ${err.toString()}`,
+      ),
+    );
   }
 
   onRuntimeError(err: Error) {
-    this.#sendToRenderer('renderer-post-console', new AppConsoleMessage('dawn-err',
-      `Encountered error when communicating with Runtime. ${err.toString()}`))
+    this.#sendToRenderer(
+      'renderer-post-console',
+      new AppConsoleMessage(
+        'dawn-err',
+        `Encountered error when communicating with Runtime. ${err.toString()}`,
+      ),
+    );
   }
 
   onRuntimeDisconnect() {
-    this.#sendToRenderer('renderer-post-console', new AppConsoleMessage('dawn-info',
-      'Disconnected from robot.'));
+    this.#sendToRenderer(
+      'renderer-post-console',
+      new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
+    );
   }
 
   /**
@@ -496,6 +516,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     channel: 'main-quit',
     func: (data: MainQuitData) => void,
   ): void;
+
   /**
    * Adds a listener for the main-file-control IPC event fired by the renderer.
    * @param channel - the event channel to listen to
@@ -505,15 +526,13 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     channel: 'main-file-control',
     func: (data: MainFileControlData) => void,
   ): void;
+
   /**
    * Typed wrapper function to listen to IPC events from the renderer.
    * @param channel - the event channel to listen to
    * @param func - the listener to attach
    */
-  #addRendererListener(
-    channel: MainChannels,
-    func: (data: any) => void,
-  ): void {
+  #addRendererListener(channel: MainChannels, func: (data: any) => void): void {
     ipcMain.on(channel, (_event, data: any) => func(data));
   }
 

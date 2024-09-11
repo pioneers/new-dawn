@@ -245,14 +245,20 @@ export default function App() {
           setFieldStationNum(data.fieldStationNumber);
           setShowDirtyUploadWarning(data.showDirtyUploadWarning);
         }),
-        window.electron.ipcRenderer.on('renderer-battery-update', setRobotBatteryVoltage),
+        window.electron.ipcRenderer.on(
+          'renderer-battery-update',
+          setRobotBatteryVoltage,
+        ),
         window.electron.ipcRenderer.on('renderer-latency-update', (latency) => {
           setRobotLatencyMs(latency);
           if (latency === -1) {
             setDeviceInfoState([]); // Disconnect everything
           }
         }),
-        window.electron.ipcRenderer.on('renderer-devices-update', setDeviceInfoState),
+        window.electron.ipcRenderer.on(
+          'renderer-devices-update',
+          setDeviceInfoState,
+        ),
       ];
       return () => listenerDestructors.forEach((destructor) => destructor());
     }
