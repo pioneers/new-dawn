@@ -274,7 +274,7 @@ export default class MenuBuilder {
     ];
   }
 
-  buildDefaultTemplate() {
+  buildDefaultTemplate(): MenuItemConstructorOptions[] {
     const templateDefault = [
       {
         label: '&File',

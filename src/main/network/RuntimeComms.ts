@@ -206,9 +206,9 @@ export default class RuntimeComms {
       .on('data', this.#handlePacket.bind(this));
     this.#tcpSock = createTcpConnection(this.#runtimePort, this.#runtimeAddr)
       .on('connect', this.#handleTcpConnection.bind(this))
-      .pipe(tcpStream)
       .on('close', this.#handleTcpClose.bind(this))
       .on('error', this.#commsListener.onRuntimeTcpError.bind(this.#commsListener));
+    this.#tcpSock.pipe(tcpStream);
     this.#pingInterval = setInterval(this.#sendLatencyTest.bind(this), PING_INTERVAL);
   }
   /**
@@ -268,15 +268,19 @@ export default class RuntimeComms {
       case MsgType.DEVICE_DATA:
         // Convert decoded Devices to DeviceInfoStates before passing to onReceiveDevices
         this.#commsListener.onReceiveDevices(protos.DevData.decode(data).devices.map(
-          (device: protos.Device, _index: number, _array: protos.Device[]) => ({
-            id: `${device.type.toString()}_${device.uid.toString()}`,
-            ...Object.fromEntries(device.params.map(
-              (param: protos.Param, _index: number, _array: protos.Param[]) => {
-                return param.val ? [param.name, param.val.toString()] : [];
-              })
-            ),
+          (deviceProps: protos.IDevice, _index: number, _array: protos.IDevice[]) => {
+            const device = new protos.Device(deviceProps);
+            return {
+              id: `${device.type.toString()}_${device.uid.toString()}`,
+              ...Object.fromEntries(device.params.map(
+                (paramProps: protos.IParam, _index: number, _array: protos.IParam[]) => {
+                  const param = new protos.Param(paramProps);
+                  return param.val ? [param.name, param.val.toString()] : [];
+                })
+              ),
+            };
           }
-        )));
+        ));
         break;
       default:
         this.#commsListener.onRuntimeError(new Error(`Received unexpected packet MsgType ${type}.`));
@@ -382,7 +386,7 @@ export default class RuntimeComms {
     const packet = Buffer.allocUnsafe(3 + packetData.byteLength);
     packet.writeUInt8(type, 0);
     packet.writeUInt16LE(packetData.byteLength, 1);
-    packetData.copy(packet, 3);
+    Buffer.from(packetData.buffer, packetData.byteOffset, packetData.byteLength) .copy(packet, 3);
 
     return packet;
   }
