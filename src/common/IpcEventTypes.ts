@@ -1,5 +1,6 @@
 import type AppConsoleMessage from './AppConsoleMessage';
 import type DeviceInfoState from './DeviceInfoState';
+import { Mode as RobotRunMode } from '../../protos-main/protos';
 
 /**
  * IPC event channels used for communication from the main process to the renderer.
@@ -15,7 +16,10 @@ export type RendererChannels =
 /**
  * IPC event channels used for communication from the renderer to the main process.
  */
-export type MainChannels = 'main-file-control' | 'main-quit';
+export type MainChannels =
+  | 'main-file-control'
+  | 'main-quit'
+  | 'main-update-robot-mode';
 
 /**
  * Data for the renderer-init event, sent when the renderer process has finished initializing and is
@@ -296,3 +300,8 @@ export interface MainQuitData {
    */
   showDirtyUploadWarning: boolean;
 }
+/**
+ * Data for the main-update-robot-mode event sent by the renderer to stop the robot or start it with
+ * a specified opmode.
+ */
+export type MainUpdateRobotModeData = RobotRunMode;

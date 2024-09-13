@@ -18,6 +18,7 @@ import ConnectionConfigModal, {
 } from './modals/ConnectionConfigModal';
 import GamepadInfoModal from './modals/GamepadInfoModal';
 import ResizeBar from './ResizeBar';
+import { Mode as RobotRunMode } from '../../protos-main/protos';
 import './App.css';
 
 const INITIAL_EDITOR_WIDTH_PERCENT = 0.7;
@@ -159,6 +160,8 @@ export default function App() {
     return true;
   };
   const endColsResize = () => setConsoleInitSize(-1);
+  const changeRunMode = (mode: RobotRunMode) =>
+    window.electron.ipcRenderer.sendMessage('main-update-robot-mode', mode);
 
   const closeWindow = useCallback(() => {
     window.electron.ipcRenderer.sendMessage('main-quit', {
@@ -347,12 +350,12 @@ export default function App() {
             onNewFile={createNewFile}
             onRobotUpload={() => uploadDownloadFile(true)}
             onRobotDownload={() => uploadDownloadFile(false)}
-            onStartRobot={() => {
-              throw new Error('Not implemented.');
+            onStartRobot={(opmode: 'auto' | 'teleop') => {
+              changeRunMode(
+                opmode === 'auto' ? RobotRunMode.AUTO : RobotRunMode.TELEOP,
+              );
             }}
-            onStopRobot={() => {
-              throw new Error('Not implemented.');
-            }}
+            onStopRobot={() => changeRunMode(RobotRunMode.IDLE)}
             onToggleConsole={() => {
               setConsoleIsOpen((v) => !v);
               setConsoleIsAlerted(false);

@@ -5,6 +5,7 @@ import type {
   RendererChannels,
   MainChannels,
   MainFileControlData,
+  MainUpdateRobotModeData,
   RendererInitData,
   RendererBatteryUpdateData,
   RendererLatencyUpdateData,
@@ -18,6 +19,10 @@ function sendMessage(channel: 'main-quit', data: MainQuitData): void;
 function sendMessage(
   channel: 'main-file-control',
   data: MainFileControlData,
+): void;
+function sendMessage(
+  channel: 'main-update-robot-mode',
+  data: MainUpdateRobotModeData,
 ): void;
 function sendMessage(channel: MainChannels, data?: any): void {
   ipcRenderer.send(channel, data);

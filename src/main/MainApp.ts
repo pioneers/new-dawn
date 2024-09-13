@@ -15,9 +15,9 @@ import type {
   MainChannels,
   MainFileControlData,
   MainQuitData,
+  MainUpdateRobotModeData,
 } from '../common/IpcEventTypes';
-import type Config from './Config';
-import { coerceToConfig } from './Config';
+import Config, { coerceToConfig } from './Config';
 import CodeTransfer from './network/CodeTransfer';
 import RuntimeComms, { RuntimeCommsListener } from './network/RuntimeComms';
 import type { MenuHandler } from './menu';
@@ -73,6 +73,16 @@ function addRendererListener(
 function addRendererListener(
   channel: 'main-file-control',
   func: (data: MainFileControlData) => void,
+): void;
+
+/**
+ * Adds a listener for the main-update-robot-mode IPC event fired by the renderer.
+ * @param channel - the event channel to listen to
+ * @param func - the listener to attach
+ */
+function addRendererListener(
+  channel: 'main-update-robot-mode',
+  func: (data: MainUpdateRobotModeData) => void,
 ): void;
 
 /**
@@ -187,6 +197,9 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       }
       this.#preventQuit = false;
       this.#mainWindow.close();
+    });
+    addRendererListener('main-update-robot-mode', (mode) => {
+      this.#runtimeComms.sendRunMode({ mode });
     });
 
     try {
