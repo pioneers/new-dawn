@@ -67,6 +67,8 @@ export default function App() {
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
   // Whether keyboard controls are enabled
   const [kbCtrlEnabled, setKbCtrlEnabled] = useState(false);
+  // Whether the robot is running student code
+  const [robotRunning, setRobotRunning] = useState(false);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
   const [windowSize, setWindowSize] = useReducer(
     (oldSize: [number, number], newSize: [number, number]) => {
@@ -160,8 +162,10 @@ export default function App() {
     return true;
   };
   const endColsResize = () => setConsoleInitSize(-1);
-  const changeRunMode = (mode: RobotRunMode) =>
+  const changeRunMode = (mode: RobotRunMode) => {
     window.electron.ipcRenderer.sendMessage('main-update-robot-mode', mode);
+    setRobotRunning(mode !== RobotRunMode.IDLE);
+  };
 
   const closeWindow = useCallback(() => {
     window.electron.ipcRenderer.sendMessage('main-quit', {
@@ -254,6 +258,7 @@ export default function App() {
           setRobotLatencyMs(latency);
           if (latency === -1) {
             setDeviceInfoState([]); // Disconnect everything
+            setRobotRunning(false);
           }
         }),
         window.electron.ipcRenderer.on(
@@ -345,6 +350,8 @@ export default function App() {
             consoleAlert={consoleIsAlerted}
             consoleIsOpen={consoleIsOpen}
             keyboardControlsEnabled={kbCtrlEnabled}
+            robotConnected={robotLatencyMs !== -1}
+            robotRunning={robotRunning}
             onOpen={loadFile}
             onSave={saveFile}
             onNewFile={createNewFile}
