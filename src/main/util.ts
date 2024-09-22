@@ -8,7 +8,7 @@ import path from 'path';
  * @param htmlFileName - the HTML path to convert.
  * @returns The HTML path converted to a path suitable for the build type.
  */
-export function resolveHtmlPath(htmlFileName: string) {
+export function resolveHtmlPath(htmlFileName: string): string {
   if (process.env.NODE_ENV === 'development') {
     const port = process.env.PORT || 1212;
     const url = new URL(`http://localhost:${port}`);

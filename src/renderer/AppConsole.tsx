@@ -3,7 +3,7 @@ import './AppConsole.css';
 
 /**
  * Component displaying output and error messages from student code ran on the robot.
- * @param props - props
+ * @param props
  * @param props.height - the height of the console in pixels
  * @param props.messages - array of console messages to display
  */
@@ -13,7 +13,7 @@ export default function AppConsole({
 }: {
   height: number;
   messages: AppConsoleMessage[];
-}) {
+}): JSX.Element {
   return (
     <div className="AppConsole" style={{ height }}>
       <pre className="AppConsole-inner">

@@ -3,7 +3,7 @@ import './Topbar.css';
 
 /**
  * Component displaying Dawn version and connection info.
- * @param props - props
+ * @param props
  * @param props.onConnectionConfigModalOpen - handler called when the ConnectionConfigModal should
  * be opened
  * @param props.robotLatencyMs - latency in milliseconds of the connection to the currently
@@ -22,7 +22,7 @@ export default function Topbar({
   robotBatteryVoltage: number;
   robotLatencyMs: number;
   dawnVersion: string;
-}) {
+}): JSX.Element {
   const robotInfo =
     robotLatencyMs === -1 ? (
       <div className="Topbar-robot-disconnected Topbar-info-card">

@@ -134,7 +134,7 @@ export default class RuntimeComms {
   /**
    * Stops listening to the TCP and UDP sockets until resumed by setRobotIp.
    */
-  disconnect() {
+  disconnect(): void {
     this.#tcpDisconnected = true; // Don't reconnect
     if (this.#pingInterval) {
       clearInterval(this.#pingInterval);
@@ -148,7 +148,7 @@ export default class RuntimeComms {
    * @param ip - the address and optionally the port Runtime is listening on, separated by a colon.
    * @returns Whether the given IP forms a valid address.
    */
-  setRobotIp(ip: string) {
+  setRobotIp(ip: string): boolean {
     [this.#runtimeAddr] = ip.split(':');
     const portStr: string | undefined = ip.split(':')[1];
     this.#runtimePort = portStr ? Number(portStr) : DEFAULT_RUNTIME_PORT;
@@ -169,7 +169,7 @@ export default class RuntimeComms {
    * Sends a new run mode.
    * @param runMode - the new run mode.
    */
-  sendRunMode(runMode: protos.IRunMode) {
+  sendRunMode(runMode: protos.IRunMode): void {
     if (this.#tcpSock) {
       this.#tcpSock.write(this.#createPacket(MsgType.RUN_MODE, runMode));
     }
@@ -179,7 +179,7 @@ export default class RuntimeComms {
    * Sends device preferences.
    * @param deviceData - device preferences to send.
    */
-  sendDevicePreferences(deviceData: protos.IDevData) {
+  sendDevicePreferences(deviceData: protos.IDevData): void {
     if (this.#tcpSock) {
       this.#tcpSock.write(this.#createPacket(MsgType.DEVICE_DATA, deviceData));
     }
@@ -190,7 +190,7 @@ export default class RuntimeComms {
    * @param data - the textual challenge data to send.
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  sendChallengeInputs(data: protos.IText) {
+  sendChallengeInputs(data: protos.IText): void {
     if (this.#tcpSock) {
       throw new Error('Not implemented.'); // MsgTypes from old dawn are inconsistent?
       // this.#tcpSock.write(this.#createPacket(MsgType.CHALLENGE_DATA, data));
@@ -201,7 +201,7 @@ export default class RuntimeComms {
    * Sends the robot's starting position.
    * @param startPos - the robot's starting position index to send.
    */
-  sendRobotStartPos(startPos: protos.IStartPos) {
+  sendRobotStartPos(startPos: protos.IStartPos): void {
     if (this.#tcpSock) {
       this.#tcpSock.write(this.#createPacket(MsgType.START_POS, startPos));
     }
@@ -212,7 +212,7 @@ export default class RuntimeComms {
    * @param inputs - the inputs to send.
    * @param source - the device that is the source of the inputs.
    */
-  sendInputs(inputs: protos.Input[], source: protos.Source) {
+  sendInputs(inputs: protos.Input[], source: protos.Source): void {
     // if (this.#udpSock) {
     //  this.udpSock.send(protos.UserInputs.encode({
     //    inputs: inputs.length ? inputs : [
@@ -236,7 +236,7 @@ export default class RuntimeComms {
    * Sends a timestamped packet that Runtime will echo, updating the latency when we receive it
    * again.
    */
-  #sendLatencyTest() {
+  #sendLatencyTest(): void {
     if (this.#tcpSock) {
       this.#tcpSock.write(
         this.#createPacket(
@@ -254,10 +254,7 @@ export default class RuntimeComms {
    * Disconnects the old TCP socket if open, then makes a new one and connects it to the
    * most recently known Runtime IP and port.
    */
-  #connectTcp() {
-    this.#commsListener.onRuntimeError(
-      new Error('Attempting to connect tcp socket'),
-    );
+  #connectTcp(): void {
     this.#tcpDisconnected = false;
     this.#disconnectTcp();
     const tcpStream = new PacketStream().on(
@@ -281,7 +278,7 @@ export default class RuntimeComms {
   /**
    * Closes the old UDP socket if open, then makes and binds a new one.
    */
-  #connectUdp() {
+  #connectUdp(): void {
     this.#disconnectUdp();
     this.#udpSock = createUdpSocket({
       type: 'udp4',
@@ -298,7 +295,7 @@ export default class RuntimeComms {
   /**
    * Ends and disconnects the TCP socket if open.
    */
-  #disconnectTcp() {
+  #disconnectTcp(): void {
     if (this.#tcpSock) {
       this.#tcpSock.resetAndDestroy();
       this.#tcpSock = null;
@@ -308,7 +305,7 @@ export default class RuntimeComms {
   /**
    * Closes the UDP socket if open.
    */
-  #disconnectUdp() {
+  #disconnectUdp(): void {
     if (this.#udpSock) {
       this.#udpSock.close();
       this.#udpSock = null;
@@ -318,7 +315,7 @@ export default class RuntimeComms {
   /**
    * Handler for TCP 'connect' event.
    */
-  #handleTcpConnection() {
+  #handleTcpConnection(): void {
     if (this.#tcpSock) {
       this.#tcpSock.write(new Uint8Array([1])); // Tell Runtime that we are Dawn, not Shepherd
     }
@@ -328,7 +325,7 @@ export default class RuntimeComms {
    * Processes a received packet.
    * @param packet - the received packet.
    */
-  #handlePacket(packet: Packet) {
+  #handlePacket(packet: Packet): void {
     const { type, data } = packet;
     switch (type) {
       case MsgType.LOG:
@@ -391,7 +388,7 @@ export default class RuntimeComms {
    * code because UDP packets might not be well-formed.
    * @param data - the payload of the received packet.
    */
-  #handleUdpMessage(data: Buffer) {
+  #handleUdpMessage(data: Buffer): void {
     try {
       this.#handlePacket({ type: MsgType.DEVICE_DATA, data });
     } catch (err) {
@@ -402,7 +399,7 @@ export default class RuntimeComms {
   /**
    * Handles TCP 'close' event and tries to reconnect if we didn't cause the disconnection.
    */
-  #handleTcpClose() {
+  #handleTcpClose(): void {
     this.#commsListener.onRuntimeDisconnect();
     if (!this.#tcpDisconnected) {
       setTimeout(this.#connectTcp.bind(this), TCP_RECONNECT_DELAY);

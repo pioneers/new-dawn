@@ -26,7 +26,7 @@ export interface ConnectionConfigChangeEvent {
 
 /**
  * Modal component exposing info about the connection to the robot (IP address, port, etc.)
- * @param props - props
+ * @param props
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.isActive - whether to display the modal
  * @param props.IPAddress - displayed robot IP address
@@ -54,8 +54,8 @@ export default function ConnectionConfigModal({
   SSHAddress: string;
   FieldIPAddress: string;
   FieldStationNum: string;
-}) {
-  const handleConfigChange = (e: ChangeEvent<HTMLInputElement>) => {
+}): JSX.Element {
+  const handleConfigChange = (e: ChangeEvent<HTMLInputElement>): void => {
     const name = e.target.name.replace(/^ConnectionConfigModal-/, '');
     onChange({
       name: name as ConfigName,

@@ -1,13 +1,13 @@
 /**
  * Button component that opens the ConnectionConfigModal.
- * @param props - props
+ * @param props
  * @param props.onModalOpen - click handler for the button that opens the ConnectionConfigModal
  */
 export default function ConnectionConfig({
   onModalOpen,
 }: {
   onModalOpen: () => void;
-}) {
+}): JSX.Element {
   return (
     <div className="ConnectionConfig">
       <button

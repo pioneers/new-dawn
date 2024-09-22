@@ -4,7 +4,7 @@ import './ConfirmModal.css';
 
 /**
  * Generic confirmation modal component.
- * @param props - props
+ * @param props
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.onConfirm - handler called when the confirm button is clicked
  * @param props.isActive - whether to display the modal
@@ -25,8 +25,8 @@ export default function ConfirmModal({
   modalTitle: string;
   noAutoClose?: boolean;
   children: ReactNode;
-}) {
-  const handleConfirm = () => {
+}): JSX.Element {
+  const handleConfirm = (): void => {
     onConfirm();
     if (!noAutoClose) {
       onClose();

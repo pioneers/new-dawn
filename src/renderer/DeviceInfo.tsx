@@ -12,7 +12,7 @@ export default function DeviceInfo({
   deviceStates,
 }: {
   deviceStates: DeviceInfoState[];
-}) {
+}): JSX.Element {
   return (
     <div className="DeviceInfo">
       {deviceStates.length > 0 ? (

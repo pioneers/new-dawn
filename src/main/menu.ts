@@ -94,7 +94,7 @@ export default class MenuBuilder {
       Menu.buildFromTemplate([
         {
           label: 'Inspect element',
-          click: () => {
+          click: (): void => {
             this.mainWindow.webContents.inspectElement(x, y);
           },
         },
@@ -131,7 +131,7 @@ export default class MenuBuilder {
         {
           label: 'Quit',
           accelerator: 'Command+Q',
-          click: () => {
+          click: (): void => {
             app.quit();
           },
         },
@@ -143,28 +143,28 @@ export default class MenuBuilder {
         {
           label: 'New',
           accelerator: 'Command+N',
-          click: () => {
+          click: (): void => {
             this.menuHandler.promptCreateNewCodeFile();
           },
         },
         {
           label: 'Open',
           accelerator: 'Command+O',
-          click: () => {
+          click: (): void => {
             this.menuHandler.promptLoadCodeFile();
           },
         },
         {
           label: 'Save',
           accelerator: 'Command+S',
-          click: () => {
+          click: (): void => {
             this.menuHandler.promptSaveCodeFile(false);
           },
         },
         {
           label: 'Save As',
           accelerator: 'Command+Shift+S',
-          click: () => {
+          click: (): void => {
             this.menuHandler.promptSaveCodeFile(true);
           },
         },
@@ -172,13 +172,13 @@ export default class MenuBuilder {
         {
           label: 'Upload open file to robot',
           accelerator: 'Command+Shift+U',
-          click: () => {
+          click: (): void => {
             this.menuHandler.promptUploadCodeFile();
           },
         },
         {
           label: 'Download code from robot',
-          click: () => {
+          click: (): void => {
             this.menuHandler.promptDownloadCodeFile();
           },
         },
@@ -206,21 +206,21 @@ export default class MenuBuilder {
         {
           label: 'Reload',
           accelerator: 'Command+R',
-          click: () => {
+          click: (): void => {
             this.mainWindow.webContents.reload();
           },
         },
         {
           label: 'Toggle Full Screen',
           accelerator: 'Ctrl+Command+F',
-          click: () => {
+          click: (): void => {
             this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
           },
         },
         {
           label: 'Toggle Developer Tools',
           accelerator: 'Alt+Command+I',
-          click: () => {
+          click: (): void => {
             this.mainWindow.webContents.toggleDevTools();
           },
         },
@@ -232,7 +232,7 @@ export default class MenuBuilder {
         {
           label: 'Toggle Full Screen',
           accelerator: 'Ctrl+Command+F',
-          click: () => {
+          click: (): void => {
             this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
           },
         },
@@ -256,13 +256,13 @@ export default class MenuBuilder {
       submenu: [
         {
           label: 'Learn More',
-          click() {
+          click(): void {
             shell.openExternal('https://electronjs.org');
           },
         },
         {
           label: 'Documentation',
-          click() {
+          click(): void {
             shell.openExternal(
               'https://github.com/electron/electron/tree/main/docs#readme',
             );
@@ -270,13 +270,13 @@ export default class MenuBuilder {
         },
         {
           label: 'Community Discussions',
-          click() {
+          click(): void {
             shell.openExternal('https://www.electronjs.org/community');
           },
         },
         {
           label: 'Search Issues',
-          click() {
+          click(): void {
             shell.openExternal('https://github.com/electron/electron/issues');
           },
         },
@@ -310,41 +310,41 @@ export default class MenuBuilder {
           {
             label: '&New',
             accelerator: 'Ctrl+N',
-            click: () => {
+            click: (): void => {
               this.menuHandler.promptCreateNewCodeFile();
             },
           },
           {
             label: '&Open',
             accelerator: 'Ctrl+O',
-            click: () => {
+            click: (): void => {
               this.menuHandler.promptLoadCodeFile();
             },
           },
           {
             label: '&Save',
             accelerator: 'Ctrl+S',
-            click: () => {
+            click: (): void => {
               this.menuHandler.promptSaveCodeFile(false);
             },
           },
           {
             label: 'Save &As',
             accelerator: 'Ctrl+Shift+S',
-            click: () => {
+            click: (): void => {
               this.menuHandler.promptSaveCodeFile(true);
             },
           },
           {
             label: '&Upload open file to robot',
             accelerator: 'Ctrl+Alt+U',
-            click: () => {
+            click: (): void => {
               this.menuHandler.promptUploadCodeFile();
             },
           },
           {
             label: 'Download code from robot',
-            click: () => {
+            click: (): void => {
               this.menuHandler.promptDownloadCodeFile();
             },
           },
@@ -359,14 +359,14 @@ export default class MenuBuilder {
                 {
                   label: '&Reload',
                   accelerator: 'Ctrl+R',
-                  click: () => {
+                  click: (): void => {
                     this.mainWindow.webContents.reload();
                   },
                 },
                 {
                   label: 'Toggle &Full Screen',
                   accelerator: 'F11',
-                  click: () => {
+                  click: (): void => {
                     this.mainWindow.setFullScreen(
                       !this.mainWindow.isFullScreen(),
                     );
@@ -375,7 +375,7 @@ export default class MenuBuilder {
                 {
                   label: 'Toggle &Developer Tools',
                   accelerator: 'Ctrl+Shift+I',
-                  click: () => {
+                  click: (): void => {
                     this.mainWindow.webContents.toggleDevTools();
                   },
                 },
@@ -384,7 +384,7 @@ export default class MenuBuilder {
                 {
                   label: 'Toggle &Full Screen',
                   accelerator: 'F11',
-                  click: () => {
+                  click: (): void => {
                     this.mainWindow.setFullScreen(
                       !this.mainWindow.isFullScreen(),
                     );
