@@ -33,3 +33,6 @@ npm-debug.log.*
 !.erb
 
 docs
+
+# Ignore protos auto-generated files
+protos-main
