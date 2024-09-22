@@ -38,7 +38,7 @@ if (isDebug) {
   require('electron-debug')();
 }
 
-const installExtensions = async () => {
+const installExtensions = async (): Promise<string> => {
   const installer = require('electron-devtools-installer');
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
   const extensions = ['REACT_DEVELOPER_TOOLS'];
@@ -51,7 +51,7 @@ const installExtensions = async () => {
     .catch(console.log);
 };
 
-const createWindow = async () => {
+const createWindow = async (): Promise<void> => {
   if (isDebug) {
     await installExtensions();
   }

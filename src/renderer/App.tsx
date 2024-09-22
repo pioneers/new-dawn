@@ -31,7 +31,7 @@ const MIN_CONSOLE_HEIGHT_PERCENT = 0.3;
 /**
  * Top-level component that communicates with main process and contains most renderer state.
  */
-export default function App() {
+export default function App(): JSX.Element {
   // Current width of editor in pixels
   const [editorSize, setEditorSize] = useState(-1);
   // Width of editor before ongoing resize in pixels, -1 if no resize
@@ -102,20 +102,20 @@ export default function App() {
     [] as DeviceInfoState[],
   );
 
-  const changeActiveModal = (newModalName: string) => {
+  const changeActiveModal = (newModalName: string): void => {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
     setActiveModal(newModalName);
   };
-  const changeEditorContent = (newContent: string) => {
+  const changeEditorContent = (newContent: string): void => {
     setEditorContent(newContent);
     if (editorStatus === 'clean') {
       setEditorStatus('dirty');
     }
   };
-  const closeModal = () => changeActiveModal('');
-  const handleConnectionChange = (event: ConnectionConfigChangeEvent) => {
+  const closeModal = (): void => changeActiveModal('');
+  const handleConnectionChange = (event: ConnectionConfigChangeEvent): void => {
     if (event.name === 'IPAddress') {
       setIPAddress(event.value);
     } else if (event.name === 'SSHAddress') {
@@ -126,8 +126,8 @@ export default function App() {
       setFieldStationNum(event.value);
     }
   };
-  const startEditorResize = () => setEditorInitialSize(editorSize);
-  const updateEditorResize = (d: number) => {
+  const startEditorResize = (): void => setEditorInitialSize(editorSize);
+  const updateEditorResize = (d: number): boolean => {
     if (editorInitialSize === -1) {
       // Drop update, the window was just resized
       return false;
@@ -143,9 +143,9 @@ export default function App() {
     );
     return true;
   };
-  const endEditorResize = () => setEditorInitialSize(-1);
-  const startColsResize = () => setConsoleInitSize(consoleSize);
-  const updateColsResize = (d: number) => {
+  const endEditorResize = (): void => setEditorInitialSize(-1);
+  const startColsResize = (): void => setConsoleInitSize(consoleSize);
+  const updateColsResize = (d: number): boolean => {
     if (consoleInitialSize === -1) {
       return false;
     }
@@ -161,8 +161,8 @@ export default function App() {
     );
     return true;
   };
-  const endColsResize = () => setConsoleInitSize(-1);
-  const changeRunMode = (mode: RobotRunMode) => {
+  const endColsResize = (): void => setConsoleInitSize(-1);
+  const changeRunMode = (mode: RobotRunMode): void => {
     window.electron.ipcRenderer.sendMessage('main-update-robot-mode', mode);
     setRobotRunning(mode !== RobotRunMode.IDLE);
   };
@@ -232,11 +232,11 @@ export default function App() {
 
   // Update windowSize:
   useLayoutEffect(() => {
-    const onResize = () =>
+    const onResize = (): void =>
       setWindowSize([window.innerWidth, window.innerHeight]);
     window.addEventListener('resize', onResize);
     onResize();
-    return () => window.removeEventListener('resize', onResize);
+    return (): void => window.removeEventListener('resize', onResize);
   }, []);
   useEffect(() => {
     // Tests won't run main/preload.ts
@@ -266,9 +266,10 @@ export default function App() {
           setDeviceInfoState,
         ),
       ];
-      return () => listenerDestructors.forEach((destructor) => destructor());
+      return (): void =>
+        listenerDestructors.forEach((destructor) => destructor());
     }
-    return () => {};
+    return (): void => {};
   }, []);
   useEffect(() => {
     if (window.electron) {
@@ -279,7 +280,7 @@ export default function App() {
         }
       });
     }
-    return () => {};
+    return (): void => {};
   }, [consoleIsOpen]);
   useEffect(() => {
     if (window.electron) {
@@ -313,7 +314,7 @@ export default function App() {
         }
       });
     }
-    return () => {};
+    return (): void => {};
   }, [editorStatus, saveFile, loadFile, uploadDownloadFile, createNewFile]);
 
   useEffect(() => {
@@ -326,14 +327,14 @@ export default function App() {
         }
       });
     }
-    return () => {};
+    return (): void => {};
   }, [activeModal, editorStatus, closeWindow]);
 
   return (
     <StrictMode>
       <div className="App">
         <Topbar
-          onConnectionConfigModalOpen={() =>
+          onConnectionConfigModalOpen={(): void =>
             changeActiveModal('ConnectionConfig')
           }
           dawnVersion={dawnVersion}
@@ -355,23 +356,23 @@ export default function App() {
             onOpen={loadFile}
             onSave={saveFile}
             onNewFile={createNewFile}
-            onRobotUpload={() => uploadDownloadFile(true)}
-            onRobotDownload={() => uploadDownloadFile(false)}
-            onStartRobot={(opmode: 'auto' | 'teleop') => {
+            onRobotUpload={(): void => uploadDownloadFile(true)}
+            onRobotDownload={(): void => uploadDownloadFile(false)}
+            onStartRobot={(opmode: 'auto' | 'teleop'): void => {
               changeRunMode(
                 opmode === 'auto' ? RobotRunMode.AUTO : RobotRunMode.TELEOP,
               );
             }}
-            onStopRobot={() => changeRunMode(RobotRunMode.IDLE)}
-            onToggleConsole={() => {
+            onStopRobot={(): void => changeRunMode(RobotRunMode.IDLE)}
+            onToggleConsole={(): void => {
               setConsoleIsOpen((v) => !v);
               setConsoleIsAlerted(false);
             }}
-            onClearConsole={() => {
+            onClearConsole={(): void => {
               setConsoleMsgs([]);
               setConsoleIsAlerted(false);
             }}
-            onToggleKeyboardControls={() => {
+            onToggleKeyboardControls={(): void => {
               setKbCtrlEnabled((v) => !v);
             }}
           />
@@ -411,7 +412,7 @@ export default function App() {
           <ConfirmModal
             isActive={activeModal === 'DirtyLoadConfirm'}
             onClose={closeModal}
-            onConfirm={() => {
+            onConfirm={(): void => {
               window.electron.ipcRenderer.sendMessage('main-file-control', {
                 type: 'load',
               });
@@ -436,7 +437,7 @@ export default function App() {
           <ConfirmModal
             isActive={activeModal === 'DirtyUploadConfirm'}
             onClose={closeModal}
-            onConfirm={() => uploadDownloadFile(true)}
+            onConfirm={(): void => uploadDownloadFile(true)}
             modalTitle="Confirm upload"
           >
             <p className="App-confirm-dialog-text">
@@ -446,7 +447,9 @@ export default function App() {
               <input
                 type="checkbox"
                 name="show-dirty-upload-warning"
-                onChange={(e) => setShowDirtyUploadWarning(!e.target.checked)}
+                onChange={(e): void =>
+                  setShowDirtyUploadWarning(!e.target.checked)
+                }
               />
               Don&apos;t show this warning again
             </label>
@@ -454,7 +457,7 @@ export default function App() {
           <ConfirmModal
             isActive={activeModal === 'DirtyDownloadConfirm'}
             onClose={closeModal}
-            onConfirm={() => uploadDownloadFile(false)}
+            onConfirm={(): void => uploadDownloadFile(false)}
             modalTitle="Confirm download"
           >
             <p className="App-confirm-dialog-text">

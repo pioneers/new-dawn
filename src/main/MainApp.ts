@@ -222,7 +222,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * happen more than once in the program's lifetime (e.g. if the BrowserWindow is somehow
    * reloaded).
    */
-  onPresent() {
+  onPresent(): void {
     this.#watcher?.close();
     this.#savePath = null;
     this.#sendToRenderer('renderer-init', {
@@ -235,7 +235,11 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     });
   }
 
-  onReceiveRobotLogs(msgs: string[]) {
+  /**
+   * Called when the robot emits log messages.
+   * @param msgs - an array of new log messages.
+   */
+  onReceiveRobotLogs(msgs: string[]): void {
     msgs.forEach((msg) => {
       this.#sendToRenderer(
         'renderer-post-console',
@@ -244,15 +248,28 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     });
   }
 
-  onReceiveLatency(latency: number) {
+  /**
+   * Called when a latency check completes.
+   * @param latency - the measured robot connection latency.
+   */
+  onReceiveLatency(latency: number): void {
     this.#sendToRenderer('renderer-latency-update', latency);
   }
 
-  onReceiveDevices(deviceInfoState: DeviceInfoState[]) {
+  /**
+   * Called when the robot sends lowcar device state.
+   * @param deviceInfoState - an array of the devices currently connected to the robot and their
+   * currently measured parameters.
+   */
+  onReceiveDevices(deviceInfoState: DeviceInfoState[]): void {
     this.#sendToRenderer('renderer-devices-update', deviceInfoState);
   }
 
-  onRuntimeTcpError(err: Error) {
+  /**
+   * Called when an error is encountered in the TCP connection to the robot.
+   * @param err - the error.
+   */
+  onRuntimeTcpError(err: Error): void {
     this.#sendToRenderer(
       'renderer-post-console',
       new AppConsoleMessage(
@@ -262,7 +279,12 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     );
   }
 
-  onRuntimeUdpError(err: Error) {
+  /**
+   * Called when the UDP socket encounters an error or data received by the UDP socket is malformed.
+   * @param err - the error. Protobuf ProtocolErrors are likely the result of a UDP transmission
+   * error.
+   */
+  onRuntimeUdpError(err: Error): void {
     this.#sendToRenderer(
       'renderer-post-console',
       new AppConsoleMessage(
@@ -272,7 +294,11 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     );
   }
 
-  onRuntimeError(err: Error) {
+  /**
+   * Called when a generic Runtime communications error is encountered.
+   * @param err - the error.
+   */
+  onRuntimeError(err: Error): void {
     this.#sendToRenderer(
       'renderer-post-console',
       new AppConsoleMessage(
@@ -282,7 +308,10 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     );
   }
 
-  onRuntimeDisconnect() {
+  /**
+   * Called when the TCP connection to the robot is lost for any reason.
+   */
+  onRuntimeDisconnect(): void {
     this.#sendToRenderer(
       'renderer-post-console',
       new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
@@ -294,7 +323,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * @param forceDialog - whether the save path selection dialog should be shown even if there is
    * a currently opened file that may be saved to.
    */
-  promptSaveCodeFile(forceDialog: boolean) {
+  promptSaveCodeFile(forceDialog: boolean): void {
     // We need a round trip to the renderer because that's where the code in the editor actually
     // lives
     this.#sendToRenderer('renderer-file-control', {
@@ -307,7 +336,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * Requests that the renderer process start to load code from a file into the editor. The renderer
    * may delay or ignore this request (e.g. if the editor has unsaved changes).
    */
-  promptLoadCodeFile() {
+  promptLoadCodeFile(): void {
     this.#sendToRenderer('renderer-file-control', { type: 'promptLoad' });
   }
 
@@ -315,7 +344,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * Requests that the renderer process start to upload the last loaded file to the robot. The round
    * trip is needed to notify the user that unsaved changes in the editor will not be uploaded.
    */
-  promptUploadCodeFile() {
+  promptUploadCodeFile(): void {
     this.#sendToRenderer('renderer-file-control', { type: 'promptUpload' });
   }
 
@@ -323,7 +352,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * Requests that the renderer process start to download code from the robot into the editor. The
    * renderer may delay or ignore this request (e.g. if the editor has unsaved changes).
    */
-  promptDownloadCodeFile() {
+  promptDownloadCodeFile(): void {
     this.#sendToRenderer('renderer-file-control', { type: 'promptDownload' });
   }
 
@@ -331,7 +360,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * Requests that the renderer process close the open file in the editor. The renderer may delay or
    * ignore this request (e.g. if there are unsaved changes).
    */
-  promptCreateNewCodeFile() {
+  promptCreateNewCodeFile(): void {
     this.#sendToRenderer('renderer-file-control', {
       type: 'promptCreateNewFile',
     });
@@ -343,7 +372,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * @param forceDialog - whether the user should be prompted for a save path even if there is a
    * currently open file.
    */
-  #saveCodeFile(code: string, forceDialog: boolean) {
+  #saveCodeFile(code: string, forceDialog: boolean): void {
     let success = true;
     if (this.#savePath === null || forceDialog) {
       success = this.#showCodePathDialog('save');
@@ -375,9 +404,9 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   }
 
   /**
-   * Tries to load code from a file into the editor. Fails is the user does not choose a path.
+   * Tries to load code from a file into the editor. Fails if the user does not choose a path.
    */
-  #openCodeFile() {
+  #openCodeFile(): void {
     const success = this.#showCodePathDialog('load');
     if (success) {
       try {
@@ -401,7 +430,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * contents) to the robot at the given IP. Does nothing if no file has been opened yet.
    * @param ip - the IP address to connect to via SSH
    */
-  #uploadCodeFile(ip: string) {
+  #uploadCodeFile(ip: string): void {
     if (this.#savePath) {
       if (
         fs
@@ -451,7 +480,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * Downloads code from the robot at the given IP into the editor.
    * @param ip - the IP address to connect to via SSH
    */
-  #downloadCodeFile(ip: string) {
+  #downloadCodeFile(ip: string): void {
     this.#codeTransfer
       .download(ip)
       .then((content: string) => {
@@ -484,9 +513,9 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * @param e - the value
    * @returns A string representation of the value.
    */
-  #getErrorDetails(e: any) {
-    let msg = e instanceof Error ? e.stack : String(e);
-    if (e.cause) {
+  #getErrorDetails(e: any): string {
+    let msg = e instanceof Error && e.stack ? e.stack : String(e);
+    if (e instanceof Error && e.cause) {
       msg += `\nCaused by: ${this.#getErrorDetails(e.cause)}`;
     }
     return msg;
@@ -498,7 +527,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * @param mode - the type of dialog that should be shown
    * @returns Whether a new path was chosen successfully.
    */
-  #showCodePathDialog(mode: 'save' | 'load') {
+  #showCodePathDialog(mode: 'save' | 'load'): boolean {
     let result: string | string[] | undefined;
     if (mode === 'save') {
       result = dialog.showSaveDialogSync(this.#mainWindow, {
@@ -530,7 +559,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * Attaches a file watcher to listen for external changes to the last saved or loaded code path,
    * destroying the previous one if it exists.
    */
-  #watchCodeFile() {
+  #watchCodeFile(): void {
     this.#watcher?.close();
     this.#watchDebounce = true;
     this.#watcher = fs.watch(

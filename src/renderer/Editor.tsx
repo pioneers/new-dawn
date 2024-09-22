@@ -42,7 +42,7 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
 
 /**
  * Component holding the Ace editor and editor toolbar.
- * @param props - props
+ * @param props
  * @param props.width - width in pixels of Editor container
  * @param props.fileStatus - dirty status of the currently open file
  * @param props.filePath - path of the currently open file, or an empty string if no file is open
@@ -122,11 +122,11 @@ export default function Editor({
   onToggleConsole: () => void;
   onClearConsole: () => void;
   onToggleKeyboardControls: () => void;
-}) {
+}): JSX.Element {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
 
-  const zoomEditor = (increase: boolean) => {
+  const zoomEditor = (increase: boolean): void => {
     setFontSize((old) => old + (increase ? 1 : -1));
   };
 
@@ -146,10 +146,18 @@ export default function Editor({
           <button type="button" onClick={onOpen} title="Open">
             <img src={openSvg} alt="Open" />
           </button>
-          <button type="button" onClick={() => onSave(false)} title="Save">
+          <button
+            type="button"
+            onClick={(): void => onSave(false)}
+            title="Save"
+          >
             <img src={saveSvg} alt="Save" />
           </button>
-          <button type="button" onClick={() => onSave(true)} title="Save As">
+          <button
+            type="button"
+            onClick={(): void => onSave(true)}
+            title="Save As"
+          >
             <img src={saveAsSvg} alt="Save As" />
           </button>
           <button type="button" onClick={onNewFile} title="New File">
@@ -159,7 +167,11 @@ export default function Editor({
         <div className="Editor-toolbar-group">
           <button
             type="button"
-            onClick={() => robotConnected && onRobotUpload()}
+            onClick={(): void => {
+              if (robotConnected) {
+                onRobotUpload();
+              }
+            }}
             className={robotConnected ? undefined : 'Editor-tbbtn-disabled'}
             title="Upload to robot"
           >
@@ -167,7 +179,11 @@ export default function Editor({
           </button>
           <button
             type="button"
-            onClick={() => robotConnected && onRobotDownload()}
+            onClick={(): void => {
+              if (robotConnected) {
+                onRobotDownload();
+              }
+            }}
             className={robotConnected ? undefined : 'Editor-tbbtn-disabled'}
             title="Download code from robot"
           >
@@ -191,14 +207,14 @@ export default function Editor({
         <div className="Editor-toolbar-group">
           <button
             type="button"
-            onClick={() => zoomEditor(true)}
+            onClick={(): void => zoomEditor(true)}
             title="Zoom in"
           >
             <img src={zoomInSvg} alt="Zoom in" />
           </button>
           <button
             type="button"
-            onClick={() => zoomEditor(false)}
+            onClick={(): void => zoomEditor(false)}
             title="Zoom out"
           >
             <img src={zoomOutSvg} alt="Zoom out" />
@@ -218,7 +234,7 @@ export default function Editor({
           <label className="Editor-tbopmode" htmlFor="Editor-toolbar-opmode">
             OpMode:
             <select
-              onChange={(e) => setOpmode(e.target.value)}
+              onChange={(e): void => setOpmode(e.target.value)}
               name="Editor-toolbar-opmode"
             >
               <option value="auto">Autonomous</option>
@@ -227,11 +243,11 @@ export default function Editor({
           </label>
           <button
             type="button"
-            onClick={() =>
-              robotConnected &&
-              !robotRunning &&
-              onStartRobot(opmode as 'auto' | 'teleop')
-            }
+            onClick={(): void => {
+              if (robotConnected && !robotRunning) {
+                onStartRobot(opmode as 'auto' | 'teleop');
+              }
+            }}
             className={
               robotConnected && !robotRunning
                 ? undefined
@@ -243,7 +259,11 @@ export default function Editor({
           </button>
           <button
             type="button"
-            onClick={() => robotConnected && robotRunning && onStopRobot()}
+            onClick={(): void => {
+              if (robotConnected && robotRunning) {
+                onStopRobot();
+              }
+            }}
             className={
               robotConnected && robotRunning
                 ? undefined

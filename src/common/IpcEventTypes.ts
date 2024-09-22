@@ -158,7 +158,10 @@ export interface RendererFileControlPromptDownloadData {
  * Data for a specialization of the renderer-file-control event, sent when the main process wants to
  * close the file open in the editor.
  */
-interface RendererFileControlPromptCreateNewFile {
+export interface RendererFileControlPromptCreateNewFileData {
+  /**
+   * The subtype of file control event.
+   */
   type: 'promptCreateNewFile';
 }
 /**
@@ -174,7 +177,7 @@ export type RendererFileControlData =
   | RendererFileControlExtChangeData
   | RendererFileControlPromptUploadData
   | RendererFileControlPromptDownloadData
-  | RendererFileControlPromptCreateNewFile;
+  | RendererFileControlPromptCreateNewFileData;
 /**
  * Data for the renderer-post-console event sent by the main process to add a console message to the
  * AppConsole.

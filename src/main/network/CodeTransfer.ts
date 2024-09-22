@@ -49,7 +49,7 @@ export default class CodeTransfer {
    * @param ip - the IP of the robot to connect to via SSH
    * @returns A Promise that resolves when the upload is complete.
    */
-  upload(localCodePath: string, ip: string): Promise<null> {
+  upload(localCodePath: string, ip: string): Promise<void> {
     return this.#doSftp(ip, (sftp, resolve, reject) => {
       sftp.fastPut(
         localCodePath,
@@ -62,7 +62,7 @@ export default class CodeTransfer {
               }),
             );
           } else {
-            resolve(null);
+            resolve();
           }
         },
       );

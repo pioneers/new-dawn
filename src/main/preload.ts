@@ -54,7 +54,7 @@ function on(
 ): () => void;
 function on(channel: 'renderer-quit-request', func: () => void): () => void;
 function on(channel: RendererChannels, func: (arg?: any) => void): () => void {
-  const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
+  const subscription = (_event: IpcRendererEvent, ...args: unknown[]): void =>
     func(...args);
   ipcRenderer.on(channel, subscription);
 

@@ -20,6 +20,7 @@ module.exports = {
     ],
     'no-redeclare': 'off', // False positives on typescript's function overloads
     'no-undef': 'off', // False positives and typescript won't build if actually undefined vars
+    '@typescript-eslint/explicit-function-return-type': 'error',
   },
   parserOptions: {
     ecmaVersion: 2022,

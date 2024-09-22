@@ -43,7 +43,7 @@ export default class PacketStream extends Transform {
     chunk: any,
     encoding: NodeJS.BufferEncoding,
     callback: TransformCallback,
-  ) {
+  ): void {
     let chunkBuf: Buffer;
     if (chunk instanceof Buffer) {
       chunkBuf = chunk;
@@ -74,7 +74,7 @@ export default class PacketStream extends Transform {
    * @returns Whether a full packet was read and output and the next packet is ready to be attempted
    * to be read.
    */
-  #tryReadPacket(shouldConcatHeader: boolean) {
+  #tryReadPacket(shouldConcatHeader: boolean): boolean {
     if (this.#bufLen < HEADER_LENGTH) {
       // Wait for complete header before reading packet
       return false;

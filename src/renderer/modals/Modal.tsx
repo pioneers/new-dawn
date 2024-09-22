@@ -3,7 +3,7 @@ import './Modal.css';
 
 /**
  * Generic modal component.
- * @param props - props
+ * @param props
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.isActive - whether to display the modal
  * @param props.modalTitle - displayed title of the modal
@@ -21,7 +21,7 @@ export default function Modal({
   modalTitle: string;
   children: ReactNode;
   className?: string;
-}) {
+}): JSX.Element {
   return (
     <div className={`Modal${isActive ? ' modal-active' : ''}`}>
       <div className="Modal-title-bar">
