@@ -19,12 +19,11 @@ const PING_INTERVAL = 5000;
 enum MsgType {
   RUN_MODE = 0,
   START_POS = 1,
-  CHALLENGE_DATA = 2,
-  LOG = 3,
-  DEVICE_DATA = 4,
-  // 5 reserved for some Shepherd msg type
-  INPUTS = 6,
-  TIME_STAMPS = 7,
+  LOG = 2,
+  DEVICE_DATA = 3,
+  // 4 reserved for some Shepherd msg type
+  INPUTS = 5,
+  TIME_STAMPS = 6,
 }
 
 /**
@@ -192,7 +191,8 @@ export default class RuntimeComms {
    */
   sendChallengeInputs(data: protos.IText) {
     if (this.#tcpSock) {
-      this.#tcpSock.write(this.#createPacket(MsgType.CHALLENGE_DATA, data));
+      throw new Error('Not implemented.'); // MsgTypes from old dawn are inconsistent?
+      //this.#tcpSock.write(this.#createPacket(MsgType.CHALLENGE_DATA, data));
     }
   }
 
@@ -254,6 +254,7 @@ export default class RuntimeComms {
    * most recently known Runtime IP and port.
    */
   #connectTcp() {
+    this.#commsListener.onRuntimeError(new Error("Attempting to connect tcp socket"));
     this.#tcpDisconnected = false;
     this.#disconnectTcp();
     const tcpStream = new PacketStream().on(
@@ -328,18 +329,18 @@ export default class RuntimeComms {
     const { type, data } = packet;
     switch (type) {
       case MsgType.LOG:
-        this.#commsListener.onReceiveRobotLogs(
-          protos.Text.decode(data).payload,
-        );
+        //this.#commsListener.onReceiveRobotLogs(
+        //  protos.Text.decode(data).payload,
+        //);
         break;
       case MsgType.TIME_STAMPS:
         this.#commsListener.onReceiveLatency(
           (Date.now() - Number(protos.TimeStamps.decode(data))) / 2,
         );
         break;
-      case MsgType.CHALLENGE_DATA:
+      //case MsgType.CHALLENGE_DATA:
         // TODO: ??? Not implemented in old Dawn
-        break;
+        //break;
       case MsgType.DEVICE_DATA:
         // Convert decoded Devices to DeviceInfoStates before passing to onReceiveDevices
         this.#commsListener.onReceiveDevices(
@@ -361,7 +362,7 @@ export default class RuntimeComms {
                     ) => {
                       const param = new protos.Param(paramProps);
                       return param.val
-                        ? [param.name, param.val.toString()]
+                        ? [param.name, param[param.val].toString()]
                         : [];
                     },
                   ),
@@ -373,7 +374,7 @@ export default class RuntimeComms {
         break;
       default:
         this.#commsListener.onRuntimeError(
-          new Error(`Received unexpected packet MsgType ${type}.`),
+          new Error(`Received unexpected packet MsgType ${type}.\nPacket: ${JSON.stringify(packet)}`),
         );
     }
   }
@@ -397,7 +398,7 @@ export default class RuntimeComms {
   #handleTcpClose() {
     this.#commsListener.onRuntimeDisconnect();
     if (!this.#tcpDisconnected) {
-      setTimeout(this.#connectTcp, TCP_RECONNECT_DELAY);
+      setTimeout(this.#connectTcp.bind(this), TCP_RECONNECT_DELAY);
     }
   }
 
@@ -433,13 +434,13 @@ export default class RuntimeComms {
    */
   #createPacket(type: MsgType.TIME_STAMPS, data: protos.ITimeStamps): Buffer;
 
-  /**
+  /*
    * Encodes a challenge data packet.
    * @param type - the packet type.
    * @param data - the packet payload.
    * @returns The packet encoded in a Buffer
    */
-  #createPacket(type: MsgType.CHALLENGE_DATA, data: protos.IText): Buffer;
+  //#createPacket(type: MsgType.CHALLENGE_DATA, data: protos.IText): Buffer;
 
   /**
    * Encodes an input state packet.
@@ -472,9 +473,9 @@ export default class RuntimeComms {
           data as protos.ITimeStamps,
         ).finish();
         break;
-      case MsgType.CHALLENGE_DATA:
-        packetData = protos.Text.encode(data as protos.IText).finish();
-        break;
+      //case MsgType.CHALLENGE_DATA:
+        //packetData = protos.Text.encode(data as protos.IText).finish();
+        //break;
       case MsgType.INPUTS:
         // Source says input data isn't usually sent through TCP? What's that about?
         packetData = protos.UserInputs.encode(

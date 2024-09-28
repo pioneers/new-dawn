@@ -215,6 +215,8 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       // Use all defaults if bad JSON or no config file
       this.#config = coerceToConfig({});
     }
+
+    this.#runtimeComms.setRobotIp(this.#config.robotIPAddress);
   }
 
   /**
@@ -621,6 +623,8 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * @param data - an optional payload for the event
    */
   #sendToRenderer(channel: RendererChannels, data?: any): void {
-    this.#mainWindow.webContents.send(channel, data);
+    if (!this.#mainWindow.isDestroyed()) {
+      this.#mainWindow.webContents.send(channel, data);
+    }
   }
 }
