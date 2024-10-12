@@ -131,7 +131,12 @@ export default function Editor({
   };
 
   return (
-    <div className="Editor" style={{ width }}>
+    <div
+      className={`Editor${
+        keyboardControlsEnabled ? ' Editor-kbctrl-enabled' : ''
+      }`}
+      style={{ width }}
+    >
       <div className="Editor-file-info">
         <span className="Editor-file-name">{filePath || '[New file]'}</span>
         <span
@@ -256,12 +261,16 @@ export default function Editor({
         </div>
       </div>
       <div className="Editor-ace-wrapper">
+        <div className="Editor-kbctrl-overlay">
+          <span>Keyboard input sent to robot -- disable to edit code</span>
+        </div>
         <AceEditor
           fontSize={fontSize}
           style={{ width: '100%', height: '100%' }}
           mode="python"
           onChange={onChange}
           value={content}
+          readOnly={keyboardControlsEnabled}
         />
       </div>
     </div>
