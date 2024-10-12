@@ -12,8 +12,14 @@ module.exports = {
     'no-shadow': 'off',
     '@typescript-eslint/no-shadow': 'error',
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        argsIgnorePattern: '^_',
+      },
+    ],
     'no-redeclare': 'off', // False positives on typescript's function overloads
+    'no-undef': 'off', // False positives and typescript won't build if actually undefined vars
   },
   parserOptions: {
     ecmaVersion: 2022,

@@ -10,16 +10,14 @@
 .AppConsole-inner {
   height: 100%;
   background-color: #eee;
-  overflow: hidden scroll;
-  overflow-wrap: break-word;
+  overflow-y: scroll;
+  word-break: break-word;
   margin: 0;
   margin-bottom: 50px;
   min-height: 0;
 }
 .AppConsole-message {
   padding: 2px;
-}
-.AppConsole-message-dawn-info {
 }
 .AppConsole-message-dawn-err {
   color: red;

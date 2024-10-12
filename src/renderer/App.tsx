@@ -11,12 +11,14 @@ import Editor, { EditorContentStatus } from './Editor';
 import DeviceInfo from './DeviceInfo';
 import AppConsole from './AppConsole';
 import type AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
+import type DeviceInfoState from '../common/DeviceInfoState';
 import ConfirmModal from './modals/ConfirmModal';
 import ConnectionConfigModal, {
   ConnectionConfigChangeEvent,
 } from './modals/ConnectionConfigModal';
 import GamepadInfoModal from './modals/GamepadInfoModal';
 import ResizeBar from './ResizeBar';
+import { Mode as RobotRunMode } from '../../protos-main/protos';
 import './App.css';
 
 const INITIAL_EDITOR_WIDTH_PERCENT = 0.7;
@@ -42,8 +44,6 @@ export default function App() {
   const [activeModal, setActiveModal] = useState('');
   // Dawn version string, received from main process
   const [dawnVersion, setDawnVersion] = useState('');
-  // Runtime version string, empty if disconnected from robot
-  const [runtimeVersion, setRuntimeVersion] = useState('');
   // Robot battery voltage, -1 if disconnected from robot
   const [robotBatteryVoltage, setRobotBatteryVoltage] = useState(-1);
   // Robot latency, -1 if disconnected from robot
@@ -67,6 +67,8 @@ export default function App() {
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
   // Whether keyboard controls are enabled
   const [kbCtrlEnabled, setKbCtrlEnabled] = useState(false);
+  // Whether the robot is running student code
+  const [robotRunning, setRobotRunning] = useState(false);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
   const [windowSize, setWindowSize] = useReducer(
     (oldSize: [number, number], newSize: [number, number]) => {
@@ -95,6 +97,10 @@ export default function App() {
   const [SSHAddress, setSSHAddress] = useState('192.168.0.100');
   const [FieldIPAddress, setFieldIPAddress] = useState('localhost');
   const [FieldStationNum, setFieldStationNum] = useState('4');
+  // Information about periperhals connected to the robot
+  const [deviceInfoState, setDeviceInfoState] = useState(
+    [] as DeviceInfoState[],
+  );
 
   const changeActiveModal = (newModalName: string) => {
     if (document.activeElement instanceof HTMLElement) {
@@ -156,6 +162,10 @@ export default function App() {
     return true;
   };
   const endColsResize = () => setConsoleInitSize(-1);
+  const changeRunMode = (mode: RobotRunMode) => {
+    window.electron.ipcRenderer.sendMessage('main-update-robot-mode', mode);
+    setRobotRunning(mode !== RobotRunMode.IDLE);
+  };
 
   const closeWindow = useCallback(() => {
     window.electron.ipcRenderer.sendMessage('main-quit', {
@@ -240,17 +250,21 @@ export default function App() {
           setFieldStationNum(data.fieldStationNumber);
           setShowDirtyUploadWarning(data.showDirtyUploadWarning);
         }),
-        window.electron.ipcRenderer.on('renderer-robot-update', (data) => {
-          if (data.runtimeVersion !== undefined) {
-            setRuntimeVersion(data.runtimeVersion);
-          }
-          if (data.robotBatteryVoltage !== undefined) {
-            setRobotBatteryVoltage(data.robotBatteryVoltage);
-          }
-          if (data.robotLatencyMs !== undefined) {
-            setRobotLatencyMs(data.robotLatencyMs);
+        window.electron.ipcRenderer.on(
+          'renderer-battery-update',
+          setRobotBatteryVoltage,
+        ),
+        window.electron.ipcRenderer.on('renderer-latency-update', (latency) => {
+          setRobotLatencyMs(latency);
+          if (latency === -1) {
+            setDeviceInfoState([]); // Disconnect everything
+            setRobotRunning(false);
           }
         }),
+        window.electron.ipcRenderer.on(
+          'renderer-devices-update',
+          setDeviceInfoState,
+        ),
       ];
       return () => listenerDestructors.forEach((destructor) => destructor());
     }
@@ -323,7 +337,6 @@ export default function App() {
             changeActiveModal('ConnectionConfig')
           }
           dawnVersion={dawnVersion}
-          runtimeVersion={runtimeVersion}
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}
         />
@@ -337,17 +350,19 @@ export default function App() {
             consoleAlert={consoleIsAlerted}
             consoleIsOpen={consoleIsOpen}
             keyboardControlsEnabled={kbCtrlEnabled}
+            robotConnected={robotLatencyMs !== -1}
+            robotRunning={robotRunning}
             onOpen={loadFile}
             onSave={saveFile}
             onNewFile={createNewFile}
             onRobotUpload={() => uploadDownloadFile(true)}
             onRobotDownload={() => uploadDownloadFile(false)}
-            onStartRobot={() => {
-              throw new Error('Not implemented.');
+            onStartRobot={(opmode: 'auto' | 'teleop') => {
+              changeRunMode(
+                opmode === 'auto' ? RobotRunMode.AUTO : RobotRunMode.TELEOP,
+              );
             }}
-            onStopRobot={() => {
-              throw new Error('Not implemented.');
-            }}
+            onStopRobot={() => changeRunMode(RobotRunMode.IDLE)}
             onToggleConsole={() => {
               setConsoleIsOpen((v) => !v);
               setConsoleIsAlerted(false);
@@ -366,9 +381,9 @@ export default function App() {
             onEndResize={endEditorResize}
             axis="x"
           />
-          <DeviceInfo />
+          <DeviceInfo deviceStates={deviceInfoState} />
         </div>
-        {consoleIsOpen ? (
+        {consoleIsOpen && (
           <>
             <ResizeBar
               onStartResize={startColsResize}
@@ -378,7 +393,7 @@ export default function App() {
             />
             <AppConsole height={consoleSize} messages={consoleMsgs} />
           </>
-        ) : undefined}
+        )}
         <div className="App-modal-container">
           <ConnectionConfigModal
             isActive={activeModal === 'ConnectionConfig'}

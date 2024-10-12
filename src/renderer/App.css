@@ -19,6 +19,7 @@ body {
   display: flex;
   flex-direction: row;
   height: 100%;
+  min-height: 0;
 }
 .App-modal-container {
   position: fixed;

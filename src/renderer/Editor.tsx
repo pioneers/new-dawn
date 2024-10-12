@@ -53,6 +53,10 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
  * indicating the console is open
  * @param props.keyboardControlsEnabled - whether to show a different icon for the toggle keyboard
  * control button indicating keyboard control is enabled
+ * @param props.robotConnected - whether toolbar buttons requiring a connection to the robot should
+ * be enabled.
+ * @param props.robotRunning - whether the robot is running, which affects whether some toolbar
+ * buttons are enabled.
  * @param props.onOpen - handler called when the user wants to open a file in the editor
  * @param props.onNewFile - handler called when the user wants to close the current file
  * @param props.onRobotUpload - handler called when the user wants to upload the open file to the
@@ -73,6 +77,8 @@ export default function Editor({
   consoleAlert,
   consoleIsOpen,
   keyboardControlsEnabled,
+  robotConnected,
+  robotRunning,
   onOpen,
   onSave,
   onNewFile,
@@ -96,6 +102,8 @@ export default function Editor({
   consoleAlert: boolean;
   consoleIsOpen: boolean;
   keyboardControlsEnabled: boolean;
+  robotConnected: boolean;
+  robotRunning: boolean;
   onOpen: () => void;
   /**
    * handler called when the user wants to save the contents of the editor
@@ -149,12 +157,18 @@ export default function Editor({
           </button>
         </div>
         <div className="Editor-toolbar-group">
-          <button type="button" onClick={onRobotUpload} title="Upload to robot">
+          <button
+            type="button"
+            onClick={() => robotConnected && onRobotUpload()}
+            className={robotConnected ? undefined : 'Editor-tbbtn-disabled'}
+            title="Upload to robot"
+          >
             <img src={uploadSvg} alt="Upload to robot" />
           </button>
           <button
             type="button"
-            onClick={onRobotDownload}
+            onClick={() => robotConnected && onRobotDownload()}
+            className={robotConnected ? undefined : 'Editor-tbbtn-disabled'}
             title="Download code from robot"
           >
             <img src={downloadSvg} alt="Download code from robot" />
@@ -213,12 +227,30 @@ export default function Editor({
           </label>
           <button
             type="button"
-            onClick={() => onStartRobot(opmode as 'auto' | 'teleop')}
+            onClick={() =>
+              robotConnected &&
+              !robotRunning &&
+              onStartRobot(opmode as 'auto' | 'teleop')
+            }
+            className={
+              robotConnected && !robotRunning
+                ? undefined
+                : 'Editor-tbbtn-disabled'
+            }
             title="Run robot code"
           >
             <img src={startRobot} alt="Run robot code" />
           </button>
-          <button type="button" onClick={onStopRobot} title="Stop robot">
+          <button
+            type="button"
+            onClick={() => robotConnected && robotRunning && onStopRobot()}
+            className={
+              robotConnected && robotRunning
+                ? undefined
+                : 'Editor-tbbtn-disabled'
+            }
+            title="Stop robot"
+          >
             <img src={stopRobot} alt="Stop robot" />
           </button>
         </div>
