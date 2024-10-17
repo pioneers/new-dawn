@@ -16,6 +16,7 @@ import type {
   MainFileControlData,
   MainQuitData,
   MainUpdateRobotModeData,
+  MainRobotInputData,
 } from '../common/IpcEventTypes';
 import Config, { coerceToConfig } from './Config';
 import CodeTransfer from './network/CodeTransfer';
@@ -83,6 +84,16 @@ function addRendererListener(
 function addRendererListener(
   channel: 'main-update-robot-mode',
   func: (data: MainUpdateRobotModeData) => void,
+): void;
+
+/**
+ * Adds a listener for the main-robot-input IPC event fired by the renderer.
+ * @param channel - the event channel to listen to
+ * @param func - the listener to attach
+ */
+function addRendererListener(
+  channel: 'main-robot-input',
+  func: (data: MainRobotInputData) => void,
 ): void;
 
 /**
@@ -200,6 +211,10 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     });
     addRendererListener('main-update-robot-mode', (mode) => {
       this.#runtimeComms.sendRunMode({ mode });
+    });
+    // eslint-disable-next-line no-unused
+    addRendererListener('main-robot-input', (inputs) => {
+      // TODO: send inputs to robot
     });
 
     try {
