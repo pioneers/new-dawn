@@ -1,0 +1,6 @@
+.ConnectionConfigButton-btn {
+  background-color: var(--window-head-color);
+  color: var(--window-head-text-color);
+  border: 2px solid var(--window-accent-color);
+  outline: none;
+}
