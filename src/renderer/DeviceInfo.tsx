@@ -26,22 +26,24 @@ export default function DeviceInfo({
             <div className="DeviceInfo-device" key={device.id}>
               <div className="DeviceInfo-device-id">{device.id}</div>
               <div className="DeviceInfo-device-type">{deviceType}</div>
-              <table className="DeviceInfo-device-props">
-                <tbody>
-                  {Object.entries(device).map(
-                    ([key, value]) =>
-                      key !== 'id' && (
-                        <tr
-                          className="DeviceInfo-device-prop"
-                          key={device.id + key}
-                        >
-                          <td className="DeviceInfo-prop-key">{key}</td>
-                          <td className="DeviceInfo-prop-value">{value}</td>
-                        </tr>
-                      ),
-                  )}
-                </tbody>
-              </table>
+              <div className="DeviceInfo-device-props-wrapper">
+                <table className="DeviceInfo-device-props">
+                  <tbody>
+                    {Object.entries(device).map(
+                      ([key, value]) =>
+                        key !== 'id' && (
+                          <tr
+                            className="DeviceInfo-device-prop"
+                            key={device.id + key}
+                          >
+                            <td className="DeviceInfo-prop-key">{key}</td>
+                            <td className="DeviceInfo-prop-value">{String(value)}</td>
+                          </tr>
+                        ),
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           );
         })
