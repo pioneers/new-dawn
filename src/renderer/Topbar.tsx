@@ -1,5 +1,10 @@
-import ConnectionConfig from './ConnectionConfig';
+import ConnectionConfigButton from './ConnectionConfigButton';
 import './Topbar.css';
+
+const GOOD_BATTERY_VOLTAGE = 11;
+const FAIR_BATTERY_VOLTAGE = 9.5;
+const GOOD_LATENCY_MS = 100;
+const FAIR_LATENCY_MS = 200;
 
 /**
  * Component displaying Dawn version and connection info.
@@ -9,7 +14,7 @@ import './Topbar.css';
  * @param props.robotLatencyMs - latency in milliseconds of the connection to the currently
  * connected robot, or -1 if there is no robot connected
  * @param props.robotBatteryVoltage - battery voltage in volts of the currently connected robot. The
- * value is not used if robotLatencyMs is -1
+ * value is not displayed to the user if robotLatencyMs is -1
  * @param props.dawnVersion - version string of Dawn
  */
 export default function Topbar({
@@ -23,6 +28,14 @@ export default function Topbar({
   robotLatencyMs: number;
   dawnVersion: string;
 }) {
+  const batteryColor
+    = robotBatteryVoltage > GOOD_BATTERY_VOLTAGE ? 'Topbar-info-card-green'
+    : robotBatteryVoltage > FAIR_BATTERY_VOLTAGE ? 'Topbar-info-card-yellow'
+    : 'Topbar-info-card-red';
+  const latencyColor
+    = robotLatencyMs < GOOD_LATENCY_MS ? 'Topbar-info-card-green'
+    : robotLatencyMs < FAIR_LATENCY_MS ? 'Topbar-info-card-yellow'
+    : 'Topbar-info-card-red';
   const robotInfo =
     robotLatencyMs === -1 ? (
       <div className="Topbar-robot-disconnected Topbar-info-card">
@@ -30,8 +43,8 @@ export default function Topbar({
       </div>
     ) : (
       <>
-        <div className="Topbar-info-card">Battery: {robotBatteryVoltage} V</div>
-        <div className="Topbar-info-card">Latency: {robotLatencyMs} ms</div>
+        <div className={`Topbar-info-card ${batteryColor}`}>Battery: {robotBatteryVoltage} V</div>
+        <div className={`Topbar-info-card ${latencyColor}`}>Latency: {robotLatencyMs} ms</div>
       </>
     );
   return (
@@ -41,7 +54,7 @@ export default function Topbar({
         {robotInfo}
       </div>
       <div className="Topbar-right-group">
-        <ConnectionConfig onModalOpen={onConnectionConfigModalOpen} />
+        <ConnectionConfigButton onModalOpen={onConnectionConfigModalOpen} />
       </div>
       <div className="Topbar-tail" />
     </div>
