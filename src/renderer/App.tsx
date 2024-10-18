@@ -263,41 +263,32 @@ export default function App() {
     const onKeyUp = ({ key }: { key: string }) => onKeyChange(key, false);
     window.addEventListener('keyup', onKeyUp);
     const gamepadUpdateInterval = setInterval(() => {
+      // Possible bug requires testing: gamepad indices are not preserved after filtering
+      // Filter removes disconnected and 'ghost'/duplicate gamepads (can be distinguished by
+      // different mapping)
       const gamepadInputs = navigator
         .getGamepads()
-        // Preserve indices before filtering:
-        .map((gp, idx) => ({ gp, idx }))
-        // Filter null and 'ghost' gamepads:
-        .filter(
-          (obj): obj is { gp: Gamepad; idx: number } =>
-            obj.gp !== null && obj.gp.mapping === 'standard',
-        )
-        .map(({ gp, idx }: { gp: Gamepad; idx: number }) => {
+        .filter((gp): gp is Gamepad => gp !== null && gp.mapping === 'standard')
+        .map((gp) => {
           let buttonBitmap: number = 0;
           gp.buttons.forEach((button, buttonIdx) => {
             if (button.pressed) {
               buttonBitmap |= 1 << buttonIdx;
             }
           });
-          return {
-            gamepadIndex: idx,
-            input: new RobotInput({
-              connected: gp.connected,
-              axes: gp.axes.slice(),
-              buttons: buttonBitmap,
-              source: RobotInputSource.GAMEPAD,
-            }),
-          };
+          return new RobotInput({
+            connected: gp.connected,
+            axes: gp.axes.slice(),
+            buttons: buttonBitmap,
+            source: RobotInputSource.GAMEPAD,
+          });
         });
-      const keyboardInput = {
-        gamepadIndex: null,
-        input: new RobotInput({
-          connected: keyboardControlsEnabled,
-          axes: [],
-          buttons: keyboardControlsEnabled ? Number(keyboardBitmap) : 0,
-          source: RobotInputSource.KEYBOARD,
-        }),
-      };
+      const keyboardInput = new RobotInput({
+        connected: keyboardControlsEnabled,
+        axes: [],
+        buttons: keyboardControlsEnabled ? Number(keyboardBitmap) : 0,
+        source: RobotInputSource.KEYBOARD,
+      });
       // Possible bug requires testing: is Runtime ok with mixed input sources in same packet?
       window.electron.ipcRenderer.sendMessage('main-robot-input', [
         ...gamepadInputs,

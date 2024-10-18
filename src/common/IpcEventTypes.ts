@@ -310,21 +310,7 @@ export interface MainQuitData {
  */
 export type MainUpdateRobotModeData = RobotRunMode;
 /**
- * Describes a single snapshot of gamepad or keyboard input.
- */
-export interface MainRobotInputDatum {
-  /**
-   * The index of the gamepad that produced this input, or null if the input was produced by a
-   * keyboard.
-   */
-  gamepadIndex: number | null;
-  /**
-   * The input, encoded as a protos Input object.
-   */
-  input: RobotInput;
-}
-/**
  * Data for the main-robot-input event sent by the renderer with gamepad or keyboard inputs bound
  * for the robot.
  */
-export type MainRobotInputData = MainRobotInputDatum[];
+export type MainRobotInputData = RobotInput[];
