@@ -298,6 +298,7 @@ export default function App() {
           source: RobotInputSource.KEYBOARD,
         }),
       };
+      // Possible bug requires testing: is Runtime ok with mixed input sources in same packet?
       window.electron.ipcRenderer.sendMessage('main-robot-input', [
         ...gamepadInputs,
         keyboardInput,

@@ -209,13 +209,8 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       this.#preventQuit = false;
       this.#mainWindow.close();
     });
-    addRendererListener('main-update-robot-mode', (mode) => {
-      this.#runtimeComms.sendRunMode({ mode });
-    });
-    // eslint-disable-next-line no-unused
-    addRendererListener('main-robot-input', (inputs) => {
-      // TODO: send inputs to robot
-    });
+    addRendererListener('main-update-robot-mode', this.#runtimeComms.sendRunMode.bind(this.#runtimeComms));
+    addRendererListener('main-robot-input', this.#runtimeComms.sendInputs.bind(this.#runtimeComms));
 
     try {
       this.#config = coerceToConfig(
