@@ -18,6 +18,7 @@
 }
 .AppConsole-message {
   padding: 2px;
+  text-wrap: wrap;
 }
 .AppConsole-message-dawn-err {
   color: red;
