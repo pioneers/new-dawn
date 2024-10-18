@@ -37,7 +37,9 @@ export default function DeviceInfo({
                             key={device.id + key}
                           >
                             <td className="DeviceInfo-prop-key">{key}</td>
-                            <td className="DeviceInfo-prop-value">{String(value)}</td>
+                            <td className="DeviceInfo-prop-value">
+                              {String(value)}
+                            </td>
                           </tr>
                         ),
                     )}

@@ -221,9 +221,7 @@ export default class RuntimeComms {
     // }
     // Old Dawn sends inputs through TCP, though comments say this is just for 2021?
     if (this.#tcpSock) {
-      this.#tcpSock.write(
-        this.#createPacket(MsgType.INPUTS, { inputs }),
-      );
+      this.#tcpSock.write(this.#createPacket(MsgType.INPUTS, { inputs }));
     }
   }
 

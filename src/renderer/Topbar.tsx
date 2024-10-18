@@ -28,14 +28,22 @@ export default function Topbar({
   robotLatencyMs: number;
   dawnVersion: string;
 }) {
-  const batteryColor
-    = robotBatteryVoltage > GOOD_BATTERY_VOLTAGE ? 'Topbar-info-card-green'
-    : robotBatteryVoltage > FAIR_BATTERY_VOLTAGE ? 'Topbar-info-card-yellow'
-    : 'Topbar-info-card-red';
-  const latencyColor
-    = robotLatencyMs < GOOD_LATENCY_MS ? 'Topbar-info-card-green'
-    : robotLatencyMs < FAIR_LATENCY_MS ? 'Topbar-info-card-yellow'
-    : 'Topbar-info-card-red';
+  let batteryColor;
+  if (robotBatteryVoltage > GOOD_BATTERY_VOLTAGE) {
+    batteryColor = 'Topbar-info-card-green';
+  } else if (robotBatteryVoltage > FAIR_BATTERY_VOLTAGE) {
+    batteryColor = 'Topbar-info-card-yellow';
+  } else {
+    batteryColor = 'Topbar-info-card-red';
+  }
+  let latencyColor;
+  if (robotLatencyMs < GOOD_LATENCY_MS) {
+    latencyColor = 'Topbar-info-card-green';
+  } else if (robotLatencyMs < FAIR_LATENCY_MS) {
+    latencyColor = 'Topbar-info-card-yellow';
+  } else {
+    latencyColor = 'Topbar-info-card-red';
+  }
   const robotInfo =
     robotLatencyMs === -1 ? (
       <div className="Topbar-robot-disconnected Topbar-info-card">
@@ -43,8 +51,12 @@ export default function Topbar({
       </div>
     ) : (
       <>
-        <div className={`Topbar-info-card ${batteryColor}`}>Battery: {robotBatteryVoltage} V</div>
-        <div className={`Topbar-info-card ${latencyColor}`}>Latency: {robotLatencyMs} ms</div>
+        <div className={`Topbar-info-card ${batteryColor}`}>
+          Battery: {robotBatteryVoltage} V
+        </div>
+        <div className={`Topbar-info-card ${latencyColor}`}>
+          Latency: {robotLatencyMs} ms
+        </div>
       </>
     );
   return (
