@@ -262,7 +262,7 @@ export default function Editor({
       </div>
       <div className="Editor-ace-wrapper">
         <div className="Editor-kbctrl-overlay">
-          <span>Keyboard input sent to robot -- disable to edit code</span>
+          <span>Keyboard input sent to robot &mdash; disable to edit code</span>
         </div>
         <AceEditor
           fontSize={fontSize}
