@@ -1,3 +1,4 @@
+/* eslint no-bitwise: 'off' */
 import {
   StrictMode,
   useState,
@@ -312,7 +313,9 @@ export default function App() {
           setFieldIPAddress(data.fieldIPAddress);
           setFieldStationNum(data.fieldStationNumber);
           setShowDirtyUploadWarning(data.showDirtyUploadWarning);
-          document.getElementsByTagName('title')[0].innerText = `Dawn ${data.dawnVersion}`;
+          document.getElementsByTagName(
+            'title',
+          )[0].innerText = `Dawn ${data.dawnVersion}`;
         }),
         window.electron.ipcRenderer.on(
           'renderer-battery-update',
