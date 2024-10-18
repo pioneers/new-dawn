@@ -119,7 +119,7 @@ export default class CodeTransfer {
       client
         .on('error', (err: Error) => {
           reject(
-            new Error('SSH connection error when uploading student code.', {
+            new Error('SSH connection error when transmitting student code.', {
               cause: err,
             }),
           );
@@ -129,7 +129,7 @@ export default class CodeTransfer {
             if (err) {
               reject(
                 new Error(
-                  'SFTP connection error when uploading student code.',
+                  'SFTP connection error when transmitting student code.',
                   { cause: err },
                 ),
               );
