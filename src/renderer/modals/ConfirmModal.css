@@ -1,3 +1,14 @@
 .ConfirmModal-content {
   margin-bottom: 7px;
+  font-family: Arial, sans-serif;
+}
+.ConfirmModal-confirm-btn {
+  width: 100%;
+  outline: none;
+  background-color: var(--body-accent-color);
+  border: none;
+  padding: 10px;
+}
+.ConfirmModal-confirm-btn:hover {
+  background-color: var(--window-accent-color);
 }

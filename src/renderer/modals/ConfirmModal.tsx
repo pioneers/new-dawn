@@ -35,7 +35,7 @@ export default function ConfirmModal({
   return (
     <Modal modalTitle={modalTitle} onClose={onClose} isActive={isActive}>
       <div className="ConfirmModal-content">{children}</div>
-      <button type="button" onClick={handleConfirm}>
+      <button className="ConfirmModal-confirm-btn" type="button" onClick={handleConfirm}>
         Confirm
       </button>
     </Modal>
