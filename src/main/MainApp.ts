@@ -209,8 +209,14 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       this.#preventQuit = false;
       this.#mainWindow.close();
     });
-    addRendererListener('main-update-robot-mode', this.#runtimeComms.sendRunMode.bind(this.#runtimeComms));
-    addRendererListener('main-robot-input', this.#runtimeComms.sendInputs.bind(this.#runtimeComms));
+    addRendererListener(
+      'main-update-robot-mode',
+      this.#runtimeComms.sendRunMode.bind(this.#runtimeComms),
+    );
+    addRendererListener(
+      'main-robot-input',
+      this.#runtimeComms.sendInputs.bind(this.#runtimeComms),
+    );
 
     try {
       this.#config = coerceToConfig(
