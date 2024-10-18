@@ -10,11 +10,14 @@
   align-items: center;
 }
 .Editor-file-name {
-  margin-right: 5px;
+  margin-right: 10px;
   font-family: Verdana, monospace;
 }
 .Editor-file-status {
   font-style: italic;
+  padding-top: 3px;
+  border-bottom: 1px dashed gray;
+  cursor: help;
 }
 .Editor-ace-wrapper {
   position: relative;
@@ -33,8 +36,8 @@
   font-weight: bold;
   align-items: center;
   justify-content: center;
-  padding: auto;
   color: white;
+  backdrop-filter: blur(2px);
 }
 .Editor-kbctrl-enabled .Editor-kbctrl-overlay {
   display: flex;
@@ -56,6 +59,7 @@
   flex-direction: row;
   padding: 5px 0 5px 20px;
   overflow-x: auto;
+  border-bottom: 4px double var(--body-accent-color);
 }
 .Editor-toolbar-group {
   margin-right: 20px;
