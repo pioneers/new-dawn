@@ -30,6 +30,7 @@ body {
   background-color: rgb(0 0 0 / 50%);
   display: none;
   z-index: 20;
+  backdrop-filter: blur(2px);
 }
 .App-modal-container:has(.modal-active) {
   display: block;
