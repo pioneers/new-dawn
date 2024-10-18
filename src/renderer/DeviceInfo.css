@@ -14,15 +14,24 @@
   font: bold 20px Verdana, sans-serif;
   user-select: all;
   margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .DeviceInfo-device-type {
   font-style: italic;
 }
+.DeviceInfo-device-props-wrapper {
+  margin: 5px 10px 0 10px;
+  overflow-x: auto;
+}
 .DeviceInfo-device-props {
   font-family: Verdana, sans-serif;
-  margin: 5px 0 0 10px;
-  width: 75%;
+  width: 100%;
+  height: 100%;
   user-select: text;
+}
+.DeviceInfo-prop-value {
+  text-align: right;
 }
 .DeviceInfo-disconnected {
   font: 15px Verdana, sans-serif;
