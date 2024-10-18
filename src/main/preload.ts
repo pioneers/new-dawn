@@ -13,6 +13,7 @@ import type {
   RendererPostConsoleData,
   RendererFileControlData,
   MainQuitData,
+  MainRobotInputData,
 } from '../common/IpcEventTypes';
 
 function sendMessage(channel: 'main-quit', data: MainQuitData): void;
@@ -23,6 +24,10 @@ function sendMessage(
 function sendMessage(
   channel: 'main-update-robot-mode',
   data: MainUpdateRobotModeData,
+): void;
+function sendMessage(
+  channel: 'main-robot-input',
+  data: MainRobotInputData,
 ): void;
 function sendMessage(channel: MainChannels, data?: any): void {
   ipcRenderer.send(channel, data);
