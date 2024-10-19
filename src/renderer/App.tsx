@@ -17,6 +17,7 @@ import ConfirmModal from './modals/ConfirmModal';
 import ConnectionConfigModal, {
   ConnectionConfigChangeEvent,
 } from './modals/ConnectionConfigModal';
+import HelpModal from './modals/HelpModal';
 import GamepadInfoModal from './modals/GamepadInfoModal';
 import ResizeBar from './ResizeBar';
 import {
@@ -403,6 +404,7 @@ export default function App() {
           onConnectionConfigModalOpen={() =>
             changeActiveModal('ConnectionConfig')
           }
+          onHelpModalOpen={() => changeActiveModal('Help')}
           dawnVersion={dawnVersion}
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}
@@ -471,6 +473,7 @@ export default function App() {
             FieldIPAddress={FieldIPAddress}
             FieldStationNum={FieldStationNum}
           />
+          <HelpModal isActive={activeModal === 'Help'} onClose={closeModal} />
           <GamepadInfoModal
             isActive={activeModal === 'GamepadInfo'}
             onClose={closeModal}

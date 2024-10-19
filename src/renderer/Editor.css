@@ -95,6 +95,7 @@
   transition: filter 0.25s;
   /* Fix other filter variables so transition is directly from black to blue: */
   filter: invert(0%) sepia(100%) hue-rotate(180deg) saturate(0);
+  pointer-events: none;
 }
 .Editor-tbbtn-toggled img {
   /* CSS filter witchcraft producing #0088ff */

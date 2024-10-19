@@ -16,9 +16,6 @@
 .Topbar-right-group {
   float: right;
 }
-.Topbar-tail {
-  clear: both;
-}
 .Topbar-dawn-version {
   font-size: 25px;
   margin-right: 40px;
@@ -32,6 +29,7 @@
   font-weight: bold;
   font-size: 15px;
 }
+
 .Topbar-robot-disconnected {
   background-color: indianred;
 }

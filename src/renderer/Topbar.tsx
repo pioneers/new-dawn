@@ -1,4 +1,7 @@
-import ConnectionConfigButton from './ConnectionConfigButton';
+import TopbarButton from './TopbarButton';
+import questionSvg from '../../assets/question.svg';
+import connectionSvg from '../../assets/network.svg';
+import noConnectionSvg from '../../assets/no-network.svg';
 import './Topbar.css';
 
 const GOOD_BATTERY_VOLTAGE = 11;
@@ -11,6 +14,7 @@ const FAIR_LATENCY_MS = 200;
  * @param props - props
  * @param props.onConnectionConfigModalOpen - handler called when the ConnectionConfigModal should
  * be opened
+ * @param props.onHelpModalOpen - handler called when the HelpModal should be opened
  * @param props.robotLatencyMs - latency in milliseconds of the connection to the currently
  * connected robot, or -1 if there is no robot connected
  * @param props.robotBatteryVoltage - battery voltage in volts of the currently connected robot. The
@@ -19,11 +23,13 @@ const FAIR_LATENCY_MS = 200;
  */
 export default function Topbar({
   onConnectionConfigModalOpen,
+  onHelpModalOpen,
   robotBatteryVoltage,
   robotLatencyMs,
   dawnVersion,
 }: {
   onConnectionConfigModalOpen: () => void;
+  onHelpModalOpen: () => void;
   robotBatteryVoltage: number;
   robotLatencyMs: number;
   dawnVersion: string;
@@ -66,9 +72,17 @@ export default function Topbar({
         {robotInfo}
       </div>
       <div className="Topbar-right-group">
-        <ConnectionConfigButton onModalOpen={onConnectionConfigModalOpen} />
+        <TopbarButton
+          onModalOpen={onHelpModalOpen}
+          alt="Dawn and robot API help"
+          src={questionSvg}
+        />
+        <TopbarButton
+          onModalOpen={onConnectionConfigModalOpen}
+          alt="Connection configuration"
+          src={robotLatencyMs === -1 ? noConnectionSvg : connectionSvg}
+        />
       </div>
-      <div className="Topbar-tail" />
     </div>
   );
 }
