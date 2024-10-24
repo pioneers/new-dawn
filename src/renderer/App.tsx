@@ -18,7 +18,12 @@ import ConnectionConfigModal, {
 } from './modals/ConnectionConfigModal';
 import GamepadInfoModal from './modals/GamepadInfoModal';
 import ResizeBar from './ResizeBar';
-import { Mode as RobotRunMode } from '../../protos-main/protos';
+import {
+  Mode as RobotRunMode,
+  Source as RobotInputSource,
+  Input as RobotInput,
+} from '../../protos-main/protos';
+import robotKeyNumberMap from './robotKeyNumberMap';
 import './App.css';
 
 const INITIAL_EDITOR_WIDTH_PERCENT = 0.7;
@@ -27,6 +32,7 @@ const MAX_EDITOR_WIDTH_PERCENT = 0.9;
 const MAX_CONSOLE_HEIGHT_PERCENT = 0.6;
 const MIN_EDITOR_WIDTH_PERCENT = 0.6;
 const MIN_CONSOLE_HEIGHT_PERCENT = 0.3;
+const GAMEPAD_UPDATE_PERIOD_MS = 50;
 
 /**
  * Top-level component that communicates with main process and contains most renderer state.
@@ -66,7 +72,7 @@ export default function App() {
   // closed)
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
   // Whether keyboard controls are enabled
-  const [kbCtrlEnabled, setKbCtrlEnabled] = useState(false);
+  const [keyboardControlsEnabled, setKeyboardControlsEnabled] = useState(false);
   // Whether the robot is running student code
   const [robotRunning, setRobotRunning] = useState(false);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
@@ -239,6 +245,63 @@ export default function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
   useEffect(() => {
+    // Storing bitmap as closure useful side effect of resetting bitmap to 0 when kb ctrl toggled
+    // Also using bigint so bitwise operators don't wrap to 32 bits
+    let keyboardBitmap = 0n;
+    const onKeyChange = (key: string, down: boolean) => {
+      if (key in robotKeyNumberMap) {
+        const bit = 1n << BigInt(robotKeyNumberMap[key]);
+        if (down) {
+          keyboardBitmap |= bit;
+        } else {
+          keyboardBitmap &= ~bit;
+        }
+      }
+    };
+    const onKeyDown = ({ key }: { key: string }) => onKeyChange(key, true);
+    window.addEventListener('keydown', onKeyDown);
+    const onKeyUp = ({ key }: { key: string }) => onKeyChange(key, false);
+    window.addEventListener('keyup', onKeyUp);
+    const gamepadUpdateInterval = setInterval(() => {
+      // Possible bug requires testing: gamepad indices are not preserved after filtering
+      // Filter removes disconnected and 'ghost'/duplicate gamepads (can be distinguished by
+      // different mapping)
+      const gamepadInputs = navigator
+        .getGamepads()
+        .filter((gp): gp is Gamepad => gp !== null && gp.mapping === 'standard')
+        .map((gp) => {
+          let buttonBitmap: number = 0;
+          gp.buttons.forEach((button, buttonIdx) => {
+            if (button.pressed) {
+              buttonBitmap |= 1 << buttonIdx;
+            }
+          });
+          return new RobotInput({
+            connected: gp.connected,
+            axes: gp.axes.slice(),
+            buttons: buttonBitmap,
+            source: RobotInputSource.GAMEPAD,
+          });
+        });
+      const keyboardInput = new RobotInput({
+        connected: keyboardControlsEnabled,
+        axes: [],
+        buttons: keyboardControlsEnabled ? Number(keyboardBitmap) : 0,
+        source: RobotInputSource.KEYBOARD,
+      });
+      // Possible bug requires testing: is Runtime ok with mixed input sources in same packet?
+      window.electron.ipcRenderer.sendMessage('main-robot-input', [
+        ...gamepadInputs,
+        keyboardInput,
+      ]);
+    }, GAMEPAD_UPDATE_PERIOD_MS);
+    return () => {
+      clearInterval(gamepadUpdateInterval);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+    };
+  }, [keyboardControlsEnabled]);
+  useEffect(() => {
     // Tests won't run main/preload.ts
     if (window.electron) {
       const listenerDestructors = [
@@ -349,7 +412,7 @@ export default function App() {
             content={editorContent}
             consoleAlert={consoleIsAlerted}
             consoleIsOpen={consoleIsOpen}
-            keyboardControlsEnabled={kbCtrlEnabled}
+            keyboardControlsEnabled={keyboardControlsEnabled}
             robotConnected={robotLatencyMs !== -1}
             robotRunning={robotRunning}
             onOpen={loadFile}
@@ -372,7 +435,7 @@ export default function App() {
               setConsoleIsAlerted(false);
             }}
             onToggleKeyboardControls={() => {
-              setKbCtrlEnabled((v) => !v);
+              setKeyboardControlsEnabled((v) => !v);
             }}
           />
           <ResizeBar

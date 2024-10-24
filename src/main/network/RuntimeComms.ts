@@ -167,11 +167,11 @@ export default class RuntimeComms {
 
   /**
    * Sends a new run mode.
-   * @param runMode - the new run mode.
+   * @param mode - the new run mode.
    */
-  sendRunMode(runMode: protos.IRunMode) {
+  sendRunMode(mode: protos.Mode) {
     if (this.#tcpSock) {
-      this.#tcpSock.write(this.#createPacket(MsgType.RUN_MODE, runMode));
+      this.#tcpSock.write(this.#createPacket(MsgType.RUN_MODE, { mode }));
     }
   }
 
@@ -210,9 +210,8 @@ export default class RuntimeComms {
   /**
    * Sends control inputs to the robot.
    * @param inputs - the inputs to send.
-   * @param source - the device that is the source of the inputs.
    */
-  sendInputs(inputs: protos.Input[], source: protos.Source) {
+  sendInputs(inputs: protos.Input[]) {
     // if (this.#udpSock) {
     //  this.udpSock.send(protos.UserInputs.encode({
     //    inputs: inputs.length ? inputs : [
@@ -222,13 +221,7 @@ export default class RuntimeComms {
     // }
     // Old Dawn sends inputs through TCP, though comments say this is just for 2021?
     if (this.#tcpSock) {
-      this.#tcpSock.write(
-        this.#createPacket(MsgType.INPUTS, {
-          inputs: inputs.length
-            ? inputs
-            : [protos.Input.create({ connected: false, source })],
-        }),
-      );
+      this.#tcpSock.write(this.#createPacket(MsgType.INPUTS, { inputs }));
     }
   }
 

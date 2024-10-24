@@ -1,6 +1,9 @@
 import type AppConsoleMessage from './AppConsoleMessage';
 import type DeviceInfoState from './DeviceInfoState';
-import { Mode as RobotRunMode } from '../../protos-main/protos';
+import {
+  Mode as RobotRunMode,
+  Input as RobotInput,
+} from '../../protos-main/protos';
 
 /**
  * IPC event channels used for communication from the main process to the renderer.
@@ -19,7 +22,8 @@ export type RendererChannels =
 export type MainChannels =
   | 'main-file-control'
   | 'main-quit'
-  | 'main-update-robot-mode';
+  | 'main-update-robot-mode'
+  | 'main-robot-input';
 
 /**
  * Data for the renderer-init event, sent when the renderer process has finished initializing and is
@@ -305,3 +309,8 @@ export interface MainQuitData {
  * a specified opmode.
  */
 export type MainUpdateRobotModeData = RobotRunMode;
+/**
+ * Data for the main-robot-input event sent by the renderer with gamepad or keyboard inputs bound
+ * for the robot.
+ */
+export type MainRobotInputData = RobotInput[];
