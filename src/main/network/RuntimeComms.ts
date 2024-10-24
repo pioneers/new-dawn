@@ -15,6 +15,8 @@ const PING_INTERVAL = 5000;
 
 /**
  * A type of packet.
+ * Note CHALLENGE_DATA type has been omitted since 2021 Dawn as Shepherd is now in charge of
+ * checking challenges.
  */
 enum MsgType {
   RUN_MODE = 0,
@@ -182,18 +184,6 @@ export default class RuntimeComms {
   sendDevicePreferences(deviceData: protos.IDevData) {
     if (this.#tcpSock) {
       this.#tcpSock.write(this.#createPacket(MsgType.DEVICE_DATA, deviceData));
-    }
-  }
-
-  /**
-   * Sends challenge data.
-   * @param data - the textual challenge data to send.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  sendChallengeInputs(data: protos.IText) {
-    if (this.#tcpSock) {
-      throw new Error('Not implemented.'); // MsgTypes from old dawn are inconsistent?
-      // this.#tcpSock.write(this.#createPacket(MsgType.CHALLENGE_DATA, data));
     }
   }
 
@@ -430,14 +420,6 @@ export default class RuntimeComms {
    * @returns The packet encoded in a Buffer
    */
   #createPacket(type: MsgType.TIME_STAMPS, data: protos.ITimeStamps): Buffer;
-
-  /*
-   * Encodes a challenge data packet.
-   * @param type - the packet type.
-   * @param data - the packet payload.
-   * @returns The packet encoded in a Buffer
-   */
-  // #createPacket(type: MsgType.CHALLENGE_DATA, data: protos.IText): Buffer;
 
   /**
    * Encodes an input state packet.
