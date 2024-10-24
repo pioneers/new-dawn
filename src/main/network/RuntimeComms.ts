@@ -322,9 +322,9 @@ export default class RuntimeComms {
     const { type, data } = packet;
     switch (type) {
       case MsgType.LOG:
-        // this.#commsListener.onReceiveRobotLogs(
-        //  protos.Text.decode(data).payload,
-        // );
+        this.#commsListener.onReceiveRobotLogs(
+          protos.Text.decode(data).payload,
+        );
         break;
       case MsgType.TIME_STAMPS:
         this.#commsListener.onReceiveLatency(
