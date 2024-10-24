@@ -21,6 +21,10 @@ import './Editor.css';
  */
 export type EditorContentStatus = 'clean' | 'dirty' | 'extDirty';
 
+/**
+ * A status of keyboard controls. Would be a simple boolean if we didn't need a way to prevent
+ * duplicate empty "keyboard disconnected" input objects to be sent to Runtime.
+ */
 export type KeyboardControlsStatus = 'off' | 'on' | 'offEdge';
 
 /**
@@ -135,7 +139,7 @@ export default function Editor({
   return (
     <div
       className={`Editor${
-        keyboardControlsEnabled == 'on' ? ' Editor-kbctrl-enabled' : ''
+        keyboardControlsEnabled === 'on' ? ' Editor-kbctrl-enabled' : ''
       }`}
       style={{ width }}
     >
@@ -272,7 +276,7 @@ export default function Editor({
           mode="python"
           onChange={onChange}
           value={content}
-          readOnly={keyboardControlsEnabled == 'on'}
+          readOnly={keyboardControlsEnabled === 'on'}
         />
       </div>
     </div>

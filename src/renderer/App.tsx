@@ -74,7 +74,9 @@ export default function App() {
   // closed)
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
   // Whether keyboard controls are enabled.
-  const [keyboardControlsEnabled, setKeyboardControlsEnabled] = useState('on' as KeyboardControlsStatus);
+  const [keyboardControlsEnabled, setKeyboardControlsEnabled] = useState(
+    'on' as KeyboardControlsStatus,
+  );
   // Whether the robot is running student code
   const [robotRunning, setRobotRunning] = useState(false);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
@@ -285,15 +287,17 @@ export default function App() {
             source: RobotInputSource.GAMEPAD,
           });
         });
-      if (keyboardControlsEnabled != 'off') {
+      if (keyboardControlsEnabled !== 'off') {
         // Possible bug requires testing: is Runtime ok with mixed input sources in same packet?
-        inputs.push(new RobotInput({
-          connected: keyboardControlsEnabled == 'on',
-          axes: [],
-          buttons: keyboardControlsEnabled ? Number(keyboardBitmap) : 0,
-          source: RobotInputSource.KEYBOARD,
-        }));
-        if (keyboardControlsEnabled == 'offEdge') {
+        inputs.push(
+          new RobotInput({
+            connected: keyboardControlsEnabled === 'on',
+            axes: [],
+            buttons: keyboardControlsEnabled ? Number(keyboardBitmap) : 0,
+            source: RobotInputSource.KEYBOARD,
+          }),
+        );
+        if (keyboardControlsEnabled === 'offEdge') {
           setKeyboardControlsEnabled('off');
         }
       }
@@ -443,7 +447,7 @@ export default function App() {
               setConsoleIsAlerted(false);
             }}
             onToggleKeyboardControls={() => {
-              setKeyboardControlsEnabled((v) => v == 'on' ? 'offEdge' : 'on');
+              setKeyboardControlsEnabled((v) => (v === 'on' ? 'offEdge' : 'on'));
             }}
           />
           <ResizeBar
