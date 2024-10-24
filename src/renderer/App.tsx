@@ -447,7 +447,9 @@ export default function App() {
               setConsoleIsAlerted(false);
             }}
             onToggleKeyboardControls={() => {
-              setKeyboardControlsEnabled((v) => (v === 'on' ? 'offEdge' : 'on'));
+              setKeyboardControlsEnabled((v) =>
+                v === 'on' ? 'offEdge' : 'on',
+              );
             }}
           />
           <ResizeBar
