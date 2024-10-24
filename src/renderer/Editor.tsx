@@ -21,6 +21,8 @@ import './Editor.css';
  */
 export type EditorContentStatus = 'clean' | 'dirty' | 'extDirty';
 
+export type KeyboardControlsStatus = 'off' | 'on' | 'offEdge';
+
 /**
  * Tooltips to display over the editor status indicator.
  */
@@ -101,7 +103,7 @@ export default function Editor({
   content: string;
   consoleAlert: boolean;
   consoleIsOpen: boolean;
-  keyboardControlsEnabled: boolean;
+  keyboardControlsEnabled: KeyboardControlsStatus;
   robotConnected: boolean;
   robotRunning: boolean;
   onOpen: () => void;
@@ -133,7 +135,7 @@ export default function Editor({
   return (
     <div
       className={`Editor${
-        keyboardControlsEnabled ? ' Editor-kbctrl-enabled' : ''
+        keyboardControlsEnabled == 'on' ? ' Editor-kbctrl-enabled' : ''
       }`}
       style={{ width }}
     >
@@ -270,7 +272,7 @@ export default function Editor({
           mode="python"
           onChange={onChange}
           value={content}
-          readOnly={keyboardControlsEnabled}
+          readOnly={keyboardControlsEnabled == 'on'}
         />
       </div>
     </div>

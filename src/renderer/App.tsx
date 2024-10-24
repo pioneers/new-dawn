@@ -8,7 +8,7 @@ import {
   useLayoutEffect,
 } from 'react';
 import Topbar from './Topbar';
-import Editor, { EditorContentStatus } from './Editor';
+import Editor, { EditorContentStatus, KeyboardControlsStatus } from './Editor';
 import DeviceInfo from './DeviceInfo';
 import AppConsole from './AppConsole';
 import type AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
@@ -73,8 +73,8 @@ export default function App() {
   // Whether a new message has been added to the AppConsole since it has been closed (if it is
   // closed)
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
-  // Whether keyboard controls are enabled
-  const [keyboardControlsEnabled, setKeyboardControlsEnabled] = useState(false);
+  // Whether keyboard controls are enabled.
+  const [keyboardControlsEnabled, setKeyboardControlsEnabled] = useState('on' as KeyboardControlsStatus);
   // Whether the robot is running student code
   const [robotRunning, setRobotRunning] = useState(false);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
@@ -268,7 +268,7 @@ export default function App() {
       // Possible bug requires testing: gamepad indices are not preserved after filtering
       // Filter removes disconnected and 'ghost'/duplicate gamepads (can be distinguished by
       // different mapping)
-      const gamepadInputs = navigator
+      const inputs = navigator
         .getGamepads()
         .filter((gp): gp is Gamepad => gp !== null && gp.mapping === 'standard')
         .map((gp) => {
@@ -285,17 +285,19 @@ export default function App() {
             source: RobotInputSource.GAMEPAD,
           });
         });
-      const keyboardInput = new RobotInput({
-        connected: keyboardControlsEnabled,
-        axes: [],
-        buttons: keyboardControlsEnabled ? Number(keyboardBitmap) : 0,
-        source: RobotInputSource.KEYBOARD,
-      });
-      // Possible bug requires testing: is Runtime ok with mixed input sources in same packet?
-      window.electron.ipcRenderer.sendMessage('main-robot-input', [
-        ...gamepadInputs,
-        keyboardInput,
-      ]);
+      if (keyboardControlsEnabled != 'off') {
+        // Possible bug requires testing: is Runtime ok with mixed input sources in same packet?
+        inputs.push(new RobotInput({
+          connected: keyboardControlsEnabled == 'on',
+          axes: [],
+          buttons: keyboardControlsEnabled ? Number(keyboardBitmap) : 0,
+          source: RobotInputSource.KEYBOARD,
+        }));
+        if (keyboardControlsEnabled == 'offEdge') {
+          setKeyboardControlsEnabled('off');
+        }
+      }
+      window.electron.ipcRenderer.sendMessage('main-robot-input', inputs);
     }, GAMEPAD_UPDATE_PERIOD_MS);
     return () => {
       clearInterval(gamepadUpdateInterval);
@@ -441,7 +443,7 @@ export default function App() {
               setConsoleIsAlerted(false);
             }}
             onToggleKeyboardControls={() => {
-              setKeyboardControlsEnabled((v) => !v);
+              setKeyboardControlsEnabled((v) => v == 'on' ? 'offEdge' : 'on');
             }}
           />
           <ResizeBar
