@@ -40,21 +40,21 @@ const CODE_FILE_FILTERS: FileFilter[] = [
  */
 const CONFIG_RELPATH = 'dawn-config.json';
 /**
- * Path on robot to upload student code to.
- */
-const REMOTE_CODE_PATH = '/home/pi/runtime/executor/studentcode.py';
-/**
  * Port to use when connecting to robot with SSH.
  */
 const ROBOT_SSH_PORT = 22;
 /**
  * Username to log in as when connecting to robot with SSH.
  */
-const ROBOT_SSH_USER = 'pi';
+const ROBOT_SSH_USER = 'ubuntu';
 /**
  * Password to log in with when connecting to robot with SSH.
  */
-const ROBOT_SSH_PASS = 'raspberry';
+const ROBOT_SSH_PASS = 'potato';
+/**
+ * Path on robot to upload student code to.
+ */
+const REMOTE_CODE_PATH = `/home/${ROBOT_SSH_USER}/runtime/executor/studentcode.py`;
 
 /**
  * Adds a listener for the main-quit IPC event fired by the renderer.
@@ -393,7 +393,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   }
 
   /**
-   * Tries to load code from a file into the editor. Fails is the user does not choose a path.
+   * Tries to load code from a file into the editor. Fails if the user does not choose a path.
    */
   #openCodeFile() {
     const success = this.#showCodePathDialog('load');
