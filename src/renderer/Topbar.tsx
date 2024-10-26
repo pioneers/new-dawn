@@ -58,7 +58,7 @@ export default function Topbar({
     ) : (
       <>
         <div className={`Topbar-info-card ${batteryColor}`}>
-          Battery: {robotBatteryVoltage} V
+          Battery: {Math.floor(robotBatteryVoltage * 100) / 100} V
         </div>
         <div className={`Topbar-info-card ${latencyColor}`}>
           Latency: {robotLatencyMs} ms

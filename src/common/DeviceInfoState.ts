@@ -1,7 +1,22 @@
 /**
+ * Numeric device types which appear before the underscore in device ids.
+ */
+export enum DeviceType {
+  DUMMY = 0,
+  LIMIT_SWITCH = 1,
+  LINE_FOLLOWER = 2,
+  BATTERY_BUZZER = 3,
+  SERVO_CONTROLLER = 4,
+  POLAR_BEAR = 5,
+  KOALA_BEAR = 6,
+  PDB = 7,
+  DISTANCE_SENSOR = 8,
+}
+
+/**
  * Maps device types to user-friendly names.
  */
-export const DeviceTypes: { [type: number]: string } = {
+export const DeviceTypeNames: { [type: number]: string } = {
   0: 'Dummy device',
   1: 'Limit switch',
   2: 'Line follower',

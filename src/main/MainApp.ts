@@ -3,7 +3,7 @@ import type { BrowserWindow, FileFilter } from 'electron';
 import fs from 'fs';
 import { version as dawnVersion } from '../../package.json';
 import AppConsoleMessage from '../common/AppConsoleMessage';
-import DeviceInfoState from '../common/DeviceInfoState';
+import DeviceInfoState, { DeviceType } from '../common/DeviceInfoState';
 import type {
   RendererChannels,
   RendererInitData,
@@ -273,6 +273,26 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
 
   onReceiveDevices(deviceInfoState: DeviceInfoState[]) {
     this.#sendToRenderer('renderer-devices-update', deviceInfoState);
+    const pdbs = deviceInfoState.filter((state) => state.id.split('_')[0] === DeviceType.PDB.toString());
+    if (pdbs.length != 1) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          'Not exactly one PDB is connected to the robot.',
+        ),
+      );
+    } else if (!('v_batt' in pdbs[0]) || Number.isNaN(Number(pdbs[0].v_batt))) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          'PDB does not have v_batt property or it is not a number.',
+        ),
+      );
+    } else {
+      this.#sendToRenderer('renderer-battery-update', Number(pdbs[0].v_batt));
+    }
   }
 
   onRuntimeTcpError(err: Error) {
