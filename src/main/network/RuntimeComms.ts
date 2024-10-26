@@ -277,9 +277,6 @@ export default class RuntimeComms {
           (Date.now() - Number(protos.TimeStamps.decode(data).dawnTimestamp)) / 2,
         );
         break;
-      // case MsgType.CHALLENGE_DATA:
-      // TODO: ??? Not implemented in old Dawn
-      // break;
       case MsgType.DEVICE_DATA:
         // Convert decoded Devices to DeviceInfoStates before passing to onReceiveDevices
         this.#commsListener.onReceiveDevices(
@@ -395,9 +392,6 @@ export default class RuntimeComms {
           data as protos.ITimeStamps,
         ).finish();
         break;
-      // case MsgType.CHALLENGE_DATA:
-      // packetData = protos.Text.encode(data as protos.IText).finish();
-      // break;
       case MsgType.INPUTS:
         // Source says input data isn't usually sent through TCP? What's that about?
         packetData = protos.UserInputs.encode(
