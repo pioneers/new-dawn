@@ -3,13 +3,11 @@ import {
   SocketAddress,
   createConnection as createTcpConnection,
 } from 'net';
-import { Socket as UDPSocket, createSocket as createUdpSocket } from 'dgram';
 import PacketStream from './PacketStream';
 import DeviceInfoState from '../../common/DeviceInfoState';
 import * as protos from '../../../protos-main/protos';
 
 const DEFAULT_RUNTIME_PORT = 8101;
-const UDP_PORT = 9001;
 const TCP_RECONNECT_DELAY = 2000;
 const PING_INTERVAL = 5000;
 
@@ -68,12 +66,6 @@ export interface RuntimeCommsListener {
    */
   onRuntimeTcpError: (err: Error) => void;
   /**
-   * Called when the UDP socket encounters an error or data received by the UDP socket is malformed.
-   * @param err - the error. Protobuf ProtocolErrors are likely the result of a UDP transmission
-   * error.
-   */
-  onRuntimeUdpError: (err: Error) => void;
-  /**
    * Called when a generic Runtime communications error is encountered.
    * @param err - the error.
    */
@@ -113,11 +105,6 @@ export default class RuntimeComms {
   #tcpSock: TCPSocket | null;
 
   /**
-   * The UDP socket listening for realtime data from Runtime.
-   */
-  #udpSock: UDPSocket | null;
-
-  /**
    * Whether communications are paused and reconnection should not be attempted automatically.
    */
   #tcpDisconnected: boolean;
@@ -132,13 +119,12 @@ export default class RuntimeComms {
     this.#runtimeAddr = '';
     this.#runtimePort = 0;
     this.#tcpSock = null;
-    this.#udpSock = null;
     this.#tcpDisconnected = false;
     this.#pingInterval = null;
   }
 
   /**
-   * Stops listening to the TCP and UDP sockets until resumed by setRobotIp.
+   * Stops listening to the TCP socket until resumed by setRobotIp.
    */
   disconnect() {
     this.#tcpDisconnected = true; // Don't reconnect
@@ -146,7 +132,6 @@ export default class RuntimeComms {
       clearInterval(this.#pingInterval);
     }
     this.#disconnectTcp();
-    this.#disconnectUdp();
   }
 
   /**
@@ -167,7 +152,7 @@ export default class RuntimeComms {
     } catch {
       return false;
     }
-    this.#connectTcp(); // Reconnect TCP, UDP will just start sending to new host
+    this.#connectTcp(); // Reconnect TCP
     return true;
   }
 
@@ -206,14 +191,6 @@ export default class RuntimeComms {
    * @param inputs - the inputs to send.
    */
   sendInputs(inputs: protos.Input[]) {
-    // if (this.#udpSock) {
-    //  this.udpSock.send(protos.UserInputs.encode({
-    //    inputs: inputs.length ? inputs : [
-    //      protos.Input.create({ connected: false, source })
-    //    ],
-    //  }), this.#runtimePort, this.#runtimeAddr);
-    // }
-    // Old Dawn sends inputs through TCP, though comments say this is just for 2021?
     if (this.#tcpSock) {
       this.#tcpSock.write(this.#createPacket(MsgType.INPUTS, { inputs }));
     }
@@ -263,39 +240,12 @@ export default class RuntimeComms {
   }
 
   /**
-   * Closes the old UDP socket if open, then makes and binds a new one.
-   */
-  #connectUdp() {
-    this.#disconnectUdp();
-    this.#udpSock = createUdpSocket({
-      type: 'udp4',
-      reuseAddr: true,
-    })
-      .on(
-        'error',
-        this.#commsListener.onRuntimeUdpError.bind(this.#commsListener),
-      )
-      .on('message', this.#handleUdpMessage.bind(this))
-      .bind(UDP_PORT);
-  }
-
-  /**
    * Ends and disconnects the TCP socket if open.
    */
   #disconnectTcp() {
     if (this.#tcpSock) {
       this.#tcpSock.resetAndDestroy();
       this.#tcpSock = null;
-    }
-  }
-
-  /**
-   * Closes the UDP socket if open.
-   */
-  #disconnectUdp() {
-    if (this.#udpSock) {
-      this.#udpSock.close();
-      this.#udpSock = null;
     }
   }
 
@@ -368,19 +318,6 @@ export default class RuntimeComms {
             )}`,
           ),
         );
-    }
-  }
-
-  /**
-   * Processes a Buffer assumed to be the payload of a device data packet with some error checking
-   * code because UDP packets might not be well-formed.
-   * @param data - the payload of the received packet.
-   */
-  #handleUdpMessage(data: Buffer) {
-    try {
-      this.#handlePacket({ type: MsgType.DEVICE_DATA, data });
-    } catch (err) {
-      this.#commsListener.onRuntimeUdpError(err as Error);
     }
   }
 
