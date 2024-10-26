@@ -203,7 +203,6 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     addRendererListener('main-quit', (data) => {
       // Save config that may have been changed while the program was running
       this.#config.robotIPAddress = data.robotIPAddress;
-      this.#config.robotSSHAddress = data.robotSSHAddress;
       this.#config.fieldIPAddress = data.fieldIPAddress;
       this.#config.fieldStationNumber = data.fieldStationNumber;
       this.#config.showDirtyUploadWarning = data.showDirtyUploadWarning;
@@ -253,7 +252,6 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#sendToRenderer('renderer-init', {
       dawnVersion,
       robotIPAddress: this.#config.robotIPAddress,
-      robotSSHAddress: this.#config.robotSSHAddress,
       fieldIPAddress: this.#config.fieldIPAddress,
       fieldStationNumber: this.#config.fieldStationNumber,
       showDirtyUploadWarning: this.#config.showDirtyUploadWarning,

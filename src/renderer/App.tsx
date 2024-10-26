@@ -104,7 +104,6 @@ export default function App() {
   );
   // Connection configuration
   const [IPAddress, setIPAddress] = useState('192.168.0.100');
-  const [SSHAddress, setSSHAddress] = useState('192.168.0.100');
   const [FieldIPAddress, setFieldIPAddress] = useState('localhost');
   const [FieldStationNum, setFieldStationNum] = useState('4');
   // Information about periperhals connected to the robot
@@ -128,8 +127,6 @@ export default function App() {
   const handleConnectionChange = (event: ConnectionConfigChangeEvent) => {
     if (event.name === 'IPAddress') {
       setIPAddress(event.value);
-    } else if (event.name === 'SSHAddress') {
-      setSSHAddress(event.value);
     } else if (event.name === 'FieldIPAddress') {
       setFieldIPAddress(event.value);
     } else if (event.name === 'FieldStationNum') {
@@ -180,14 +177,12 @@ export default function App() {
   const closeWindow = useCallback(() => {
     window.electron.ipcRenderer.sendMessage('main-quit', {
       robotIPAddress: IPAddress,
-      robotSSHAddress: SSHAddress,
       fieldIPAddress: FieldIPAddress,
       fieldStationNumber: FieldStationNum,
       showDirtyUploadWarning,
     });
   }, [
     IPAddress,
-    SSHAddress,
     FieldIPAddress,
     FieldStationNum,
     showDirtyUploadWarning,
@@ -219,13 +214,13 @@ export default function App() {
       if (editorStatus === 'clean' || activeModal === modalName) {
         window.electron.ipcRenderer.sendMessage('main-file-control', {
           type: isUpload ? 'upload' : 'download',
-          robotSSHAddress: SSHAddress,
+          robotSSHAddress: IPAddress,
         });
       } else {
         changeActiveModal(modalName);
       }
     },
-    [editorStatus, SSHAddress, activeModal],
+    [editorStatus, IPAddress, activeModal],
   );
   const createNewFile = useCallback(() => {
     if (editorStatus === 'clean' || activeModal === 'DirtyNewFileConfirm') {
@@ -316,7 +311,6 @@ export default function App() {
         window.electron.ipcRenderer.on('renderer-init', (data) => {
           setDawnVersion(data.dawnVersion);
           setIPAddress(data.robotIPAddress);
-          setSSHAddress(data.robotSSHAddress);
           setFieldIPAddress(data.fieldIPAddress);
           setFieldStationNum(data.fieldStationNumber);
           setShowDirtyUploadWarning(data.showDirtyUploadWarning);
@@ -477,7 +471,6 @@ export default function App() {
             onClose={closeModal}
             onChange={handleConnectionChange}
             IPAddress={IPAddress}
-            SSHAddress={SSHAddress}
             FieldIPAddress={FieldIPAddress}
             FieldStationNum={FieldStationNum}
           />

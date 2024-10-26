@@ -7,7 +7,6 @@ import './ConnectionConfigModal.css';
  */
 export type ConfigName =
   | 'IPAddress'
-  | 'SSHAddress'
   | 'FieldIPAddress'
   | 'FieldStationNum';
 /**
@@ -30,7 +29,6 @@ export interface ConnectionConfigChangeEvent {
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.isActive - whether to display the modal
  * @param props.IPAddress - displayed robot IP address
- * @param props.SSHAddress - displayed robot SSH address
  * @param props.FieldIPAddress - displayed field IP address
  * @param props.FieldStationNum - displayed field station number
  */
@@ -39,7 +37,6 @@ export default function ConnectionConfigModal({
   isActive,
   onChange,
   IPAddress,
-  SSHAddress,
   FieldIPAddress,
   FieldStationNum,
 }: {
@@ -51,7 +48,6 @@ export default function ConnectionConfigModal({
   onChange: (e: ConnectionConfigChangeEvent) => void;
   isActive: boolean;
   IPAddress: string;
-  SSHAddress: string;
   FieldIPAddress: string;
   FieldStationNum: string;
 }) {
@@ -73,22 +69,11 @@ export default function ConnectionConfigModal({
         htmlFor="ConnectionConfigModal-IPAddress"
         className="ConnectionConfigModal-config-field"
       >
-        IP Address:
+        Robot IP Address:
         <input
           name="ConnectionConfigModal-IPAddress"
           onChange={handleConfigChange}
           value={IPAddress}
-        />
-      </label>
-      <label
-        htmlFor="ConnectionConfigModal-SSHAddress"
-        className="ConnectionConfigModal-config-field"
-      >
-        SSH Address:
-        <input
-          name="ConnectionConfigModal-SSHAddress"
-          onChange={handleConfigChange}
-          value={SSHAddress}
         />
       </label>
       <div className="ConnectionConfigModal-section">
