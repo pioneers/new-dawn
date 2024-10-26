@@ -82,6 +82,10 @@ export interface RuntimeCommsListener {
    * Called when the TCP connection to the robot is lost for any reason.
    */
   onRuntimeDisconnect: () => void;
+  /**
+   * Called when a TCP connection to the robot is established.
+   */
+  onRuntimeConnect: () => void;
 }
 
 /**
@@ -299,6 +303,7 @@ export default class RuntimeComms {
    * Handler for TCP 'connect' event.
    */
   #handleTcpConnection() {
+    this.#commsListener.onRuntimeConnect();
     if (this.#tcpSock) {
       this.#tcpSock.write(new Uint8Array([1])); // Tell Runtime that we are Dawn, not Shepherd
     }

@@ -141,6 +141,12 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   #preventQuit: boolean;
 
   /**
+   * Whether error messages relating to connectivity will be suppressed. Used so disconnects only
+   * generate one log message and possibly (hopefully?) the causing error.
+   */
+  #suppressNetworkErrors: boolean;
+
+  /**
    * Persistent configuration loaded when MainApp is constructed and saved when the main window is
    * closed.
    */
@@ -165,6 +171,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#watcher = null;
     this.#watchDebounce = true;
     this.#preventQuit = true;
+    this.#suppressNetworkErrors = false;
     this.#codeTransfer = new CodeTransfer(
       REMOTE_CODE_PATH,
       ROBOT_SSH_PORT,
@@ -271,40 +278,53 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   }
 
   onRuntimeTcpError(err: Error) {
-    this.#sendToRenderer(
-      'renderer-post-console',
-      new AppConsoleMessage(
-        'dawn-err',
-        `Encountered TCP error when communicating with Runtime. ${err.toString()}`,
-      ),
-    );
+    if (!this.#suppressNetworkErrors) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          `Encountered TCP error when communicating with Runtime. ${err.toString()}`,
+        ),
+      );
+    }
   }
 
   onRuntimeUdpError(err: Error) {
-    this.#sendToRenderer(
-      'renderer-post-console',
-      new AppConsoleMessage(
-        'dawn-err',
-        `Encountered UDP error when communicating with Runtime. ${err.toString()}`,
-      ),
-    );
+    if (!this.#suppressNetworkErrors) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          `Encountered UDP error when communicating with Runtime. ${err.toString()}`,
+        ),
+      );
+    }
   }
 
   onRuntimeError(err: Error) {
-    this.#sendToRenderer(
-      'renderer-post-console',
-      new AppConsoleMessage(
-        'dawn-err',
-        `Encountered error when communicating with Runtime. ${err.toString()}`,
-      ),
-    );
+    if (!this.#suppressNetworkErrors) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          `Encountered error when communicating with Runtime. ${err.toString()}`,
+        ),
+      );
+    }
   }
 
   onRuntimeDisconnect() {
-    this.#sendToRenderer(
-      'renderer-post-console',
-      new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
-    );
+    if (!this.#suppressNetworkErrors) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
+      );
+      this.#suppressNetworkErrors = true;
+    }
+  }
+
+  onRuntimeConnect() {
+    this.#suppressNetworkErrors = false;
   }
 
   /**
