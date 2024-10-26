@@ -248,9 +248,6 @@ export default class RuntimeComms {
    * most recently known Runtime IP and port.
    */
   #connectTcp() {
-    this.#commsListener.onRuntimeError(
-      new Error('Attempting to connect tcp socket'),
-    );
     this.#tcpDisconnected = false;
     this.#disconnectTcp();
     const tcpStream = new PacketStream().on(

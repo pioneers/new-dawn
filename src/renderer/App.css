@@ -3,7 +3,7 @@ body {
 }
 
 .App {
-  --window-head-color: blue;
+  --window-head-color: navy;
   --window-head-text-color: white;
   --window-accent-color: grey;
   --body-color: white;
@@ -29,9 +29,10 @@ body {
   height: 100%;
   background-color: rgb(0 0 0 / 50%);
   display: none;
-  z-index: 4;
+  z-index: 20;
+  backdrop-filter: blur(2px);
 }
-.App-modal-container:has(.modal-active) {
+.App-modal-container:has(.Modal-active) {
   display: block;
 }
 .App-confirm-dialog-text {

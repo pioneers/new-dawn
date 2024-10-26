@@ -4,17 +4,17 @@
   font-family: Arial, sans-serif;
   border-bottom: 1px solid var(--body-accent-color);
 }
-.Topbar-left-group {
-  float: left;
+.Topbar > * {
+  height: 100%;
   display: flex;
   flex-direction: row;
   align-items: center;
 }
+.Topbar-left-group {
+  float: left;
+}
 .Topbar-right-group {
   float: right;
-}
-.Topbar-tail {
-  clear: both;
 }
 .Topbar-dawn-version {
   font-size: 25px;
@@ -29,18 +29,19 @@
   font-weight: bold;
   font-size: 15px;
 }
+
 .Topbar-robot-disconnected {
-  background-color: red;
+  background-color: indianred;
 }
 .Topbar-runtime-version {
   background-color: blue;
 }
 .Topbar-info-card-red {
-  background-color: red;
+  background-color: salmon;
 }
 .Topbar-info-card-yellow {
-  background-color: yellow;
+  background-color: orange;
 }
 .Topbar-info-card-green {
-  background-color: green;
+  background-color: limegreen;
 }

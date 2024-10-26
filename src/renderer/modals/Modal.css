@@ -6,8 +6,9 @@
   transform: translate(-50%, -50%);
   background-color: var(--body-color);
   border-radius: 10px;
+  font-family: Arial, sans-serif;
 }
-.modal-active {
+.Modal-active {
   display: block;
 }
 .Modal-title-bar {

@@ -23,7 +23,7 @@ export default function Modal({
   className?: string;
 }) {
   return (
-    <div className={`Modal${isActive ? ' modal-active' : ''}`}>
+    <div className={`Modal${isActive ? ' Modal-active' : ''}`}>
       <div className="Modal-title-bar">
         <span className="Modal-title">{modalTitle}</span>
         <button className="Modal-close-button" onClick={onClose} type="button">
