@@ -74,8 +74,8 @@ export default function App() {
   // closed)
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
   // Whether keyboard controls are enabled.
-  const [keyboardControlsEnabled, setKeyboardControlsEnabled] = useState(
-    'on' as KeyboardControlsStatus,
+  const [keyboardControlsStatus, setKeyboardControlsEnabled] = useState(
+    'off' as KeyboardControlsStatus,
   );
   // Whether the robot is running student code
   const [robotRunning, setRobotRunning] = useState(false);
@@ -282,17 +282,17 @@ export default function App() {
             source: RobotInputSource.GAMEPAD,
           });
         });
-      if (keyboardControlsEnabled !== 'off') {
+      if (keyboardControlsStatus !== 'off') {
         // Possible bug requires testing: is Runtime ok with mixed input sources in same packet?
         inputs.push(
           new RobotInput({
-            connected: keyboardControlsEnabled === 'on',
+            connected: keyboardControlsStatus === 'on',
             axes: [],
-            buttons: keyboardControlsEnabled ? Number(keyboardBitmap) : 0,
+            buttons: keyboardControlsStatus ? Number(keyboardBitmap) : 0,
             source: RobotInputSource.KEYBOARD,
           }),
         );
-        if (keyboardControlsEnabled === 'offEdge') {
+        if (keyboardControlsStatus === 'offEdge') {
           setKeyboardControlsEnabled('off');
         }
       }
@@ -303,7 +303,7 @@ export default function App() {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [keyboardControlsEnabled]);
+  }, [keyboardControlsStatus]);
   useEffect(() => {
     // Tests won't run main/preload.ts
     if (window.electron) {
@@ -418,7 +418,7 @@ export default function App() {
             content={editorContent}
             consoleAlert={consoleIsAlerted}
             consoleIsOpen={consoleIsOpen}
-            keyboardControlsEnabled={keyboardControlsEnabled}
+            keyboardControlsStatus={keyboardControlsStatus}
             robotConnected={robotLatencyMs !== -1}
             robotRunning={robotRunning}
             onOpen={loadFile}
