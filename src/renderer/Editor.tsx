@@ -165,7 +165,11 @@ export default function Editor({
           <button type="button" onClick={onNewFile} title="New File">
             <img src={newFileSvg} alt="New file" />
           </button>
-          <button type="button" onClick={onLoadStaffCode} title="Load staff code">
+          <button
+            type="button"
+            onClick={onLoadStaffCode}
+            title="Load staff code"
+          >
             <img src={pieSvg} alt="Load staff code" />
           </button>
         </div>

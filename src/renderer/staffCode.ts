@@ -1,3 +1,6 @@
+/**
+ * Sample code written by PiE staff that may be loaded into the editor with a toolbar button.
+ */
 export default `# NOTE FROM PIE STAFF
 # This code has not been tested thoroughly on robots; it is meant to be guidance to help improve
 # the code you currently have. It will be tested throughout the week and will be available for you
@@ -95,4 +98,4 @@ def teleop_main():
         Robot.set_value(MOTOR_ID, "velocity_" + RIGHT_MTR, -1.0)
     else:
         Robot.set_value(MOTOR_ID, "velocity_" + RIGHT_MTR, 0.0)
-`;
+` as string;

@@ -239,7 +239,10 @@ export default function App() {
     }
   }, [activeModal, editorStatus]);
   const loadStaffCode = useCallback(() => {
-    if (editorStatus === 'clean' || activeModal === 'DirtyLoadStaffCodeConfirm') {
+    if (
+      editorStatus === 'clean' ||
+      activeModal === 'DirtyLoadStaffCodeConfirm'
+    ) {
       setEditorContent(staffCodeSource);
       setEditorStatus('dirty');
     } else {
@@ -559,7 +562,8 @@ export default function App() {
             modalTitle="Confirm load staff code"
           >
             <p className="App-confirm-dialog-text">
-              You have unsaved changes. Really replace contents of editor with staff code?
+              You have unsaved changes. Really replace contents of editor with
+              staff code?
             </p>
           </ConfirmModal>
         </div>
