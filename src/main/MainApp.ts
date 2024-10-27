@@ -273,13 +273,15 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
 
   onReceiveDevices(deviceInfoState: DeviceInfoState[]) {
     this.#sendToRenderer('renderer-devices-update', deviceInfoState);
-    const pdbs = deviceInfoState.filter((state) => state.id.split('_')[0] === DeviceType.PDB.toString());
-    if (pdbs.length != 1) {
+    const pdbs = deviceInfoState.filter(
+      (state) => state.id.split('_')[0] === DeviceType.PDB.toString(),
+    );
+    if (pdbs.length !== 1) {
       this.#sendToRenderer(
         'renderer-post-console',
         new AppConsoleMessage(
           'dawn-err',
-          'Not exactly one PDB is connected to the robot.',
+          'Cannot read battery voltage. Not exactly one PDB is connected to the robot.',
         ),
       );
     } else if (!('v_batt' in pdbs[0]) || Number.isNaN(Number(pdbs[0].v_batt))) {
@@ -302,18 +304,6 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
         new AppConsoleMessage(
           'dawn-err',
           `Encountered TCP error when communicating with Runtime. ${err.toString()}`,
-        ),
-      );
-    }
-  }
-
-  onRuntimeUdpError(err: Error) {
-    if (!this.#suppressNetworkErrors) {
-      this.#sendToRenderer(
-        'renderer-post-console',
-        new AppConsoleMessage(
-          'dawn-err',
-          `Encountered UDP error when communicating with Runtime. ${err.toString()}`,
         ),
       );
     }

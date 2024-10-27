@@ -218,7 +218,9 @@ export default function Editor({
             type="button"
             onClick={onToggleKeyboardControls}
             className={
-              keyboardControlsStatus === 'on' ? 'Editor-tbbtn-toggled' : undefined
+              keyboardControlsStatus === 'on'
+                ? 'Editor-tbbtn-toggled'
+                : undefined
             }
             title="Toggle keyboard controls"
           >

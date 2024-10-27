@@ -181,12 +181,7 @@ export default function App() {
       fieldStationNumber: FieldStationNum,
       showDirtyUploadWarning,
     });
-  }, [
-    IPAddress,
-    FieldIPAddress,
-    FieldStationNum,
-    showDirtyUploadWarning,
-  ]);
+  }, [IPAddress, FieldIPAddress, FieldStationNum, showDirtyUploadWarning]);
   const saveFile = useCallback(
     (forceDialog: boolean) => {
       window.electron.ipcRenderer.sendMessage('main-file-control', {

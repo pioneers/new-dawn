@@ -5,10 +5,7 @@ import './ConnectionConfigModal.css';
 /**
  * Names of fields in ConnectionConfigModal.
  */
-export type ConfigName =
-  | 'IPAddress'
-  | 'FieldIPAddress'
-  | 'FieldStationNum';
+export type ConfigName = 'IPAddress' | 'FieldIPAddress' | 'FieldStationNum';
 /**
  * Event data for ConnectionConfigModal onChange handler.
  */
