@@ -7,6 +7,7 @@ import openSvg from '../../assets/open.svg';
 import saveSvg from '../../assets/save.svg';
 import saveAsSvg from '../../assets/save-as.svg';
 import newFileSvg from '../../assets/new-file.svg';
+import pieSvg from '../../assets/pie.svg';
 import consoleSvg from '../../assets/console.svg';
 import consoleClearSvg from '../../assets/console-clear.svg';
 import zoomInSvg from '../../assets/zoom-in.svg';
@@ -59,6 +60,8 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
  * buttons are enabled.
  * @param props.onOpen - handler called when the user wants to open a file in the editor
  * @param props.onNewFile - handler called when the user wants to close the current file
+ * @param props.onLoadStaffCode - handler called when the user wants to load staff code into the
+ * editor
  * @param props.onRobotUpload - handler called when the user wants to upload the open file to the
  * robot
  * @param props.onRobotDownload - handler called when the user wants to download code from the
@@ -82,6 +85,7 @@ export default function Editor({
   onOpen,
   onSave,
   onNewFile,
+  onLoadStaffCode,
   onRobotUpload,
   onRobotDownload,
   onStartRobot,
@@ -111,6 +115,7 @@ export default function Editor({
    */
   onSave: (forceDialog: boolean) => void;
   onNewFile: () => void;
+  onLoadStaffCode: () => void;
   onRobotUpload: () => void;
   onRobotDownload: () => void;
   /**
@@ -158,7 +163,10 @@ export default function Editor({
             <img src={saveAsSvg} alt="Save As" />
           </button>
           <button type="button" onClick={onNewFile} title="New File">
-            <img src={newFileSvg} alt="New File" />
+            <img src={newFileSvg} alt="New file" />
+          </button>
+          <button type="button" onClick={onLoadStaffCode} title="Load staff code">
+            <img src={pieSvg} alt="Load staff code" />
           </button>
         </div>
         <div className="Editor-toolbar-group">
