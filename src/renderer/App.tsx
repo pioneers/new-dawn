@@ -26,6 +26,7 @@ import {
   Input as RobotInput,
 } from '../../protos-main/protos';
 import robotKeyNumberMap from './robotKeyNumberMap';
+import staffCodeSource from './staffCode';
 import './App.css';
 
 const INITIAL_EDITOR_WIDTH_PERCENT = 0.7;
@@ -229,6 +230,17 @@ export default function App() {
       changeActiveModal('DirtyNewFileConfirm');
     }
   }, [activeModal, editorStatus]);
+  const loadStaffCode = useCallback(() => {
+    if (
+      editorStatus === 'clean' ||
+      activeModal === 'DirtyLoadStaffCodeConfirm'
+    ) {
+      setEditorContent(staffCodeSource);
+      setEditorStatus('dirty');
+    } else {
+      changeActiveModal('DirtyLoadStaffCodeConfirm');
+    }
+  }, [activeModal, editorStatus]);
 
   // Update windowSize:
   useLayoutEffect(() => {
@@ -419,6 +431,7 @@ export default function App() {
             onOpen={loadFile}
             onSave={saveFile}
             onNewFile={createNewFile}
+            onLoadStaffCode={loadStaffCode}
             onRobotUpload={() => uploadDownloadFile(true)}
             onRobotDownload={() => uploadDownloadFile(false)}
             onStartRobot={(opmode: 'auto' | 'teleop') => {
@@ -536,6 +549,17 @@ export default function App() {
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really close file?
+            </p>
+          </ConfirmModal>
+          <ConfirmModal
+            isActive={activeModal === 'DirtyLoadStaffCodeConfirm'}
+            onClose={closeModal}
+            onConfirm={loadStaffCode}
+            modalTitle="Confirm load staff code"
+          >
+            <p className="App-confirm-dialog-text">
+              You have unsaved changes. Really replace contents of editor with
+              staff code?
             </p>
           </ConfirmModal>
         </div>
