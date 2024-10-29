@@ -1,4 +1,4 @@
-import DeviceInfoState, { DeviceTypes } from '../common/DeviceInfoState';
+import DeviceInfoState, { DeviceTypeNames } from '../common/DeviceInfoState';
 import './DeviceInfo.css';
 
 /**
@@ -19,8 +19,8 @@ export default function DeviceInfo({
         deviceStates.map((device) => {
           const deviceTypeNum = Number(device.id.split('_')[0]);
           const deviceType =
-            deviceTypeNum in DeviceTypes
-              ? DeviceTypes[deviceTypeNum]
+            deviceTypeNum in DeviceTypeNames
+              ? DeviceTypeNames[deviceTypeNum]
               : 'Unknown device';
           return (
             <div className="DeviceInfo-device" key={device.id}>

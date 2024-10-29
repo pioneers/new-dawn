@@ -22,6 +22,12 @@ import './Editor.css';
 export type EditorContentStatus = 'clean' | 'dirty' | 'extDirty';
 
 /**
+ * A status of keyboard controls. Would be a simple boolean if we didn't need a way to prevent
+ * duplicate empty "keyboard disconnected" input objects to be sent to Runtime.
+ */
+export type KeyboardControlsStatus = 'off' | 'on' | 'offEdge';
+
+/**
  * Tooltips to display over the editor status indicator.
  */
 const STATUS_TOOLTIPS: { [k in EditorContentStatus]: string } = {
@@ -51,7 +57,7 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
  * indicating the user's attention is needed
  * @param props.consoleIsOpen - whether to show a different icon for the toggle console button
  * indicating the console is open
- * @param props.keyboardControlsEnabled - whether to show a different icon for the toggle keyboard
+ * @param props.keyboardControlsStatus - whether to show a different icon for the toggle keyboard
  * control button indicating keyboard control is enabled
  * @param props.robotConnected - whether toolbar buttons requiring a connection to the robot should
  * be enabled.
@@ -76,7 +82,7 @@ export default function Editor({
   content,
   consoleAlert,
   consoleIsOpen,
-  keyboardControlsEnabled,
+  keyboardControlsStatus,
   robotConnected,
   robotRunning,
   onOpen,
@@ -101,7 +107,7 @@ export default function Editor({
   content: string;
   consoleAlert: boolean;
   consoleIsOpen: boolean;
-  keyboardControlsEnabled: boolean;
+  keyboardControlsStatus: KeyboardControlsStatus;
   robotConnected: boolean;
   robotRunning: boolean;
   onOpen: () => void;
@@ -133,7 +139,7 @@ export default function Editor({
   return (
     <div
       className={`Editor${
-        keyboardControlsEnabled ? ' Editor-kbctrl-enabled' : ''
+        keyboardControlsStatus === 'on' ? ' Editor-kbctrl-enabled' : ''
       }`}
       style={{ width }}
     >
@@ -212,7 +218,9 @@ export default function Editor({
             type="button"
             onClick={onToggleKeyboardControls}
             className={
-              keyboardControlsEnabled ? 'Editor-tbbtn-toggled' : undefined
+              keyboardControlsStatus === 'on'
+                ? 'Editor-tbbtn-toggled'
+                : undefined
             }
             title="Toggle keyboard controls"
           >
@@ -270,7 +278,7 @@ export default function Editor({
           mode="python"
           onChange={onChange}
           value={content}
-          readOnly={keyboardControlsEnabled}
+          readOnly={keyboardControlsStatus === 'on'}
         />
       </div>
     </div>
