@@ -27,7 +27,7 @@ export default function Modal({
       <div className="Modal-title-bar">
         <span className="Modal-title">{modalTitle}</span>
         <button className="Modal-close-button" onClick={onClose} type="button">
-          X
+          &times;
         </button>
       </div>
       <div className={`Modal-content ${className}`}>{children}</div>

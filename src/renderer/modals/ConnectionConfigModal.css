@@ -1,26 +1,66 @@
 .ConnectionConfigModal-content {
   font-family: Arial, sans-serif;
+  padding: 24px;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
-.ConnectionConfigModal-config-field {
+
+.ConnectionConfigModal-config-field:first-child {
   display: block;
-  padding: 2px 0 2px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: var(--window-head-color);
 }
+
 .ConnectionConfigModal-section .ConnectionConfigModal-config-field {
-  padding-left: 12px;
+  padding-left: 0;
 }
+
 .ConnectionConfigModal-config-field input {
-  margin-left: 4px;
-  border: none;
-  border-bottom: 1px solid var(--window-accent-color);
+  min-width: 200px;
+  display: block;
+  margin-top: 5px;
+  padding: 10px;
+  border: 1px solid var(--window-accent-color);
+  border-radius: 5px;
   outline: none;
   font-size: 16px;
+  transition: border-color 0.3s ease;
 }
-.ConnectionConfigModal-config-field input:focus{
+
+.ConnectionConfigModal-config-field input:focus {
   border-color: var(--window-head-color);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
+
+.ConnectionConfigModal-config-field-2 {
+  display: block;
+  margin-top: 10px;
+}
+
+.ConnectionConfigModal-section input {
+  font-size: 14px;
+}
+
+.ConnectionConfigModal-section .ConnectionConfigModal-config-field {
+  font-size: 14px;
+}
+
+.ConnectionConfigModal-section .ConnectionConfigModal-config-field::before {
+  content: '•';
+  color: #000;
+  margin-right: 8px;
+}
+
 .ConnectionConfigModal-section:not(:first-child) {
-  margin-top: 8px;
+  margin-top: 15px;
 }
+
 .ConnectionConfigModal-section-header {
-  padding: 4px 0 4px 0;
+  padding: 10px 0;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 10px;
+  color: var(--window-head-color);
 }

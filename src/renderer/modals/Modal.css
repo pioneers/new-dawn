@@ -7,34 +7,44 @@
   background-color: var(--body-color);
   border-radius: 10px;
   font-family: Arial, sans-serif;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
 }
+
 .Modal-active {
   display: block;
 }
+
 .Modal-title-bar {
-  white-space: nowrap;
-  padding: 10px 10px 10px 20px;
+  padding: 4px 18px;
   background-color: var(--window-head-color);
   border-radius: 10px 10px 0 0;
   color: var(--window-head-text-color);
   font-family: Tahoma, sans-serif;
-  height: 40px;
-  margin: auto 0 auto 0;
+  height: 50px;
   display: flex;
-  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
 }
+
+.Modal-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
 .Modal-close-button {
-  position: absolute;
-  right: 10px;
+  margin-top: 2px;
+  margin-left: auto;
   background-color: transparent;
   border: none;
   color: var(--window-head-text-color);
   font-weight: bold;
   cursor: pointer;
-  width: 40px;
-  height: 40px;
+  font-size: 22px;
 }
+
 .Modal-content {
   padding: 20px;
+  max-height: 400px;
+  overflow-y: auto;
 }
