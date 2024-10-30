@@ -25,19 +25,28 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       ]);
     }
   };
-  const makeContextCompleter = (lastTokens: string, completions: Ace.Completion[]) => ({
+  // $ is interpreted as caret location. If not present, assumed to be at end
+  const makeContextCompleter = (lastTokens: string[], completions: Ace.Completion[]) => ({
     getCompletions: (_editor: Ace.Editor, session: Ace.EditSession, pos: Ace.Point, _prefix: string, callback: Ace.CompleterCallback) => {
       const iter = new AceTokenIterator(session, pos.row, pos.column);
       let buf = '';
-      const maybePartialToken = iter.getCurrentToken() !== undefined ? iter.getCurrentToken().value.trim() : '';
-      while (iter.stepBackward() !== null && buf.length < lastTokens.length) {
+      const curToken = iter.getCurrentToken() || null;
+      let positionInLastTokens = curToken && curToken.start !== undefined ? pos.column - curToken.start : 0;
+      console.log(curToken, curToken, curToken.start !== undefined, positionInLastTokens);
+      const maxLength = lastTokens.map(s => s.length).reduce(Math.max);
+      while (iter.stepBackward() !== null && buf.length < maxLength) {
         const token = iter.getCurrentToken();
-        console.log(token.type, token.value);
         if (token.type !== 'comment') {
           buf = token.value.trim() + buf;
+          positionInLastTokens += buf.length;
         }
       }
-      callback(null, buf.endsWith(lastTokens) || (buf + maybePartialToken).endsWith(lastTokens) ? completions : []);
+      const isContext = lastTokens.map(s => {
+        const caretLoc = s.indexOf('$') === -1 ? s.length : s.indexOf('$');
+        const replaced = s.replace('$', '');
+        return positionInLastTokens == caretLoc && buf.endsWith(replaced);
+      }).includes(true);
+      callback(null, isContext ? completions : []);
     }
   });
   const adaptGlobalCompleter = (completer: Completer) => ({
@@ -62,7 +71,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
   });
   editor.completers = [
     adaptGlobalCompleter(globalCompleter),
-    makeContextCompleter('Robot.', [
+    makeContextCompleter(['Robot', 'Robot.'], [
       {
         value: 'get_value',
         meta: 'PiE API',
@@ -99,7 +108,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
         score: compScore,
       },
     ]),
-    makeContextCompleter('Gamepad.', [
+    makeContextCompleter(['Gamepad', 'Gamepad.'], [
       {
         value: 'available',
         meta: 'PiE API',
@@ -111,7 +120,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
         score: compScore,
       },
     ]),
-    makeContextCompleter('Gamepad.get_value(', [
+    makeContextCompleter(['Gamepad.get_value(', 'Gamepad.get_value($)'], [
       {
         value: '"button_a"',
         meta: 'PiE API',
@@ -198,7 +207,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
         score: compScore,
       },
     ]),
-    makeContextCompleter('Keyboard.', [
+    makeContextCompleter(['Keyboard', 'Keyboard.'], [
       {
         value: 'available',
         meta: 'PiE API',
@@ -210,7 +219,9 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
         score: compScore,
       },
     ]),
-    makeContextCompleter('Keyboard.get_value('),
+    makeContextCompleter(['Keyboard.get_value(', 'Keyboard.get_value($)'], [
+
+    ]),
     ...editor.completers.map(adaptGlobalCompleter),
   ];
 }
