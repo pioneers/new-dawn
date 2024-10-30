@@ -1,6 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Ace } from 'ace-builds';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
+//import 'ace-builds/src-noconflict/snippets-python';
+import 'ace-builds/src-noconflict/ext-language_tools';
+import 'ace-builds/src-noconflict/ext-searchbox';
 import uploadSvg from '../../assets/upload.svg';
 import downloadSvg from '../../assets/download.svg';
 import openSvg from '../../assets/open.svg';
@@ -14,6 +18,7 @@ import zoomOutSvg from '../../assets/zoom-out.svg';
 import startRobot from '../../assets/start-robot.svg';
 import stopRobot from '../../assets/stop-robot.svg';
 import keyboardKeySvg from '../../assets/keyboard-key.svg';
+import addEditorAutocomplete from './addEditorAutocomplete';
 import './Editor.css';
 
 /**
@@ -125,10 +130,16 @@ export default function Editor({
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
+  const editorRef = useRef(null as Ace.Editor | null);
 
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
   };
+  useEffect(() => {
+    if (editorRef.current !== null) {
+      addEditorAutocomplete(editorRef.current.editor);
+    }
+  }, [editorRef]);
 
   return (
     <div
@@ -271,6 +282,10 @@ export default function Editor({
           onChange={onChange}
           value={content}
           readOnly={keyboardControlsEnabled}
+          ref={editorRef}
+          enableBasicAutocompletion={true}
+          enableLiveAutocompletion={true}
+          enableSnippets={true}
         />
       </div>
     </div>
