@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { Ace } from 'ace-builds';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 // import 'ace-builds/src-noconflict/snippets-python';
@@ -130,7 +129,7 @@ export default function Editor({
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
-  const editorRef = useRef(null as Ace.Editor | null);
+  const editorRef = useRef(null as AceEditor | null);
 
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
