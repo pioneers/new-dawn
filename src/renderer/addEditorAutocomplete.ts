@@ -14,16 +14,19 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
   const makeContextCompleter = (lastTokens: string[], completions: Ace.Completion[]) => ({
     getCompletions: (_editor: Ace.Editor, session: Ace.EditSession, pos: Ace.Point, _prefix: string, callback: Ace.CompleterCallback) => {
       const iter = new AceTokenIterator(session, pos.row, pos.column);
-      let buf = '';
-      const curToken = iter.getCurrentToken() || null;
-      let positionInLastTokens = curToken && curToken.start !== undefined ? pos.column - curToken.start : 0;
-      console.log(curToken, curToken, curToken.start !== undefined, positionInLastTokens);
+      const firstToken = iter.getCurrentToken();
+      if (firstToken === undefined || firstToken.type === 'comment') {
+        return;
+      }
+      let buf = firstToken.value.trim();
+      let positionInLastTokens = buf.length;
       const maxLength = Math.max.apply(Math, lastTokens.map(s => s.length));
       while (iter.stepBackward() !== null && buf.length < maxLength) {
         const token = iter.getCurrentToken();
         if (token.type !== 'comment') {
-          buf = token.value.trim() + buf;
-          positionInLastTokens += buf.length;
+          const tokenStr = token.value.trim();
+          buf = tokenStr + buf;
+          positionInLastTokens += tokenStr.length;
         }
       }
       const isContext = lastTokens.map(s => {
@@ -53,6 +56,17 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
     },
     exec: () => {
       editor.insert('.');
+      editor.execCommand('startAutocomplete');
+    }
+  });
+  editor.commands.addCommand({
+    name: 'parenAutoComplete',
+    bindKey: {
+      win: '(',
+      mac: '(',
+    },
+    exec: () => {
+      editor.insert('(');
       editor.execCommand('startAutocomplete');
     }
   });
