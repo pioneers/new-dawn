@@ -1,7 +1,7 @@
 import { Ace, require as acequire } from 'ace-builds';
 import robotKeyNumberMap from './robotKeyNumberMap';
 
-const AceTokenIterator = acequire('ace/token_iterator').TokenIterator;
+const { TokenIterator } = acequire('ace/token_iterator');
 
 /**
  * Adds PiE API completers to the given editor.
@@ -53,7 +53,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       _prefix: string,
       callback: Ace.CompleterCallback,
     ) => {
-      const iter = new AceTokenIterator(session, pos.row, pos.column);
+      const iter = new TokenIterator(session, pos.row, pos.column);
       const firstToken = iter.getCurrentToken();
       if (firstToken === undefined || firstToken.type === 'comment') {
         return;
@@ -92,7 +92,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       prefix: string,
       callback: Ace.CompleterCallback,
     ) => {
-      const iter = new AceTokenIterator(session, pos.row, pos.column);
+      const iter = new TokenIterator(session, pos.row, pos.column);
       const curTokenDot =
         iter.getCurrentToken() !== undefined &&
         iter.getCurrentToken().value === '.';
