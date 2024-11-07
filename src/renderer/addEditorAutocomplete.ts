@@ -3,6 +3,10 @@ import robotKeyNumberMap from './robotKeyNumberMap';
 
 const AceTokenIterator = acequire('ace/token_iterator').TokenIterator;
 
+/**
+ * Adds PiE API completers to the given editor.
+ * @param editor - the editor to modify
+ */
 export default function addEditorAutocomplete(editor: Ace.Editor) {
   const compScore = 1; // Override 'local' completions
   const globalCompleter = {
@@ -23,7 +27,21 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       );
     },
   };
-  // $ is interpreted as caret location. If not present, assumed to be at end
+  /**
+   * Creates a completer that only shows its completions when the tokens around the caret
+   * match one of the given lastToken strings.
+   * @param lastTokens - the array of strings to match the current and previous tokens against. $ is
+   * interpreted as the position of the caret in the current token. If ommitted, the matching caret
+   * position is assumed to be at the end. Any occurrences of $ in lastToken strings are removed
+   * from the match.
+   * @param completions - the array of completions to show if the tokens around the caret are
+   * matched with one of the lastToken strings. Characters before the first occurrence of $ in the
+   * value property of a completion and after the second are intrepreted as optional. A leading
+   * sequence of optional prefix characters and trailing sequence of optional suffix characters
+   * around the caret are removed from the completion. If ommitted, no part of the completion value
+   * is considered optional. Any occurrences of $ in completion values are removed.
+   * @return The created completer.
+   */
   const makeContextCompleter = (
     lastTokens: string[],
     completions: Ace.Completion[],
@@ -61,6 +79,11 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       callback(null, isContext ? completions : []);
     },
   });
+  /**
+   * Wraps a completer so it does not trigger if the current or preceeding token is a dot.
+   * @param completer - the completer to wrap.
+   * @return The wrapped completer.
+   */
   const adaptGlobalCompleter = (completer: Ace.Completer) => ({
     getCompletions: (
       _editor: Ace.Editor,
