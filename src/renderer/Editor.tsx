@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Ace } from 'ace-builds';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
-//import 'ace-builds/src-noconflict/snippets-python';
+// import 'ace-builds/src-noconflict/snippets-python';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/ext-searchbox';
 import uploadSvg from '../../assets/upload.svg';
@@ -283,9 +283,9 @@ export default function Editor({
           value={content}
           readOnly={keyboardControlsEnabled}
           ref={editorRef}
-          enableBasicAutocompletion={true}
-          enableLiveAutocompletion={true}
-          enableSnippets={true}
+          enableBasicAutocompletion
+          enableLiveAutocompletion
+          enableSnippets
         />
       </div>
     </div>
