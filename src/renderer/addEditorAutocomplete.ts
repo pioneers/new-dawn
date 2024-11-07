@@ -1,4 +1,5 @@
 import { Ace, acequire } from 'ace-builds';
+import robotKeyNumberMap from './robotKeyNumberMap';
 
 const AceTokenIterator = acequire('ace/token_iterator').TokenIterator;
 
@@ -33,7 +34,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       const curToken = iter.getCurrentToken() || null;
       let positionInLastTokens = curToken && curToken.start !== undefined ? pos.column - curToken.start : 0;
       console.log(curToken, curToken, curToken.start !== undefined, positionInLastTokens);
-      const maxLength = lastTokens.map(s => s.length).reduce(Math.max);
+      const maxLength = Math.max.apply(Math, lastTokens.map(s => s.length));
       while (iter.stepBackward() !== null && buf.length < maxLength) {
         const token = iter.getCurrentToken();
         if (token.type !== 'comment') {
@@ -49,12 +50,14 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       callback(null, isContext ? completions : []);
     }
   });
-  const adaptGlobalCompleter = (completer: Completer) => ({
+  const adaptGlobalCompleter = (completer: Ace.Completer) => ({
     getCompletions: (editor: Ace.Editor, session: Ace.EditSession, pos: Ace.Point, prefix: string, callback: Ace.CompleterCallback) => {
       const iter = new AceTokenIterator(session, pos.row, pos.column);
       const curTokenDot = iter.getCurrentToken() !== undefined && iter.getCurrentToken().value === '.';
       const prevTokenDot = iter.stepBackward() !== null && iter.getCurrentToken().value === '.';
-      callback(null, curTokenDot || prevTokenDot ? [] : completer.getCompletions(editor, session, pos, prefix, callback));
+      if (!curTokenDot && !prevTokenDot) {
+        completer.getCompletions(editor, session, pos, prefix, callback);
+      }
     }
   });
 
@@ -71,157 +74,51 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
   });
   editor.completers = [
     adaptGlobalCompleter(globalCompleter),
-    makeContextCompleter(['Robot', 'Robot.'], [
-      {
-        value: 'get_value',
+    makeContextCompleter(['Robot', 'Robot.'], ['get_value', 'set_value', 'start_pos', 'sleep', 'log', 'is_running', 'run'].map((value) => ({
+      value,
+      meta: 'PiE API',
+      score: compScore,
+    }))),
+    makeContextCompleter(['Gamepad', 'Gamepad.'], ['available', 'get_value'].map((value) => ({
+      value,
+      meta: 'PiE API',
+      score: compScore,
+    }))),
+    makeContextCompleter(['Gamepad.get_value(', 'Gamepad.get_value($)'],
+      [
+        '"button_a"',
+        '"button_b"',
+        '"button_x"',
+        '"button_y"',
+        '"l_bumper"',
+        '"r_bumper"',
+        '"l_trigger"',
+        '"r_trigger"',
+        '"button_back"',
+        '"button_start"',
+        '"l_stick"',
+        '"r_stick"',
+        '"dpad_up"',
+        '"dpad_down"',
+        '"dpad_left"',
+        '"dpad_right"',
+        '"button_xbox"',
+      ].map((value) => ({
+        value,
         meta: 'PiE API',
         score: compScore,
-      },
-      {
-        value: 'set_value',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: 'start_pos',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: 'sleep',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: 'log',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: 'is_running',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: 'run',
-        meta: 'PiE API',
-        score: compScore,
-      },
-    ]),
-    makeContextCompleter(['Gamepad', 'Gamepad.'], [
-      {
-        value: 'available',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: 'get_value',
-        meta: 'PiE API',
-        score: compScore,
-      },
-    ]),
-    makeContextCompleter(['Gamepad.get_value(', 'Gamepad.get_value($)'], [
-      {
-        value: '"button_a"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"button_b"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"button_x"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"button_y"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"l_bumper"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"r_bumper"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"l_trigger"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"r_trigger"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"button_back"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"button_start"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"l_stick"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"r_stick"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"dpad_up"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"dpad_down"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"dpad_left"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"dpad_right"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: '"button_xbox"',
-        meta: 'PiE API',
-        score: compScore,
-      },
-    ]),
-    makeContextCompleter(['Keyboard', 'Keyboard.'], [
-      {
-        value: 'available',
-        meta: 'PiE API',
-        score: compScore,
-      },
-      {
-        value: 'get_value',
-        meta: 'PiE API',
-        score: compScore,
-      },
-    ]),
-    makeContextCompleter(['Keyboard.get_value(', 'Keyboard.get_value($)'], [
-
-    ]),
+      }))
+    ),
+    makeContextCompleter(['Keyboard', 'Keyboard.'], ['available', 'get_value'].map((value) => ({
+      value,
+      meta: 'PiE API',
+      score: compScore,
+    }))),
+    makeContextCompleter(['Keyboard.get_value(', 'Keyboard.get_value($)'], Object.keys(robotKeyNumberMap).map((value) => ({
+      value: `"${value}"`,
+      meta: 'PiE API',
+      score: compScore,
+    }))),
     ...editor.completers.map(adaptGlobalCompleter),
   ];
 }
