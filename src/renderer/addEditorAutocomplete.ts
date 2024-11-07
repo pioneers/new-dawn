@@ -7,23 +7,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
   const compScore = 1; // Override 'local' completions
   const globalCompleter = {
     getCompletions: (_editor: Ace.Editor, _session: Ace.EditSession, _pos: Ace.Point, _prefix: string, callback: Ace.CompleterCallback) => {
-      callback(null, [
-        {
-          value: 'Robot',
-          meta: 'PiE API',
-          score: compScore,
-        },
-        {
-          value: 'Keyboard',
-          meta: 'PiE API',
-          score: compScore,
-        },
-        {
-          value: 'Gamepad',
-          meta: 'PiE API',
-          score: compScore,
-        },
-      ]);
+      callback(null, ['Robot', 'Keyboard', 'Gamepad'].map((value) => ({ value, meta: 'PiE API', score: compScore })));
     }
   };
   // $ is interpreted as caret location. If not present, assumed to be at end
