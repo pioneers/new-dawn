@@ -1,4 +1,4 @@
-import { Ace, acequire } from 'ace-builds';
+import { Ace, require as acequire } from 'ace-builds';
 import robotKeyNumberMap from './robotKeyNumberMap';
 
 const AceTokenIterator = acequire('ace/token_iterator').TokenIterator;
