@@ -18,6 +18,7 @@ import startRobot from '../../assets/start-robot.svg';
 import stopRobot from '../../assets/stop-robot.svg';
 import keyboardKeySvg from '../../assets/keyboard-key.svg';
 import addEditorAutocomplete from './addEditorAutocomplete';
+import addEditorTooltips from './addEditorTooltips';
 import './Editor.css';
 
 /**
@@ -136,7 +137,9 @@ export default function Editor({
   };
   useEffect(() => {
     if (editorRef.current !== null) {
-      addEditorAutocomplete(editorRef.current.editor);
+      const editor = editorRef.current.editor;
+      addEditorAutocomplete(editor);
+      addEditorTooltips(editor);
     }
   }, [editorRef]);
 
