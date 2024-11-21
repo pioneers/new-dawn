@@ -56,6 +56,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       ) => {
         const iter = new TokenIterator(session, pos.row, pos.column);
         let token = iter.getCurrentToken();
+        const tokenIsIdent = () => ['identifier', 'function.support'].includes(token.type);
         const firstToken = token;
         let canPartialComplete = true;
         while (token === undefined || token.value.trim() === '') {
@@ -68,8 +69,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
         if (token.type === 'comment') {
           return;
         }
-        console.log(`itoken '${token.value}' type ${token.type}`);
-        let lastWasIdentifier = token.type === 'identifier';
+        let lastWasIdentifier = tokenIsIdent();
         if (iter.getCurrentTokenRow() !== pos.row) {
           canPartialComplete = false;
         }
@@ -88,8 +88,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
           if (token === null) {
             break;
           }
-          console.log(`token '${token.value}' type ${token.type} lwi ${lastWasIdentifier}`);
-          if (lastWasIdentifier && (token.type === 'identifier' || token.value.trim() !== token.value)) {
+          if (lastWasIdentifier && (tokenIsIdent() || token.value.trim() !== token.value)) {
             break;
           }
           if (token.type === 'comment' || token.value.trim() === '') {
@@ -100,7 +99,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
           }
           buf = token.value.trim() + buf;
           posInBuf += token.value.trim().length;
-          lastWasIdentifier = token.type === 'identifier';
+          lastWasIdentifier = tokenIsIdent();
         }
         const beforeCaret = buf.slice(0, posInBuf);
         const isContext = beforeCaret.startsWith(ctx);
@@ -109,10 +108,15 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
             ? ((ctx + completion).startsWith(beforeCaret))
             : (ctx === beforeCaret))
           .map(caption => {
-            console.log(`bc '${beforeCaret}' ctx '${ctx}' cap '${caption}' cpc ${canPartialComplete}`);
             return {
               caption,
-              value: caption.slice(beforeCaret.length - ctx.length),
+              // FIXME
+              // Completion is multiple tokens (e.g. Gamepad.get_value completions): slice is needed
+              // to remove already-typed string from completion.
+              // Context is single token: unsliced is needed or else existing text is replaced with
+              // sliced completion, effectively deleting the already-typed bit.
+              //value: caption.slice(beforeCaret.length - ctx.length),
+              value: caption,
               meta: 'PiE API',
               score: COMP_SCORE,
             };
