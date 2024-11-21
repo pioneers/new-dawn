@@ -49,6 +49,7 @@ const STATUS_TOOLTIPS: { [k in EditorContentStatus]: string } = {
   extDirty:
     'The code that will be uploaded to the robot was last changed in an external program.',
 };
+
 /**
  * Content of the editor status indicator (next to the file name).
  */
@@ -58,11 +59,13 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
   extDirty: 'Externally modified',
 };
 
+/**
+ * Color themes for the ACE code editor.
+ */
 const ACE_THEMES = {
   dawn: 'Dawn',
   chrome: 'Chrome',
   clouds: 'Clouds',
-
   dreamweaver: 'Dreamweaver',
   monokai: 'Monokai',
   tomorrow_night: 'Tomorrow Night',
@@ -269,9 +272,7 @@ export default function Editor({
           </button>
         </div>
         <div className="Editor-toolbar-group">
-          <button type="button">
-            <img src={themeSvg} alt="Change Theme" />
-          </button>
+          <img src={themeSvg} alt="Change Theme" />
           <select
             onChange={(e) => handleThemeChange(`ace/theme/${e.target.value}`)}
             name="Editor-toolbar-opmode"
