@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
-// import 'ace-builds/src-noconflict/snippets-python';
+import 'ace-builds/src-noconflict/snippets/python';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/ext-searchbox';
 import uploadSvg from '../../assets/upload.svg';

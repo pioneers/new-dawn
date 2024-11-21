@@ -8,7 +8,7 @@ const { TokenIterator } = acequire('ace/token_iterator');
  * @param editor - the editor to modify
  */
 export default function addEditorAutocomplete(editor: Ace.Editor) {
-  const compScore = 1; // Override 'local' completions
+  const COMP_SCORE = 200; // Override 'local' completions
   const globalCompleter = {
     getCompletions: (
       _editor: Ace.Editor,
@@ -22,7 +22,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
         ['Robot', 'Keyboard', 'Gamepad'].map((value) => ({
           value,
           meta: 'PiE API',
-          score: compScore,
+          score: COMP_SCORE - 10,
         })),
       );
     },
@@ -30,7 +30,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
   /**
    * Creates a completer that only shows its completions when the tokens around the caret
    * match one of the given lastToken strings.
-   * @param lastTokens - the array of strings to match the current and previous tokens against. $ is
+   * @param ctx - the string to match the current and previous tokens against. $ is
    * interpreted as the position of the caret in the current token. If ommitted, the matching caret
    * position is assumed to be at the end. Any occurrences of $ in lastToken strings are removed
    * from the match.
@@ -43,42 +43,84 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
    * @return The created completer.
    */
   const makeContextCompleter = (
-    lastTokens: string[],
-    completions: Ace.Completion[],
-  ) => ({
-    getCompletions: (
-      _editor: Ace.Editor,
-      session: Ace.EditSession,
-      pos: Ace.Point,
-      _prefix: string,
-      callback: Ace.CompleterCallback,
-    ) => {
-      const iter = new TokenIterator(session, pos.row, pos.column);
-      const firstToken = iter.getCurrentToken();
-      if (firstToken === undefined || firstToken.type === 'comment') {
-        return;
-      }
-      let buf = firstToken.value.trim();
-      let positionInLastTokens = buf.length;
-      const maxLength = Math.max(...lastTokens.map((s) => s.length));
-      while (iter.stepBackward() !== null && buf.length < maxLength) {
-        const token = iter.getCurrentToken();
-        if (token.type !== 'comment') {
-          const tokenStr = token.value.trim();
-          buf = tokenStr + buf;
-          positionInLastTokens += tokenStr.length;
+    ctx: string,
+    completions: string[],
+  ) => {
+    return {
+      getCompletions: (
+        _editor: Ace.Editor,
+        session: Ace.EditSession,
+        pos: Ace.Point,
+        _prefix: string,
+        callback: Ace.CompleterCallback,
+      ) => {
+        const iter = new TokenIterator(session, pos.row, pos.column);
+        let token = iter.getCurrentToken();
+        const firstToken = token;
+        let canPartialComplete = true;
+        while (token === undefined || token.value.trim() === '') {
+          canPartialComplete = false;
+          token = iter.stepBackward();
+          if (token === null) {
+            return;
+          }
         }
-      }
-      const isContext = lastTokens
-        .map((s) => {
-          const caretLoc = s.indexOf('$') === -1 ? s.length : s.indexOf('$');
-          const replaced = s.replace('$', '');
-          return positionInLastTokens === caretLoc && buf.endsWith(replaced);
-        })
-        .includes(true);
-      callback(null, isContext ? completions : []);
-    },
-  });
+        if (token.type === 'comment') {
+          return;
+        }
+        console.log(`itoken '${token.value}' type ${token.type}`);
+        let lastWasIdentifier = token.type === 'identifier';
+        if (iter.getCurrentTokenRow() !== pos.row) {
+          canPartialComplete = false;
+        }
+        let buf = token.value;
+        let posInBuf;
+        if (token === firstToken) {
+          posInBuf = pos.column - iter.getCurrentTokenColumn();
+        } else {
+          posInBuf = buf.length;
+        }
+        const maxLength = ctx.length + Math.max(
+          ...completions.map(completion => completion.length)
+        );
+        while (buf.length < maxLength) {
+          token = iter.stepBackward();
+          if (token === null) {
+            break;
+          }
+          console.log(`token '${token.value}' type ${token.type} lwi ${lastWasIdentifier}`);
+          if (lastWasIdentifier && (token.type === 'identifier' || token.value.trim() !== token.value)) {
+            break;
+          }
+          if (token.type === 'comment' || token.value.trim() === '') {
+            // Whitespace-only check looks redundant because nothing would be added to buf or
+            // posInBuf, but lastWasIdentifier assignment must be skipped
+            canPartialComplete = false;
+            continue;
+          }
+          buf = token.value.trim() + buf;
+          posInBuf += token.value.trim().length;
+          lastWasIdentifier = token.type === 'identifier';
+        }
+        const beforeCaret = buf.slice(0, posInBuf);
+        const isContext = beforeCaret.startsWith(ctx);
+        callback(null, isContext ? completions
+          .filter(completion => canPartialComplete
+            ? ((ctx + completion).startsWith(beforeCaret))
+            : (ctx === beforeCaret))
+          .map(caption => {
+            console.log(`bc '${beforeCaret}' ctx '${ctx}' cap '${caption}' cpc ${canPartialComplete}`);
+            return {
+              caption,
+              value: caption.slice(beforeCaret.length - ctx.length),
+              meta: 'PiE API',
+              score: COMP_SCORE,
+            };
+          }) : []
+        );
+      },
+    };
+  };
   /**
    * Wraps a completer so it does not trigger if the current or preceeding token is a dot.
    * @param completer - the completer to wrap.
@@ -129,7 +171,7 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
   editor.completers = [
     adaptGlobalCompleter(globalCompleter),
     makeContextCompleter(
-      ['Robot', 'Robot.'],
+      'Robot.',
       [
         'get_value',
         'set_value',
@@ -138,22 +180,14 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
         'log',
         'is_running',
         'run',
-      ].map((value) => ({
-        value,
-        meta: 'PiE API',
-        score: compScore,
-      })),
+      ],
     ),
     makeContextCompleter(
-      ['Gamepad', 'Gamepad.'],
-      ['available', 'get_value'].map((value) => ({
-        value,
-        meta: 'PiE API',
-        score: compScore,
-      })),
+      'Gamepad.',
+      ['available', 'get_value'],
     ),
     makeContextCompleter(
-      ['Gamepad.get_value(', 'Gamepad.get_value($)'],
+      'Gamepad.get_value(',
       [
         '"button_a"',
         '"button_b"',
@@ -172,27 +206,15 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
         '"dpad_left"',
         '"dpad_right"',
         '"button_xbox"',
-      ].map((value) => ({
-        value,
-        meta: 'PiE API',
-        score: compScore,
-      })),
+      ],
     ),
     makeContextCompleter(
-      ['Keyboard', 'Keyboard.'],
-      ['available', 'get_value'].map((value) => ({
-        value,
-        meta: 'PiE API',
-        score: compScore,
-      })),
+      'Keyboard.',
+      ['available', 'get_value'],
     ),
     makeContextCompleter(
-      ['Keyboard.get_value(', 'Keyboard.get_value($)'],
-      Object.keys(robotKeyNumberMap).map((value) => ({
-        value: `"${value}"`,
-        meta: 'PiE API',
-        score: compScore,
-      })),
+      'Keyboard.get_value(',
+      Object.keys(robotKeyNumberMap).map(c => `"${c}"`),
     ),
     ...editor.completers.map(adaptGlobalCompleter),
   ];
