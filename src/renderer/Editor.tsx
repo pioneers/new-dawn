@@ -15,6 +15,17 @@ import zoomOutSvg from '../../assets/zoom-out.svg';
 import startRobot from '../../assets/start-robot.svg';
 import stopRobot from '../../assets/stop-robot.svg';
 import keyboardKeySvg from '../../assets/keyboard-key.svg';
+import themeSvg from '../../assets/theme.svg';
+
+import 'ace-builds/src-noconflict/theme-chrome';
+import 'ace-builds/src-noconflict/theme-clouds';
+import 'ace-builds/src-noconflict/theme-dawn';
+import 'ace-builds/src-noconflict/theme-dreamweaver';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/theme-tomorrow_night';
+import 'ace-builds/src-noconflict/theme-clouds_midnight';
+import 'ace-builds/src-noconflict/theme-ambiance';
+
 import './Editor.css';
 
 /**
@@ -38,6 +49,7 @@ const STATUS_TOOLTIPS: { [k in EditorContentStatus]: string } = {
   extDirty:
     'The code that will be uploaded to the robot was last changed in an external program.',
 };
+
 /**
  * Content of the editor status indicator (next to the file name).
  */
@@ -45,6 +57,20 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
   clean: '',
   dirty: 'Modified',
   extDirty: 'Externally modified',
+};
+
+/**
+ * Color themes for the ACE code editor.
+ */
+const ACE_THEMES = {
+  dawn: 'Dawn',
+  chrome: 'Chrome',
+  clouds: 'Clouds',
+  dreamweaver: 'Dreamweaver',
+  monokai: 'Monokai',
+  tomorrow_night: 'Tomorrow Night',
+  clouds_midnight: 'Clouds Midnight',
+  ambiance: 'Ambiance',
 };
 
 /**
@@ -139,6 +165,12 @@ export default function Editor({
 
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
+  };
+
+  const [theme, setTheme] = useState('dawn'); // Default theme
+  const handleThemeChange = (newTheme: string) => {
+    const cleanTheme = newTheme.replace('ace/theme/', '');
+    setTheme(cleanTheme);
   };
 
   return (
@@ -240,6 +272,17 @@ export default function Editor({
           </button>
         </div>
         <div className="Editor-toolbar-group">
+          <img src={themeSvg} alt="Change Theme" />
+          <select
+            onChange={(e) => handleThemeChange(`ace/theme/${e.target.value}`)}
+            name="Editor-toolbar-opmode"
+          >
+            {Object.entries(ACE_THEMES).map(([themeKey, themeName]) => (
+              <option value={themeKey}>{themeName}</option>
+            ))}
+          </select>
+        </div>
+        <div className="Editor-toolbar-group">
           <label className="Editor-tbopmode" htmlFor="Editor-toolbar-opmode">
             OpMode:
             <select
@@ -285,6 +328,7 @@ export default function Editor({
           <span>Keyboard input sent to robot &mdash; disable to edit code</span>
         </div>
         <AceEditor
+          theme={theme}
           fontSize={fontSize}
           style={{ width: '100%', height: '100%' }}
           mode="python"
