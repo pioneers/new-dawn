@@ -6,8 +6,8 @@ const { TokenIterator } = acequire('ace/token_iterator');
 
 export default function addEditorTooltips(editor: Ace.Editor) {
   const tooltip = new HoverTooltip();
-  tooltip.setDataProvider((event, _editor) => {
-    const pos = event.getDocumentPosition();
+  tooltip.setDataProvider((event: any, _editor: Ace.Editor) => {
+    const pos: Ace.Position = event.getDocumentPosition();
     const range = editor.session.getWordRange(pos.row, pos.column);
     const node = document.createElement('div');
     const root = createRoot(node);
