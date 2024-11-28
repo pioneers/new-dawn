@@ -9,11 +9,12 @@ const { TokenIterator } = acequire('ace/token_iterator');
  * are ignored, and string collections continues on the other side of the comment.
  * @param session - the Ace editing session to use to read the editor contents.
  * @param pos - the position to start reading behind.
- * @param minLength - the minimum length of text to read.
+ * @param minLength - the minimum length in characters of text to read. A whole number of tokens
+ * will always be read, but reading is stopped after reading at least this many characters.
  * @return The text of the read "API call" and whether the text was interrupted, i.e. interspersed
  * with a comment or starting on a different line than the cursor position.
  */
-export default (session: Ace.Session, pos: Ace.Position, minLength: number): {
+export default (session: Ace.EditSession, pos: Ace.Position, minLength: number): {
   text: string;
   isInterrupted: boolean;
 } => {
