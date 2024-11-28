@@ -16,14 +16,17 @@ const { TokenIterator } = acequire('ace/token_iterator');
  * @return The text of the read "API call", which may be an empty string if the first token before
  * pos is not part of an API call.
  */
-export default (session: Ace.EditSession, pos: Ace.Position, minLength: number): string => {
+export default (
+  session: Ace.EditSession,
+  pos: Ace.Position,
+  minLength: number,
+): string => {
   const iter = new TokenIterator(session, pos.row, pos.column);
   let token = iter.getCurrentToken();
-  const tokenIsIdent = () => ['identifier', 'function.support'].includes(token.type);
+  const tokenIsIdent = () =>
+    ['identifier', 'function.support'].includes(token.type);
   const firstToken = token;
-  let isInterrupted = false;
   while (token === undefined || token.value.trim() === '') {
-    isInterrupted = true;
     token = iter.stepBackward();
     if (token === null) {
       return '';
@@ -33,9 +36,6 @@ export default (session: Ace.EditSession, pos: Ace.Position, minLength: number):
     return '';
   }
   let lastWasIdentifier = tokenIsIdent();
-  if (iter.getCurrentTokenRow() !== pos.row) {
-    isInterrupted = true;
-  }
   let buf = token.value.trim();
   let posInBuf;
   if (token === firstToken) {
@@ -51,20 +51,20 @@ export default (session: Ace.EditSession, pos: Ace.Position, minLength: number):
     }
     const tokenIsWhitespace = token.value.trim() === '';
     // The following conditions cause a token break if coming before an identifier:
-    const preIdentBreak = tokenIsIdent()
-      || token.type.startsWith('paren')
-      || token.type === 'string'
-      || (token.type === 'punctuation' && !token.value.includes('.'));
+    const preIdentBreak =
+      tokenIsIdent() ||
+      token.type.startsWith('paren') ||
+      token.type === 'string' ||
+      (token.type === 'punctuation' && !token.value.includes('.'));
     if (lastWasIdentifier && preIdentBreak) {
       break;
     }
-    if (token.type === 'comment') {
-      continue;
-    }
-    buf = token.value.trim() + buf;
-    posInBuf += token.value.trim().length;
-    if (!tokenIsWhitespace) {
-      lastWasIdentifier = tokenIsIdent();
+    if (token.type !== 'comment') {
+      buf = token.value.trim() + buf;
+      posInBuf += token.value.trim().length;
+      if (!tokenIsWhitespace) {
+        lastWasIdentifier = tokenIsIdent();
+      }
     }
   }
   return buf;

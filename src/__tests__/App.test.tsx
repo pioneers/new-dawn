@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
 import { render } from '@testing-library/react';
+import { config as aceConfig } from 'ace-builds';
 import App from '../renderer/App';
-import { config as aceConfig, require as acequire } from 'ace-builds';
 
 describe('App', () => {
   beforeEach(() => {

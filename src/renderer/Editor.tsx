@@ -137,7 +137,7 @@ export default function Editor({
   };
   useEffect(() => {
     if (editorRef.current !== null) {
-      const editor = editorRef.current.editor;
+      const { editor } = editorRef.current;
       addEditorAutocomplete(editor);
       addEditorTooltips(editor);
     }

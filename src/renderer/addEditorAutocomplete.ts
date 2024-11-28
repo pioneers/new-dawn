@@ -51,38 +51,42 @@ function makeContextCompleter(ctx: string, completions: string[]) {
       _prefix: string,
       callback: Ace.CompleterCallback,
     ) => {
-      const maxLength = ctx.length + Math.max(
-        ...completions.map(completion => completion.length)
-      );
+      const maxLength =
+        ctx.length +
+        Math.max(...completions.map((completion) => completion.length));
       const buf = readApiCall(session, pos, maxLength);
       const isContext = buf.startsWith(ctx);
-      callback(null, isContext ? completions
-        .filter(completion => (ctx + completion).startsWith(buf.trim())
-            && (ctx + completion) !== buf.trim())
-        .map(caption => {
-          return {
-            caption,
-            // FIXME
-            // Completion is multiple tokens (e.g. Gamepad.get_value completions): slice is needed
-            // to remove already-typed string from completion.
-            // Context is single token: unsliced is needed or else existing text is replaced with
-            // sliced completion, effectively deleting the already-typed bit.
-            //value: caption.slice(buf.length - ctx.length),
-            value: caption,
-            meta: 'PiE API',
-            score: COMP_SCORE,
-          };
-        }) : []
+      callback(
+        null,
+        isContext
+          ? completions
+              .filter(
+                (completion) =>
+                  (ctx + completion).startsWith(buf.trim()) &&
+                  ctx + completion !== buf.trim(),
+              )
+              .map((caption) => {
+                return {
+                  caption,
+                  // FIXME
+                  // Completion is multiple tokens (e.g. Gamepad.get_value completions): slice is needed
+                  // to remove already-typed string from completion.
+                  // Context is single token: unsliced is needed or else existing text is replaced with
+                  // sliced completion, effectively deleting the already-typed bit.
+                  // value: caption.slice(buf.length - ctx.length),
+                  value: caption,
+                  meta: 'PiE API',
+                  score: COMP_SCORE,
+                };
+              })
+          : [],
       );
     },
-    onInsert: (
-      _editor: Ace.Editor,
-      completion: Ace.Completion,
-    ) => {
+    onInsert: (_editor: Ace.Editor, _completion: Ace.Completion) => {
       // Adding something over here could maybe fix sliced completion?
     },
   };
-};
+}
 
 /**
  * Wraps a completer so it does not trigger if the current or preceeding token contains a dot.
@@ -99,12 +103,14 @@ function adaptGlobalCompleter(completer: Ace.Completer) {
       callback: Ace.CompleterCallback,
     ) => {
       const iter = new TokenIterator(session, pos.row, pos.column);
-      const curTokenDot = iter.getCurrentToken() !== undefined
-        && iter.getCurrentToken().value
-        && iter.getCurrentToken().value.includes('.');
-      const prevTokenDot = iter.stepBackward() !== null
-        && iter.getCurrentToken().value
-        && iter.getCurrentToken().value.includes('.');
+      const curTokenDot =
+        iter.getCurrentToken() !== undefined &&
+        iter.getCurrentToken().value &&
+        iter.getCurrentToken().value.includes('.');
+      const prevTokenDot =
+        iter.stepBackward() !== null &&
+        iter.getCurrentToken().value &&
+        iter.getCurrentToken().value.includes('.');
       if (!curTokenDot && !prevTokenDot) {
         completer.getCompletions(editor, session, pos, prefix, callback);
       }
@@ -141,51 +147,39 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
   });
   editor.completers = [
     adaptGlobalCompleter(globalCompleter),
-    makeContextCompleter(
-      'Robot.',
-      [
-        'get_value',
-        'set_value',
-        'start_pos',
-        'sleep',
-        'log',
-        'is_running',
-        'run',
-      ],
-    ),
-    makeContextCompleter(
-      'Gamepad.',
-      ['available', 'get_value'],
-    ),
-    makeContextCompleter(
-      'Gamepad.get_value(',
-      [
-        '"button_a"',
-        '"button_b"',
-        '"button_x"',
-        '"button_y"',
-        '"l_bumper"',
-        '"r_bumper"',
-        '"l_trigger"',
-        '"r_trigger"',
-        '"button_back"',
-        '"button_start"',
-        '"l_stick"',
-        '"r_stick"',
-        '"dpad_up"',
-        '"dpad_down"',
-        '"dpad_left"',
-        '"dpad_right"',
-        '"button_xbox"',
-      ],
-    ),
-    makeContextCompleter(
-      'Keyboard.',
-      ['available', 'get_value'],
-    ),
+    makeContextCompleter('Robot.', [
+      'get_value',
+      'set_value',
+      'start_pos',
+      'sleep',
+      'log',
+      'is_running',
+      'run',
+    ]),
+    makeContextCompleter('Gamepad.', ['available', 'get_value']),
+    makeContextCompleter('Gamepad.get_value(', [
+      '"button_a"',
+      '"button_b"',
+      '"button_x"',
+      '"button_y"',
+      '"l_bumper"',
+      '"r_bumper"',
+      '"l_trigger"',
+      '"r_trigger"',
+      '"button_back"',
+      '"button_start"',
+      '"l_stick"',
+      '"r_stick"',
+      '"dpad_up"',
+      '"dpad_down"',
+      '"dpad_left"',
+      '"dpad_right"',
+      '"button_xbox"',
+    ]),
+    makeContextCompleter('Keyboard.', ['available', 'get_value']),
     makeContextCompleter(
       'Keyboard.get_value(',
-      Object.keys(robotKeyNumberMap).map(c => `"${c}"`),
+      Object.keys(robotKeyNumberMap).map((c) => `"${c}"`),
     ),
     ...(editor.completers || []).map(adaptGlobalCompleter),
   ];
