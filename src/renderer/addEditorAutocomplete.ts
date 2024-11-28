@@ -74,7 +74,6 @@ function makeContextCompleter(ctx: string, completions: string[]) {
         posInBuf = buf.length;
       }
       buf = buf.slice(0, posInBuf);
-      //console.log(`first token '${buf}'`);
       const maxLength = ctx.length + Math.max(
         ...completions.map(completion => completion.length)
       );
@@ -101,14 +100,12 @@ function makeContextCompleter(ctx: string, completions: string[]) {
           lastWasIdentifier = tokenIsIdent();
         }
       }
-      const beforeCaret = buf.slice(0, posInBuf);
-      const isContext = beforeCaret.startsWith(ctx);
-      //console.log(`ic ${isContext} bc '${beforeCaret}' ctx '${ctx}'`);
+      const isContext = buf.startsWith(ctx);
       callback(null, isContext ? completions
         .filter(completion => canPartialComplete
-          ? ((ctx + completion).startsWith(beforeCaret.trim())
-            && (ctx + completion) !== beforeCaret.trim())
-          : (ctx === beforeCaret.trim()))
+          ? ((ctx + completion).startsWith(buf.trim())
+            && (ctx + completion) !== buf.trim())
+          : (ctx === buf.trim()))
         .map(caption => {
           return {
             caption,
@@ -117,7 +114,7 @@ function makeContextCompleter(ctx: string, completions: string[]) {
             // to remove already-typed string from completion.
             // Context is single token: unsliced is needed or else existing text is replaced with
             // sliced completion, effectively deleting the already-typed bit.
-            //value: caption.slice(beforeCaret.length - ctx.length),
+            //value: caption.slice(buf.length - ctx.length),
             value: caption,
             meta: 'PiE API',
             score: COMP_SCORE,
