@@ -1,5 +1,6 @@
 import { Ace, require as acequire } from 'ace-builds';
 import robotKeyNumberMap from './robotKeyNumberMap';
+import readApiCall from './readApiCall';
 
 const { TokenIterator } = acequire('ace/token_iterator');
 
@@ -47,59 +48,12 @@ function makeContextCompleter(ctx: string, completions: string[]) {
       _prefix: string,
       callback: Ace.CompleterCallback,
     ) => {
-      const iter = new TokenIterator(session, pos.row, pos.column);
-      let token = iter.getCurrentToken();
-      const tokenIsIdent = () => ['identifier', 'function.support'].includes(token.type);
-      const firstToken = token;
-      let canPartialComplete = true;
-      while (token === undefined || token.value.trim() === '') {
-        canPartialComplete = false;
-        token = iter.stepBackward();
-        if (token === null) {
-          return;
-        }
-      }
-      if (token.type === 'comment') {
-        return;
-      }
-      let lastWasIdentifier = tokenIsIdent();
-      if (iter.getCurrentTokenRow() !== pos.row) {
-        canPartialComplete = false;
-      }
-      let buf = token.value.trim();
-      let posInBuf;
-      if (token === firstToken) {
-        posInBuf = pos.column - iter.getCurrentTokenColumn();
-      } else {
-        posInBuf = buf.length;
-      }
-      buf = buf.slice(0, posInBuf);
       const maxLength = ctx.length + Math.max(
         ...completions.map(completion => completion.length)
       );
-      while (buf.length < maxLength) {
-        token = iter.stepBackward();
-        if (token === null) {
-          break;
-        }
-        const tokenIsWhitespace = token.value.trim() === '';
-        // The following conditions cause a token break if coming before an identifier:
-        const preIdentBreak = tokenIsIdent()
-          || token.type.startsWith('paren')
-          || (token.type === 'punctuation' && !token.value.includes('.'));
-        if (lastWasIdentifier && preIdentBreak) {
-          break;
-        }
-        if (token.type === 'comment') {
-          canPartialComplete = false;
-          continue;
-        }
-        buf = token.value.trim() + buf;
-        posInBuf += token.value.trim().length;
-        if (!tokenIsWhitespace) {
-          lastWasIdentifier = tokenIsIdent();
-        }
-      }
+      const result = readApiCall(session, pos, maxLength);
+      const buf = result.text;
+      const canPartialComplete = !result.isInterrupted;
       const isContext = buf.startsWith(ctx);
       callback(null, isContext ? completions
         .filter(completion => canPartialComplete
