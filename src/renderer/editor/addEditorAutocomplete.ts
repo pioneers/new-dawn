@@ -1,5 +1,5 @@
 import { Ace, require as acequire } from 'ace-builds';
-import robotKeyNumberMap from './robotKeyNumberMap';
+import robotKeyNumberMap from '../robotKeyNumberMap';
 import readApiCall from './readApiCall';
 
 const { TokenIterator } = acequire('ace/token_iterator');

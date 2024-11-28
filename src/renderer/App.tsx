@@ -8,7 +8,7 @@ import {
   useLayoutEffect,
 } from 'react';
 import Topbar from './Topbar';
-import Editor, { EditorContentStatus } from './Editor';
+import Editor, { EditorContentStatus } from './editor/Editor';
 import DeviceInfo from './DeviceInfo';
 import AppConsole from './AppConsole';
 import type AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
