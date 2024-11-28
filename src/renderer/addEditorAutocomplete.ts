@@ -10,6 +10,9 @@ const { TokenIterator } = acequire('ace/token_iterator');
  */
 const COMP_SCORE = 200;
 
+/**
+ * Completer for PiE globals.
+ */
 const globalCompleter = {
   getCompletions: (
     _editor: Ace.Editor,
@@ -188,6 +191,6 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       'Keyboard.get_value(',
       Object.keys(robotKeyNumberMap).map(c => `"${c}"`),
     ),
-    ...editor.completers.map(adaptGlobalCompleter),
+    ...(editor.completers || []).map(adaptGlobalCompleter),
   ];
 }
