@@ -54,15 +54,11 @@ function makeContextCompleter(ctx: string, completions: string[]) {
       const maxLength = ctx.length + Math.max(
         ...completions.map(completion => completion.length)
       );
-      const result = readApiCall(session, pos, maxLength);
-      const buf = result.text;
-      const canPartialComplete = !result.isInterrupted;
+      const buf = readApiCall(session, pos, maxLength);
       const isContext = buf.startsWith(ctx);
       callback(null, isContext ? completions
-        .filter(completion => canPartialComplete
-          ? ((ctx + completion).startsWith(buf.trim())
+        .filter(completion => (ctx + completion).startsWith(buf.trim())
             && (ctx + completion) !== buf.trim())
-          : (ctx === buf.trim()))
         .map(caption => {
           return {
             caption,
