@@ -8,7 +8,7 @@ const { TokenIterator } = acequire('ace/token_iterator');
 
 const apiHelpComponents: {
   [matchText: string]: () => ReactNode;
-}[] = {
+} = {
   'Robot.get_value': () => (
     <div>
       Documentation for Robot.get_value method.

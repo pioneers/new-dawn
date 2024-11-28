@@ -27,11 +27,11 @@ export default (session: Ace.EditSession, pos: Ace.Position, minLength: number):
     isInterrupted = true;
     token = iter.stepBackward();
     if (token === null) {
-      return;
+      return { text: '', isInterrupted };
     }
   }
   if (token.type === 'comment') {
-    return;
+    return { text: '', isInterrupted };
   }
   let lastWasIdentifier = tokenIsIdent();
   if (iter.getCurrentTokenRow() !== pos.row) {
