@@ -7,15 +7,16 @@ import './HighlightedCode.css';
  * valid children of this component is text containing the code to be displayed. Common indentation
  * is removed from each line of code before display. Only spaces are considered indentation; tabs,
  * half-width spaces, and nonbreaking spaces are treated as content.
+ * @param props
  * @param props.indent - number of spaces of indentation to prepend to each line, after common
  * indentation is removed.
  */
 export default function HighlightedCode({
   children,
-  indent = 0,
+  indent,
 }: {
   children: string;
-  indent: number?;
+  indent: number;
 }) {
   const lines = children.split('\n');
   if (lines.length && !lines[0].trim()) {
@@ -28,7 +29,7 @@ export default function HighlightedCode({
   const minIndent = Math.min(
     ...lines
       .filter((line) => line.trim().length)
-      .map((line) => line.match(/^ */)[0].length),
+      .map((line) => line.match(/^ */)![0].length),
   );
   const formatted = lines
     .map((line) => ' '.repeat(indent) + line.slice(minIndent))
@@ -45,3 +46,12 @@ export default function HighlightedCode({
     />
   );
 }
+/**
+ * Default props for HighlightedCode.
+ */
+HighlightedCode.defaultProps = {
+  /**
+   * No indentation is added to code lines after stripping common indentation by default.
+   */
+  indent: 0,
+};

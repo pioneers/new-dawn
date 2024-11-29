@@ -16,14 +16,14 @@ export default function ConfirmModal({
   onConfirm,
   isActive,
   modalTitle,
-  noAutoClose = false,
+  noAutoClose,
   children,
 }: {
   onClose: () => void;
   onConfirm: () => void;
   isActive: boolean;
   modalTitle: string;
-  noAutoClose?: boolean;
+  noAutoClose: boolean;
   children: ReactNode;
 }) {
   const handleConfirm = () => {
@@ -46,8 +46,7 @@ export default function ConfirmModal({
   );
 }
 /**
- * Default properties for ConfirmModal. Not sure why we need this if we have the default
- * deconstruction parameter but the linter cries if we leave it out.
+ * Default properties for ConfirmModal.
  */
 ConfirmModal.defaultProps = {
   /**
