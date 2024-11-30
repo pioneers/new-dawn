@@ -1,3 +1,4 @@
+import { useRef, useEffect } from 'react';
 import AppConsoleMessage from '../common/AppConsoleMessage';
 import './AppConsole.css';
 
@@ -14,9 +15,17 @@ export default function AppConsole({
   height: number;
   messages: AppConsoleMessage[];
 }) {
+  const consoleRef = useRef<HTMLPreElement>(null);
+
+  useEffect(() => {
+    if (consoleRef.current) {
+      consoleRef.current.scrollTop = consoleRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   return (
     <div className="AppConsole" style={{ height }}>
-      <pre className="AppConsole-inner">
+      <pre ref={consoleRef} className="AppConsole-inner">
         {messages.map((msg: AppConsoleMessage) => (
           <div
             key={msg.uuid}
