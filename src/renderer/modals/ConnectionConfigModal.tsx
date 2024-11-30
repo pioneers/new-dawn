@@ -90,7 +90,7 @@ export default function ConnectionConfigModal({
         </label>
         <label
           htmlFor="ConnectionConfigModal-FieldStationNum"
-          className="ConnectionConfigModal-config-field"
+          className="ConnectionConfigModal-config-field ConnectionConfigModal-config-field-2"
         >
           Field Control Station Number:
           <input
