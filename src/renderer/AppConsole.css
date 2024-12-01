@@ -15,6 +15,7 @@
   margin: 0;
   margin-bottom: 50px;
   min-height: 0;
+  scroll-behavior: smooth;
 }
 .AppConsole-message {
   padding: 2px;
