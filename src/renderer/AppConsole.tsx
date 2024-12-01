@@ -15,6 +15,7 @@ export default function AppConsole({
   height: number;
   messages: AppConsoleMessage[];
 }) {
+  // Add autoscroll feature to AppConsole by setting the current scrollTop prop to the current scrollHeight value
   const consoleRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
