@@ -179,8 +179,8 @@
     "webpack-merge": "^5.9.0"
   },
   "build": {
-    "productName": "ElectronReact",
-    "appId": "org.erb.ElectronReact",
+    "productName": "Dawn",
+    "appId": "edu.berkeley.pioneers.Dawn",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -224,9 +224,12 @@
     },
     "linux": {
       "target": [
-        "AppImage"
+        "deb"
       ],
       "category": "Development"
+    },
+    "deb": {
+      "artifactName": "${productName}_${version}_${arch}.${ext}"
     },
     "directories": {
       "app": "release/app",
@@ -238,8 +241,8 @@
     ],
     "publish": {
       "provider": "github",
-      "owner": "electron-react-boilerplate",
-      "repo": "electron-react-boilerplate"
+      "owner": "pioneers",
+      "repo": "new-dawn"
     }
   },
   "collective": {
