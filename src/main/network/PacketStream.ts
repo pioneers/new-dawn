@@ -62,7 +62,7 @@ export default class PacketStream extends Transform {
     while (this.#tryReadPacket(shouldConcatHeader)) {
       shouldConcatHeader = false;
     }
-    callback(null, chunk);
+    callback();
   }
 
   /**

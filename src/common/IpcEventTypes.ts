@@ -39,10 +39,6 @@ export interface RendererInitData {
    */
   robotIPAddress: string;
   /**
-   * The IP address used to upload code to the robot, retrieved from persistent config.
-   */
-  robotSSHAddress: string;
-  /**
    * The IP address of the field controller, retrieved from persistent config.
    */
   fieldIPAddress: string;
@@ -286,10 +282,6 @@ export interface MainQuitData {
    * The IP address used to communicate with the robot's runtime, to be saved to persistent config.
    */
   robotIPAddress: string;
-  /**
-   * The IP address used to upload code to the robot, to be saved to persistent config.
-   */
-  robotSSHAddress: string;
   /**
    * The IP address of the field controller, to be saved to persistent config.
    */

@@ -10,6 +10,7 @@ import openSvg from '../../../assets/open.svg';
 import saveSvg from '../../../assets/save.svg';
 import saveAsSvg from '../../../assets/save-as.svg';
 import newFileSvg from '../../../assets/new-file.svg';
+import pieSvg from '../../../assets/pie.svg';
 import consoleSvg from '../../../assets/console.svg';
 import consoleClearSvg from '../../../assets/console-clear.svg';
 import zoomInSvg from '../../../assets/zoom-in.svg';
@@ -25,6 +26,12 @@ import './Editor.css';
  * A status of the Editor's content.
  */
 export type EditorContentStatus = 'clean' | 'dirty' | 'extDirty';
+
+/**
+ * A status of keyboard controls. Would be a simple boolean if we didn't need a way to prevent
+ * duplicate empty "keyboard disconnected" input objects to be sent to Runtime.
+ */
+export type KeyboardControlsStatus = 'off' | 'on' | 'offEdge';
 
 /**
  * Tooltips to display over the editor status indicator.
@@ -56,7 +63,7 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
  * indicating the user's attention is needed
  * @param props.consoleIsOpen - whether to show a different icon for the toggle console button
  * indicating the console is open
- * @param props.keyboardControlsEnabled - whether to show a different icon for the toggle keyboard
+ * @param props.keyboardControlsStatus - whether to show a different icon for the toggle keyboard
  * control button indicating keyboard control is enabled
  * @param props.robotConnected - whether toolbar buttons requiring a connection to the robot should
  * be enabled.
@@ -64,6 +71,8 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
  * buttons are enabled.
  * @param props.onOpen - handler called when the user wants to open a file in the editor
  * @param props.onNewFile - handler called when the user wants to close the current file
+ * @param props.onLoadStaffCode - handler called when the user wants to load staff code into the
+ * editor
  * @param props.onRobotUpload - handler called when the user wants to upload the open file to the
  * robot
  * @param props.onRobotDownload - handler called when the user wants to download code from the
@@ -81,12 +90,13 @@ export default function Editor({
   content,
   consoleAlert,
   consoleIsOpen,
-  keyboardControlsEnabled,
+  keyboardControlsStatus,
   robotConnected,
   robotRunning,
   onOpen,
   onSave,
   onNewFile,
+  onLoadStaffCode,
   onRobotUpload,
   onRobotDownload,
   onStartRobot,
@@ -106,7 +116,7 @@ export default function Editor({
   content: string;
   consoleAlert: boolean;
   consoleIsOpen: boolean;
-  keyboardControlsEnabled: boolean;
+  keyboardControlsStatus: KeyboardControlsStatus;
   robotConnected: boolean;
   robotRunning: boolean;
   onOpen: () => void;
@@ -116,6 +126,7 @@ export default function Editor({
    */
   onSave: (forceDialog: boolean) => void;
   onNewFile: () => void;
+  onLoadStaffCode: () => void;
   onRobotUpload: () => void;
   onRobotDownload: () => void;
   /**
@@ -146,7 +157,7 @@ export default function Editor({
   return (
     <div
       className={`Editor${
-        keyboardControlsEnabled ? ' Editor-kbctrl-enabled' : ''
+        keyboardControlsStatus === 'on' ? ' Editor-kbctrl-enabled' : ''
       }`}
       style={{ width }}
     >
@@ -171,7 +182,14 @@ export default function Editor({
             <img src={saveAsSvg} alt="Save As" />
           </button>
           <button type="button" onClick={onNewFile} title="New File">
-            <img src={newFileSvg} alt="New File" />
+            <img src={newFileSvg} alt="New file" />
+          </button>
+          <button
+            type="button"
+            onClick={onLoadStaffCode}
+            title="Load staff code"
+          >
+            <img src={pieSvg} alt="Load staff code" />
           </button>
         </div>
         <div className="Editor-toolbar-group">
@@ -225,7 +243,9 @@ export default function Editor({
             type="button"
             onClick={onToggleKeyboardControls}
             className={
-              keyboardControlsEnabled ? 'Editor-tbbtn-toggled' : undefined
+              keyboardControlsStatus === 'on'
+                ? 'Editor-tbbtn-toggled'
+                : undefined
             }
             title="Toggle keyboard controls"
           >
@@ -283,7 +303,7 @@ export default function Editor({
           mode="python"
           onChange={onChange}
           value={content}
-          readOnly={keyboardControlsEnabled}
+          readOnly={keyboardControlsStatus === 'on'}
           ref={editorRef}
           enableBasicAutocompletion
           enableLiveAutocompletion

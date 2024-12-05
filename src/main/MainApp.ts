@@ -3,7 +3,7 @@ import type { BrowserWindow, FileFilter } from 'electron';
 import fs from 'fs';
 import { version as dawnVersion } from '../../package.json';
 import AppConsoleMessage from '../common/AppConsoleMessage';
-import DeviceInfoState from '../common/DeviceInfoState';
+import DeviceInfoState, { DeviceType } from '../common/DeviceInfoState';
 import type {
   RendererChannels,
   RendererInitData,
@@ -40,21 +40,21 @@ const CODE_FILE_FILTERS: FileFilter[] = [
  */
 const CONFIG_RELPATH = 'dawn-config.json';
 /**
- * Path on robot to upload student code to.
- */
-const REMOTE_CODE_PATH = '/home/pi/runtime/executor/studentcode.py';
-/**
  * Port to use when connecting to robot with SSH.
  */
 const ROBOT_SSH_PORT = 22;
 /**
  * Username to log in as when connecting to robot with SSH.
  */
-const ROBOT_SSH_USER = 'pi';
+const ROBOT_SSH_USER = 'ubuntu';
 /**
  * Password to log in with when connecting to robot with SSH.
  */
-const ROBOT_SSH_PASS = 'raspberry';
+const ROBOT_SSH_PASS = 'potato';
+/**
+ * Path on robot to upload student code to.
+ */
+const REMOTE_CODE_PATH = `/home/${ROBOT_SSH_USER}/runtime/executor/studentcode.py`;
 
 /**
  * Adds a listener for the main-quit IPC event fired by the renderer.
@@ -141,6 +141,12 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   #preventQuit: boolean;
 
   /**
+   * Whether error messages relating to connectivity will be suppressed. Used so disconnects only
+   * generate one log message and possibly (hopefully?) the causing error.
+   */
+  #suppressNetworkErrors: boolean;
+
+  /**
    * Persistent configuration loaded when MainApp is constructed and saved when the main window is
    * closed.
    */
@@ -165,6 +171,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#watcher = null;
     this.#watchDebounce = true;
     this.#preventQuit = true;
+    this.#suppressNetworkErrors = false;
     this.#codeTransfer = new CodeTransfer(
       REMOTE_CODE_PATH,
       ROBOT_SSH_PORT,
@@ -196,7 +203,6 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     addRendererListener('main-quit', (data) => {
       // Save config that may have been changed while the program was running
       this.#config.robotIPAddress = data.robotIPAddress;
-      this.#config.robotSSHAddress = data.robotSSHAddress;
       this.#config.fieldIPAddress = data.fieldIPAddress;
       this.#config.fieldStationNumber = data.fieldStationNumber;
       this.#config.showDirtyUploadWarning = data.showDirtyUploadWarning;
@@ -246,7 +252,6 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#sendToRenderer('renderer-init', {
       dawnVersion,
       robotIPAddress: this.#config.robotIPAddress,
-      robotSSHAddress: this.#config.robotSSHAddress,
       fieldIPAddress: this.#config.fieldIPAddress,
       fieldStationNumber: this.#config.fieldStationNumber,
       showDirtyUploadWarning: this.#config.showDirtyUploadWarning,
@@ -268,43 +273,66 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
 
   onReceiveDevices(deviceInfoState: DeviceInfoState[]) {
     this.#sendToRenderer('renderer-devices-update', deviceInfoState);
+    const pdbs = deviceInfoState.filter(
+      (state) => state.id.split('_')[0] === DeviceType.PDB.toString(),
+    );
+    if (pdbs.length !== 1) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          'Cannot read battery voltage. Not exactly one PDB is connected to the robot.',
+        ),
+      );
+    } else if (!('v_batt' in pdbs[0]) || Number.isNaN(Number(pdbs[0].v_batt))) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          'PDB does not have v_batt property or it is not a number.',
+        ),
+      );
+    } else {
+      this.#sendToRenderer('renderer-battery-update', Number(pdbs[0].v_batt));
+    }
   }
 
   onRuntimeTcpError(err: Error) {
-    this.#sendToRenderer(
-      'renderer-post-console',
-      new AppConsoleMessage(
-        'dawn-err',
-        `Encountered TCP error when communicating with Runtime. ${err.toString()}`,
-      ),
-    );
-  }
-
-  onRuntimeUdpError(err: Error) {
-    this.#sendToRenderer(
-      'renderer-post-console',
-      new AppConsoleMessage(
-        'dawn-err',
-        `Encountered UDP error when communicating with Runtime. ${err.toString()}`,
-      ),
-    );
+    if (!this.#suppressNetworkErrors) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          `Encountered TCP error when communicating with Runtime. ${err.toString()}`,
+        ),
+      );
+    }
   }
 
   onRuntimeError(err: Error) {
-    this.#sendToRenderer(
-      'renderer-post-console',
-      new AppConsoleMessage(
-        'dawn-err',
-        `Encountered error when communicating with Runtime. ${err.toString()}`,
-      ),
-    );
+    if (!this.#suppressNetworkErrors) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-err',
+          `Encountered error when communicating with Runtime. ${err.toString()}`,
+        ),
+      );
+    }
   }
 
   onRuntimeDisconnect() {
-    this.#sendToRenderer(
-      'renderer-post-console',
-      new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
-    );
+    if (!this.#suppressNetworkErrors) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
+      );
+      this.#suppressNetworkErrors = true;
+    }
+  }
+
+  onRuntimeConnect() {
+    this.#suppressNetworkErrors = false;
   }
 
   /**
@@ -393,7 +421,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   }
 
   /**
-   * Tries to load code from a file into the editor. Fails is the user does not choose a path.
+   * Tries to load code from a file into the editor. Fails if the user does not choose a path.
    */
   #openCodeFile() {
     const success = this.#showCodePathDialog('load');

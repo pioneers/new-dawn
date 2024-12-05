@@ -3,18 +3,18 @@ import {
   SocketAddress,
   createConnection as createTcpConnection,
 } from 'net';
-import { Socket as UDPSocket, createSocket as createUdpSocket } from 'dgram';
 import PacketStream from './PacketStream';
 import DeviceInfoState from '../../common/DeviceInfoState';
 import * as protos from '../../../protos-main/protos';
 
 const DEFAULT_RUNTIME_PORT = 8101;
-const UDP_PORT = 9001;
 const TCP_RECONNECT_DELAY = 2000;
 const PING_INTERVAL = 5000;
 
 /**
  * A type of packet.
+ * Note CHALLENGE_DATA type has been omitted since 2021 Dawn as Shepherd is now in charge of
+ * checking challenges.
  */
 enum MsgType {
   RUN_MODE = 0,
@@ -66,12 +66,6 @@ export interface RuntimeCommsListener {
    */
   onRuntimeTcpError: (err: Error) => void;
   /**
-   * Called when the UDP socket encounters an error or data received by the UDP socket is malformed.
-   * @param err - the error. Protobuf ProtocolErrors are likely the result of a UDP transmission
-   * error.
-   */
-  onRuntimeUdpError: (err: Error) => void;
-  /**
    * Called when a generic Runtime communications error is encountered.
    * @param err - the error.
    */
@@ -80,6 +74,10 @@ export interface RuntimeCommsListener {
    * Called when the TCP connection to the robot is lost for any reason.
    */
   onRuntimeDisconnect: () => void;
+  /**
+   * Called when a TCP connection to the robot is established.
+   */
+  onRuntimeConnect: () => void;
 }
 
 /**
@@ -107,11 +105,6 @@ export default class RuntimeComms {
   #tcpSock: TCPSocket | null;
 
   /**
-   * The UDP socket listening for realtime data from Runtime.
-   */
-  #udpSock: UDPSocket | null;
-
-  /**
    * Whether communications are paused and reconnection should not be attempted automatically.
    */
   #tcpDisconnected: boolean;
@@ -126,21 +119,20 @@ export default class RuntimeComms {
     this.#runtimeAddr = '';
     this.#runtimePort = 0;
     this.#tcpSock = null;
-    this.#udpSock = null;
     this.#tcpDisconnected = false;
     this.#pingInterval = null;
   }
 
   /**
-   * Stops listening to the TCP and UDP sockets until resumed by setRobotIp.
+   * Stops listening to the TCP socket until resumed by setRobotIp.
    */
   disconnect() {
     this.#tcpDisconnected = true; // Don't reconnect
     if (this.#pingInterval) {
       clearInterval(this.#pingInterval);
+      this.#pingInterval = null;
     }
     this.#disconnectTcp();
-    this.#disconnectUdp();
   }
 
   /**
@@ -161,7 +153,7 @@ export default class RuntimeComms {
     } catch {
       return false;
     }
-    this.#connectTcp(); // Reconnect TCP, UDP will just start sending to new host
+    this.#connectTcp(); // Reconnect TCP
     return true;
   }
 
@@ -186,18 +178,6 @@ export default class RuntimeComms {
   }
 
   /**
-   * Sends challenge data.
-   * @param data - the textual challenge data to send.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  sendChallengeInputs(data: protos.IText) {
-    if (this.#tcpSock) {
-      throw new Error('Not implemented.'); // MsgTypes from old dawn are inconsistent?
-      // this.#tcpSock.write(this.#createPacket(MsgType.CHALLENGE_DATA, data));
-    }
-  }
-
-  /**
    * Sends the robot's starting position.
    * @param startPos - the robot's starting position index to send.
    */
@@ -212,14 +192,6 @@ export default class RuntimeComms {
    * @param inputs - the inputs to send.
    */
   sendInputs(inputs: protos.Input[]) {
-    // if (this.#udpSock) {
-    //  this.udpSock.send(protos.UserInputs.encode({
-    //    inputs: inputs.length ? inputs : [
-    //      protos.Input.create({ connected: false, source })
-    //    ],
-    //  }), this.#runtimePort, this.#runtimeAddr);
-    // }
-    // Old Dawn sends inputs through TCP, though comments say this is just for 2021?
     if (this.#tcpSock) {
       this.#tcpSock.write(this.#createPacket(MsgType.INPUTS, { inputs }));
     }
@@ -269,23 +241,6 @@ export default class RuntimeComms {
   }
 
   /**
-   * Closes the old UDP socket if open, then makes and binds a new one.
-   */
-  #connectUdp() {
-    this.#disconnectUdp();
-    this.#udpSock = createUdpSocket({
-      type: 'udp4',
-      reuseAddr: true,
-    })
-      .on(
-        'error',
-        this.#commsListener.onRuntimeUdpError.bind(this.#commsListener),
-      )
-      .on('message', this.#handleUdpMessage.bind(this))
-      .bind(UDP_PORT);
-  }
-
-  /**
    * Ends and disconnects the TCP socket if open.
    */
   #disconnectTcp() {
@@ -296,19 +251,10 @@ export default class RuntimeComms {
   }
 
   /**
-   * Closes the UDP socket if open.
-   */
-  #disconnectUdp() {
-    if (this.#udpSock) {
-      this.#udpSock.close();
-      this.#udpSock = null;
-    }
-  }
-
-  /**
    * Handler for TCP 'connect' event.
    */
   #handleTcpConnection() {
+    this.#commsListener.onRuntimeConnect();
     if (this.#tcpSock) {
       this.#tcpSock.write(new Uint8Array([1])); // Tell Runtime that we are Dawn, not Shepherd
     }
@@ -322,18 +268,16 @@ export default class RuntimeComms {
     const { type, data } = packet;
     switch (type) {
       case MsgType.LOG:
-        // this.#commsListener.onReceiveRobotLogs(
-        //  protos.Text.decode(data).payload,
-        // );
+        this.#commsListener.onReceiveRobotLogs(
+          protos.Text.decode(data).payload,
+        );
         break;
       case MsgType.TIME_STAMPS:
         this.#commsListener.onReceiveLatency(
-          (Date.now() - Number(protos.TimeStamps.decode(data))) / 2,
+          (Date.now() - Number(protos.TimeStamps.decode(data).dawnTimestamp)) /
+            2,
         );
         break;
-      // case MsgType.CHALLENGE_DATA:
-      // TODO: ??? Not implemented in old Dawn
-      // break;
       case MsgType.DEVICE_DATA:
         // Convert decoded Devices to DeviceInfoStates before passing to onReceiveDevices
         this.#commsListener.onReceiveDevices(
@@ -373,19 +317,6 @@ export default class RuntimeComms {
             )}`,
           ),
         );
-    }
-  }
-
-  /**
-   * Processes a Buffer assumed to be the payload of a device data packet with some error checking
-   * code because UDP packets might not be well-formed.
-   * @param data - the payload of the received packet.
-   */
-  #handleUdpMessage(data: Buffer) {
-    try {
-      this.#handlePacket({ type: MsgType.DEVICE_DATA, data });
-    } catch (err) {
-      this.#commsListener.onRuntimeUdpError(err as Error);
     }
   }
 
@@ -431,14 +362,6 @@ export default class RuntimeComms {
    */
   #createPacket(type: MsgType.TIME_STAMPS, data: protos.ITimeStamps): Buffer;
 
-  /*
-   * Encodes a challenge data packet.
-   * @param type - the packet type.
-   * @param data - the packet payload.
-   * @returns The packet encoded in a Buffer
-   */
-  // #createPacket(type: MsgType.CHALLENGE_DATA, data: protos.IText): Buffer;
-
   /**
    * Encodes an input state packet.
    * @param type - the packet type.
@@ -470,9 +393,6 @@ export default class RuntimeComms {
           data as protos.ITimeStamps,
         ).finish();
         break;
-      // case MsgType.CHALLENGE_DATA:
-      // packetData = protos.Text.encode(data as protos.IText).finish();
-      // break;
       case MsgType.INPUTS:
         // Source says input data isn't usually sent through TCP? What's that about?
         packetData = protos.UserInputs.encode(

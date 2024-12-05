@@ -8,7 +8,10 @@ import {
   useLayoutEffect,
 } from 'react';
 import Topbar from './Topbar';
-import Editor, { EditorContentStatus } from './editor/Editor';
+import Editor, {
+  EditorContentStatus,
+  KeyboardControlsStatus,
+} from './editor/Editor';
 import DeviceInfo from './DeviceInfo';
 import AppConsole from './AppConsole';
 import type AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
@@ -26,6 +29,7 @@ import {
   Input as RobotInput,
 } from '../../protos-main/protos';
 import robotKeyNumberMap from './robotKeyNumberMap';
+import staffCodeSource from './staffCode';
 import './App.css';
 
 const INITIAL_EDITOR_WIDTH_PERCENT = 0.7;
@@ -73,8 +77,10 @@ export default function App() {
   // Whether a new message has been added to the AppConsole since it has been closed (if it is
   // closed)
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
-  // Whether keyboard controls are enabled
-  const [keyboardControlsEnabled, setKeyboardControlsEnabled] = useState(false);
+  // Whether keyboard controls are enabled.
+  const [keyboardControlsStatus, setKeyboardControlsEnabled] = useState(
+    'off' as KeyboardControlsStatus,
+  );
   // Whether the robot is running student code
   const [robotRunning, setRobotRunning] = useState(false);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
@@ -102,7 +108,6 @@ export default function App() {
   );
   // Connection configuration
   const [IPAddress, setIPAddress] = useState('192.168.0.100');
-  const [SSHAddress, setSSHAddress] = useState('192.168.0.100');
   const [FieldIPAddress, setFieldIPAddress] = useState('localhost');
   const [FieldStationNum, setFieldStationNum] = useState('4');
   // Information about periperhals connected to the robot
@@ -126,8 +131,6 @@ export default function App() {
   const handleConnectionChange = (event: ConnectionConfigChangeEvent) => {
     if (event.name === 'IPAddress') {
       setIPAddress(event.value);
-    } else if (event.name === 'SSHAddress') {
-      setSSHAddress(event.value);
     } else if (event.name === 'FieldIPAddress') {
       setFieldIPAddress(event.value);
     } else if (event.name === 'FieldStationNum') {
@@ -178,18 +181,11 @@ export default function App() {
   const closeWindow = useCallback(() => {
     window.electron.ipcRenderer.sendMessage('main-quit', {
       robotIPAddress: IPAddress,
-      robotSSHAddress: SSHAddress,
       fieldIPAddress: FieldIPAddress,
       fieldStationNumber: FieldStationNum,
       showDirtyUploadWarning,
     });
-  }, [
-    IPAddress,
-    SSHAddress,
-    FieldIPAddress,
-    FieldStationNum,
-    showDirtyUploadWarning,
-  ]);
+  }, [IPAddress, FieldIPAddress, FieldStationNum, showDirtyUploadWarning]);
   const saveFile = useCallback(
     (forceDialog: boolean) => {
       window.electron.ipcRenderer.sendMessage('main-file-control', {
@@ -217,13 +213,13 @@ export default function App() {
       if (editorStatus === 'clean' || activeModal === modalName) {
         window.electron.ipcRenderer.sendMessage('main-file-control', {
           type: isUpload ? 'upload' : 'download',
-          robotSSHAddress: SSHAddress,
+          robotSSHAddress: IPAddress,
         });
       } else {
         changeActiveModal(modalName);
       }
     },
-    [editorStatus, SSHAddress, activeModal],
+    [editorStatus, IPAddress, activeModal],
   );
   const createNewFile = useCallback(() => {
     if (editorStatus === 'clean' || activeModal === 'DirtyNewFileConfirm') {
@@ -235,6 +231,17 @@ export default function App() {
       });
     } else {
       changeActiveModal('DirtyNewFileConfirm');
+    }
+  }, [activeModal, editorStatus]);
+  const loadStaffCode = useCallback(() => {
+    if (
+      editorStatus === 'clean' ||
+      activeModal === 'DirtyLoadStaffCodeConfirm'
+    ) {
+      setEditorContent(staffCodeSource);
+      setEditorStatus('dirty');
+    } else {
+      changeActiveModal('DirtyLoadStaffCodeConfirm');
     }
   }, [activeModal, editorStatus]);
 
@@ -268,7 +275,7 @@ export default function App() {
       // Possible bug requires testing: gamepad indices are not preserved after filtering
       // Filter removes disconnected and 'ghost'/duplicate gamepads (can be distinguished by
       // different mapping)
-      const gamepadInputs = navigator
+      const inputs = navigator
         .getGamepads()
         .filter((gp): gp is Gamepad => gp !== null && gp.mapping === 'standard')
         .map((gp) => {
@@ -285,24 +292,28 @@ export default function App() {
             source: RobotInputSource.GAMEPAD,
           });
         });
-      const keyboardInput = new RobotInput({
-        connected: keyboardControlsEnabled,
-        axes: [],
-        buttons: keyboardControlsEnabled ? Number(keyboardBitmap) : 0,
-        source: RobotInputSource.KEYBOARD,
-      });
-      // Possible bug requires testing: is Runtime ok with mixed input sources in same packet?
-      window.electron.ipcRenderer.sendMessage('main-robot-input', [
-        ...gamepadInputs,
-        keyboardInput,
-      ]);
+      if (keyboardControlsStatus !== 'off') {
+        // Possible bug requires testing: is Runtime ok with mixed input sources in same packet?
+        inputs.push(
+          new RobotInput({
+            connected: keyboardControlsStatus === 'on',
+            axes: [],
+            buttons: keyboardControlsStatus ? Number(keyboardBitmap) : 0,
+            source: RobotInputSource.KEYBOARD,
+          }),
+        );
+        if (keyboardControlsStatus === 'offEdge') {
+          setKeyboardControlsEnabled('off');
+        }
+      }
+      window.electron.ipcRenderer.sendMessage('main-robot-input', inputs);
     }, GAMEPAD_UPDATE_PERIOD_MS);
     return () => {
       clearInterval(gamepadUpdateInterval);
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [keyboardControlsEnabled]);
+  }, [keyboardControlsStatus]);
   useEffect(() => {
     // Tests won't run main/preload.ts
     if (window.electron) {
@@ -310,7 +321,6 @@ export default function App() {
         window.electron.ipcRenderer.on('renderer-init', (data) => {
           setDawnVersion(data.dawnVersion);
           setIPAddress(data.robotIPAddress);
-          setSSHAddress(data.robotSSHAddress);
           setFieldIPAddress(data.fieldIPAddress);
           setFieldStationNum(data.fieldStationNumber);
           setShowDirtyUploadWarning(data.showDirtyUploadWarning);
@@ -418,12 +428,13 @@ export default function App() {
             content={editorContent}
             consoleAlert={consoleIsAlerted}
             consoleIsOpen={consoleIsOpen}
-            keyboardControlsEnabled={keyboardControlsEnabled}
+            keyboardControlsStatus={keyboardControlsStatus}
             robotConnected={robotLatencyMs !== -1}
             robotRunning={robotRunning}
             onOpen={loadFile}
             onSave={saveFile}
             onNewFile={createNewFile}
+            onLoadStaffCode={loadStaffCode}
             onRobotUpload={() => uploadDownloadFile(true)}
             onRobotDownload={() => uploadDownloadFile(false)}
             onStartRobot={(opmode: 'auto' | 'teleop') => {
@@ -441,7 +452,9 @@ export default function App() {
               setConsoleIsAlerted(false);
             }}
             onToggleKeyboardControls={() => {
-              setKeyboardControlsEnabled((v) => !v);
+              setKeyboardControlsEnabled((v) =>
+                v === 'on' ? 'offEdge' : 'on',
+              );
             }}
           />
           <ResizeBar
@@ -469,7 +482,6 @@ export default function App() {
             onClose={closeModal}
             onChange={handleConnectionChange}
             IPAddress={IPAddress}
-            SSHAddress={SSHAddress}
             FieldIPAddress={FieldIPAddress}
             FieldStationNum={FieldStationNum}
           />
@@ -540,6 +552,17 @@ export default function App() {
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really close file?
+            </p>
+          </ConfirmModal>
+          <ConfirmModal
+            isActive={activeModal === 'DirtyLoadStaffCodeConfirm'}
+            onClose={closeModal}
+            onConfirm={loadStaffCode}
+            modalTitle="Confirm load staff code"
+          >
+            <p className="App-confirm-dialog-text">
+              You have unsaved changes. Really replace contents of editor with
+              staff code?
             </p>
           </ConfirmModal>
         </div>
