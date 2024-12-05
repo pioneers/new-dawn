@@ -19,8 +19,8 @@ export default function Modal({
   onClose: () => void;
   isActive: boolean;
   modalTitle: string;
-  children: ReactNode;
   className?: string;
+  children: ReactNode;
 }) {
   return (
     <div className={`Modal${isActive ? ' Modal-active' : ''}`}>

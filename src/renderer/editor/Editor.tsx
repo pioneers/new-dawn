@@ -1,22 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AceEditor from 'react-ace';
-import 'ace-builds/src-noconflict/mode-python';
-import uploadSvg from '../../assets/upload.svg';
-import downloadSvg from '../../assets/download.svg';
-import openSvg from '../../assets/open.svg';
-import saveSvg from '../../assets/save.svg';
-import saveAsSvg from '../../assets/save-as.svg';
-import newFileSvg from '../../assets/new-file.svg';
-import pieSvg from '../../assets/pie.svg';
-import consoleSvg from '../../assets/console.svg';
-import consoleClearSvg from '../../assets/console-clear.svg';
-import zoomInSvg from '../../assets/zoom-in.svg';
-import zoomOutSvg from '../../assets/zoom-out.svg';
-import startRobot from '../../assets/start-robot.svg';
-import stopRobot from '../../assets/stop-robot.svg';
-import keyboardKeySvg from '../../assets/keyboard-key.svg';
-import themeSvg from '../../assets/theme.svg';
+import addEditorAutocomplete from './addEditorAutocomplete';
+import addEditorTooltips from './addEditorTooltips';
 
+import 'ace-builds/src-noconflict/mode-python';
+import 'ace-builds/src-noconflict/snippets/python';
+import 'ace-builds/src-noconflict/ext-language_tools';
+import 'ace-builds/src-noconflict/ext-searchbox';
 import 'ace-builds/src-noconflict/theme-chrome';
 import 'ace-builds/src-noconflict/theme-clouds';
 import 'ace-builds/src-noconflict/theme-dawn';
@@ -25,6 +15,22 @@ import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/theme-tomorrow_night';
 import 'ace-builds/src-noconflict/theme-clouds_midnight';
 import 'ace-builds/src-noconflict/theme-ambiance';
+
+import uploadSvg from '../../../assets/upload.svg';
+import downloadSvg from '../../../assets/download.svg';
+import openSvg from '../../../assets/open.svg';
+import saveSvg from '../../../assets/save.svg';
+import saveAsSvg from '../../../assets/save-as.svg';
+import newFileSvg from '../../../assets/new-file.svg';
+import pieSvg from '../../../assets/pie.svg';
+import consoleSvg from '../../../assets/console.svg';
+import consoleClearSvg from '../../../assets/console-clear.svg';
+import zoomInSvg from '../../../assets/zoom-in.svg';
+import zoomOutSvg from '../../../assets/zoom-out.svg';
+import startRobot from '../../../assets/start-robot.svg';
+import stopRobot from '../../../assets/stop-robot.svg';
+import keyboardKeySvg from '../../../assets/keyboard-key.svg';
+import themeSvg from '../../../assets/theme.svg';
 
 import './Editor.css';
 
@@ -162,10 +168,18 @@ export default function Editor({
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
+  const editorRef = useRef(null as AceEditor | null);
 
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
   };
+  useEffect(() => {
+    if (editorRef.current !== null) {
+      const { editor } = editorRef.current;
+      addEditorAutocomplete(editor);
+      addEditorTooltips(editor);
+    }
+  }, [editorRef]);
 
   const [theme, setTheme] = useState('dawn'); // Default theme
   const handleThemeChange = (newTheme: string) => {
@@ -278,7 +292,9 @@ export default function Editor({
             name="Editor-toolbar-opmode"
           >
             {Object.entries(ACE_THEMES).map(([themeKey, themeName]) => (
-              <option value={themeKey}>{themeName}</option>
+              <option key={themeKey} value={themeKey}>
+                {themeName}
+              </option>
             ))}
           </select>
         </div>
@@ -325,7 +341,7 @@ export default function Editor({
       </div>
       <div className="Editor-ace-wrapper">
         <div className="Editor-kbctrl-overlay">
-          <span>Keyboard input sent to robot &mdash; disable to edit code</span>
+          <span>Keyboard input sent to robot -- disable to edit code</span>
         </div>
         <AceEditor
           theme={theme}
@@ -335,6 +351,10 @@ export default function Editor({
           onChange={onChange}
           value={content}
           readOnly={keyboardControlsStatus === 'on'}
+          ref={editorRef}
+          enableBasicAutocompletion
+          enableLiveAutocompletion
+          enableSnippets
         />
       </div>
     </div>
