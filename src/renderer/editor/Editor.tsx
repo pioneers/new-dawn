@@ -1,9 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import AceEditor from 'react-ace';
+import addEditorAutocomplete from './addEditorAutocomplete';
+import addEditorTooltips from './addEditorTooltips';
+
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/snippets/python';
 import 'ace-builds/src-noconflict/ext-language_tools';
 import 'ace-builds/src-noconflict/ext-searchbox';
+import 'ace-builds/src-noconflict/theme-chrome';
+import 'ace-builds/src-noconflict/theme-clouds';
+import 'ace-builds/src-noconflict/theme-dawn';
+import 'ace-builds/src-noconflict/theme-dreamweaver';
+import 'ace-builds/src-noconflict/theme-monokai';
+import 'ace-builds/src-noconflict/theme-tomorrow_night';
+import 'ace-builds/src-noconflict/theme-clouds_midnight';
+import 'ace-builds/src-noconflict/theme-ambiance';
+
 import uploadSvg from '../../../assets/upload.svg';
 import downloadSvg from '../../../assets/download.svg';
 import openSvg from '../../../assets/open.svg';
@@ -18,8 +30,8 @@ import zoomOutSvg from '../../../assets/zoom-out.svg';
 import startRobot from '../../../assets/start-robot.svg';
 import stopRobot from '../../../assets/stop-robot.svg';
 import keyboardKeySvg from '../../../assets/keyboard-key.svg';
-import addEditorAutocomplete from './addEditorAutocomplete';
-import addEditorTooltips from './addEditorTooltips';
+import themeSvg from '../../../assets/theme.svg';
+
 import './Editor.css';
 
 /**
@@ -43,6 +55,7 @@ const STATUS_TOOLTIPS: { [k in EditorContentStatus]: string } = {
   extDirty:
     'The code that will be uploaded to the robot was last changed in an external program.',
 };
+
 /**
  * Content of the editor status indicator (next to the file name).
  */
@@ -50,6 +63,20 @@ const STATUS_TEXT: { [k in EditorContentStatus]: string } = {
   clean: '',
   dirty: 'Modified',
   extDirty: 'Externally modified',
+};
+
+/**
+ * Color themes for the ACE code editor.
+ */
+const ACE_THEMES = {
+  dawn: 'Dawn',
+  chrome: 'Chrome',
+  clouds: 'Clouds',
+  dreamweaver: 'Dreamweaver',
+  monokai: 'Monokai',
+  tomorrow_night: 'Tomorrow Night',
+  clouds_midnight: 'Clouds Midnight',
+  ambiance: 'Ambiance',
 };
 
 /**
@@ -154,6 +181,12 @@ export default function Editor({
     }
   }, [editorRef]);
 
+  const [theme, setTheme] = useState('dawn'); // Default theme
+  const handleThemeChange = (newTheme: string) => {
+    const cleanTheme = newTheme.replace('ace/theme/', '');
+    setTheme(cleanTheme);
+  };
+
   return (
     <div
       className={`Editor${
@@ -253,6 +286,17 @@ export default function Editor({
           </button>
         </div>
         <div className="Editor-toolbar-group">
+          <img src={themeSvg} alt="Change Theme" />
+          <select
+            onChange={(e) => handleThemeChange(`ace/theme/${e.target.value}`)}
+            name="Editor-toolbar-opmode"
+          >
+            {Object.entries(ACE_THEMES).map(([themeKey, themeName]) => (
+              <option key={themeKey} value={themeKey}>{themeName}</option>
+            ))}
+          </select>
+        </div>
+        <div className="Editor-toolbar-group">
           <label className="Editor-tbopmode" htmlFor="Editor-toolbar-opmode">
             OpMode:
             <select
@@ -298,6 +342,7 @@ export default function Editor({
           <span>Keyboard input sent to robot -- disable to edit code</span>
         </div>
         <AceEditor
+          theme={theme}
           fontSize={fontSize}
           style={{ width: '100%', height: '100%' }}
           mode="python"
