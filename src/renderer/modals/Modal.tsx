@@ -14,13 +14,13 @@ export default function Modal({
   isActive,
   modalTitle,
   children,
-  className,
+  className = '',
 }: {
   onClose: () => void;
   isActive: boolean;
   modalTitle: string;
+  className?: string;
   children: ReactNode;
-  className: string;
 }) {
   return (
     <div className={`Modal${isActive ? ' Modal-active' : ''}`}>

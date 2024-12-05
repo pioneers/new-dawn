@@ -16,14 +16,14 @@ export default function ConfirmModal({
   onConfirm,
   isActive,
   modalTitle,
-  noAutoClose,
+  noAutoClose = false,
   children,
 }: {
   onClose: () => void;
   onConfirm: () => void;
   isActive: boolean;
   modalTitle: string;
-  noAutoClose: boolean;
+  noAutoClose?: boolean;
   children: ReactNode;
 }) {
   const handleConfirm = () => {

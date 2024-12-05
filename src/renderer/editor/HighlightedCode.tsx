@@ -13,10 +13,10 @@ import './HighlightedCode.css';
  */
 export default function HighlightedCode({
   children,
-  indent,
+  indent = 0,
 }: {
   children: string;
-  indent: number;
+  indent?: number;
 }) {
   const lines = children.split('\n');
   if (lines.length && !lines[0].trim()) {

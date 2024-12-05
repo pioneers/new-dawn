@@ -10,11 +10,11 @@ import './ApiLink.css';
  */
 export default function ApiLink({
   dest,
-  code,
+  code = false,
   children,
 }: {
   dest: string;
-  code: boolean;
+  code?: boolean;
   children: string;
 }) {
   const text = `(${children})[${dest}]`;
