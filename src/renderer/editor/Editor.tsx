@@ -292,7 +292,9 @@ export default function Editor({
             name="Editor-toolbar-opmode"
           >
             {Object.entries(ACE_THEMES).map(([themeKey, themeName]) => (
-              <option key={themeKey} value={themeKey}>{themeName}</option>
+              <option key={themeKey} value={themeKey}>
+                {themeName}
+              </option>
             ))}
           </select>
         </div>
