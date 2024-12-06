@@ -222,6 +222,9 @@
         "nsis"
       ]
     },
+    "nsis": {
+      "oneClick": false
+    },
     "linux": {
       "target": [
         "deb"
