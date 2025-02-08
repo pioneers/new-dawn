@@ -1,7 +1,18 @@
-.Editor {
+/* light mode */
+.Editor-light {
   display: flex;
   flex-direction: column;
 }
+/* dark mode */
+.Editor-dark {
+  display: flex;
+  flex-direction: column;
+}
+.Editor-dark > * {
+  color: white;
+  background-color: #121212;
+}
+
 .Editor-file-info {
   display: flex;
   padding-left: 15px;
@@ -54,13 +65,60 @@
 .Editor-kbctrl-enabled .ace_scrollbar-h {
   overflow: hidden;
 }
-.Editor-toolbar {
+/* inefficient code T_T */
+/* light */
+.Editor-toolbar-light {
   display: flex;
   flex-direction: row;
   padding: 5px 0 5px 20px;
   overflow-x: auto;
   border-bottom: 4px double var(--body-accent-color);
 }
+.Editor-toolbar-group-light {
+  margin-right: 20px;
+  border: 1px solid var(--body-accent-color);
+  padding: 4px;
+  border-radius: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+}
+/* dark */
+.Editor-toolbar-dark {
+  display: flex;
+  flex-direction: row;
+  padding: 5px 0 5px 20px;
+  margin: 0px 0  0;
+  overflow-x: auto;
+  border-bottom: 4px double var(--body-accent-color);
+  background-color: #1E1E1E;
+}
+.Editor-toolbar-dark::-webkit-scrollbar {
+  width: 10px;
+  background-color: #2E2E2E;
+}
+
+.Editor-toolbar-dark::-webkit-scrollbar-thumb {
+  background-color: #6b6b6b;
+  border-radius: 4px;
+}
+.Editor-toolbar-group-dark {
+  margin-right: 20px;
+  border: 1px solid var(--body-accent-color);
+  padding: 4px;
+  border-radius: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+  background-color: white;
+}
+/* Sorry, this is bad code but deleting the block underneath breaks stuff D: . This is my fault... - Justin */
 .Editor-toolbar-group {
   margin-right: 20px;
   border: 1px solid var(--body-accent-color);
@@ -79,7 +137,8 @@
 .Editor-toolbar-group:last-child {
   margin-left: auto;
 }
-.Editor-toolbar button {
+/* light mode */
+.Editor-toolbar-light button {
   position: relative;
   outline: none;
   border: none;
@@ -89,7 +148,28 @@
   padding: 0;
   background-color: transparent;
 }
-.Editor-toolbar img {
+.Editor-toolbar-light img {
+  width: 100%;
+  height: 100%;
+  width: 20px;
+  height: 20px;
+  transition: filter 0.25s;
+  /* Fix other filter variables so transition is directly from black to blue: */
+  filter: invert(0%) sepia(100%) hue-rotate(180deg) saturate(0);
+  pointer-events: none;
+}
+/* dark mode */
+.Editor-toolbar-dark button {
+  position: relative;
+  outline: none;
+  border: none;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  padding: 0;
+  background-color: white;
+}
+.Editor-toolbar-dark img {
   width: 100%;
   height: 100%;
   width: 20px;
@@ -121,6 +201,7 @@
 }
 .Editor-tbopmode {
   font-family: Verdana, monospace;
+  color: #1E1E1E;
 }
 .Editor-tbopmode select {
   margin-left: 5px;

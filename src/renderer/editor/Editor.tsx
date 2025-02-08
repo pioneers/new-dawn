@@ -197,7 +197,7 @@ export default function Editor({
 
   return (
     <div
-      className={`Editor${
+      className={`Editor-${isDarkMode ? 'dark' : 'light'}${
         keyboardControlsStatus === 'on' ? ' Editor-kbctrl-enabled' : ''
       }`}
       style={{ width }}
@@ -211,8 +211,10 @@ export default function Editor({
           {STATUS_TEXT[fileStatus]}
         </span>
       </div>
-      <div className="Editor-toolbar">
-        <div className="Editor-toolbar-group">
+      <div className={`Editor-toolbar-${isDarkMode ? 'dark' : 'light'}`}>
+        <div
+          className={`Editor-toolbar-group Editor-toolbar-group-${isDarkMode ? 'dark' : 'light'}`}
+        >
           <button type="button" onClick={onOpen} title="Open">
             <img src={openSvg} alt="Open" />
           </button>
@@ -233,7 +235,9 @@ export default function Editor({
             <img src={pieSvg} alt="Load staff code" />
           </button>
         </div>
-        <div className="Editor-toolbar-group">
+        <div
+          className={`Editor-toolbar-group Editor-toolbar-group-${isDarkMode ? 'dark' : 'light'}`}
+        >
           <button
             type="button"
             onClick={() => robotConnected && onRobotUpload()}
@@ -251,7 +255,7 @@ export default function Editor({
             <img src={downloadSvg} alt="Download code from robot" />
           </button>
         </div>
-        <div className="Editor-toolbar-group">
+        <div className={`Editor-toolbar-group Editor-toolbar-group-${isDarkMode ? 'dark' : 'light'}`}>
           <button
             type="button"
             onClick={onToggleConsole}
@@ -265,7 +269,7 @@ export default function Editor({
             <img src={consoleClearSvg} alt="Clear console" />
           </button>
         </div>
-        <div className="Editor-toolbar-group">
+        <div className={`Editor-toolbar-group Editor-toolbar-group-${isDarkMode ? 'dark' : 'light'}`}>
           <button
             type="button"
             onClick={() => zoomEditor(true)}
@@ -293,7 +297,7 @@ export default function Editor({
             <img src={keyboardKeySvg} alt="Toggle keyboard controls" />
           </button>
         </div>
-        <div className="Editor-toolbar-group">
+        <div className={`Editor-toolbar-group Editor-toolbar-group-${isDarkMode ? 'dark' : 'light'}`}>
           <img src={themeSvg} alt="Change Theme" />
           <select
             onChange={(e) => handleThemeChange(`ace/theme/${e.target.value}`)}
@@ -306,7 +310,7 @@ export default function Editor({
             ))}
           </select>
         </div>
-        <div className="Editor-toolbar-group">
+        <div className={`Editor-toolbar-group Editor-toolbar-group-${isDarkMode ? 'dark' : 'light'}`}>
           <button
             type="button"
             className="Editor-toolbar-button"
@@ -316,7 +320,7 @@ export default function Editor({
             <img src={darkModeSvg} alt="Toggle Dark Theme" />
           </button>
         </div>
-        <div className="Editor-toolbar-group">
+        <div className={`Editor-toolbar-group Editor-toolbar-group-${isDarkMode ? 'dark' : 'light'}`}>
           <label className="Editor-tbopmode" htmlFor="Editor-toolbar-opmode">
             OpMode:
             <select
