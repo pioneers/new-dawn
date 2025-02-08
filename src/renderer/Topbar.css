@@ -49,17 +49,17 @@
 }
 
 .Topbar-robot-disconnected {
-  background-color: indianred;
+  background-color: #BB86FC;
 }
 .Topbar-runtime-version {
-  background-color: blue;
+  background-color: #BB86FC;
 }
 .Topbar-info-card-red {
-  background-color: salmon;
+  background-color: #BB86FC;
 }
 .Topbar-info-card-yellow {
-  background-color: orange;
+  background-color: #BB86FC;
 }
 .Topbar-info-card-green {
-  background-color: limegreen;
+  background-color: #BB86FC;
 }

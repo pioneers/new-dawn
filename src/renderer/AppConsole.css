@@ -7,7 +7,6 @@
   flex-shrink: 0;
   user-select: text;
 }
-
 /* Light Mode */
 .AppConsole-light {
   padding: 10px;
@@ -44,7 +43,6 @@
   padding-left: 4px;
   border-left: 6px solid crimson;
 }
-
 /* Dark Mode */
 .AppConsole-dark {
   padding: 10px;
@@ -85,13 +83,14 @@
   padding-left: 4px;
   border-left: 6px solid crimson;
 }
-
 .AppConsole-inner-dark::-webkit-scrollbar {
   width: 10px;
   background-color: #2E2E2E;
 }
-
 .AppConsole-inner-dark::-webkit-scrollbar-thumb {
   background-color: #6b6b6b;
   border-radius: 4px;
+}
+.AppConsole-inner-dark::-webkit-scrollbar-thumb:hover {
+  background-color: #7f7f7f;
 }

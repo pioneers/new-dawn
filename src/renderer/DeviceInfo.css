@@ -28,7 +28,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .DeviceInfo-device-props-light {
   font-family: Verdana, sans-serif;
   width: 100%;
@@ -38,7 +37,6 @@
 .DeviceInfo-disconnected-light {
   font: 15px Verdana, sans-serif;
 }
-
 /* dark mode */
 .DeviceInfo-dark {
   flex-grow: 1;
@@ -55,7 +53,6 @@
   text-overflow: ellipsis;
   color: white;
 }
-
 .DeviceInfo-device-props-dark {
   font-family: Verdana, sans-serif;
   width: 100%;
@@ -67,13 +64,14 @@
   font: 15px Verdana, sans-serif;
   color: white;
 }
-
 .DeviceInfo-dark::-webkit-scrollbar {
   width: 10px;
   background-color: #2E2E2E;
 }
-
 .DeviceInfo-dark::-webkit-scrollbar-thumb {
   background-color: #6b6b6b;
   border-radius: 4px;
+}
+.DeviceInfo-dark::-webkit-scrollbar-thumb:hover {
+  background-color: #7f7f7f;
 }

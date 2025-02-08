@@ -98,16 +98,18 @@
 }
 .Editor-toolbar-dark::-webkit-scrollbar {
   width: 10px;
-  background-color: #2E2E2E;
+  background-color: #2E2E2E; 
 }
-
 .Editor-toolbar-dark::-webkit-scrollbar-thumb {
   background-color: #6b6b6b;
   border-radius: 4px;
 }
+.Editor-toolbar-dark::-webkit-scrollbar-thumb:hover {
+  background-color: #7f7f7f;
+}
 .Editor-toolbar-group-dark {
-  margin-right: 20px;
-  border: 1px solid var(--body-accent-color);
+  margin: 5px 20px 5px 0px;
+  border: none;
   padding: 4px;
   border-radius: 5px;
   white-space: nowrap;
@@ -118,18 +120,10 @@
   flex-shrink: 0;
   background-color: white;
 }
-/* Sorry, this is bad code but deleting the block underneath breaks stuff D: . This is my fault... - Justin */
-.Editor-toolbar-group {
-  margin-right: 20px;
-  border: 1px solid var(--body-accent-color);
-  padding: 4px;
-  border-radius: 5px;
-  white-space: nowrap;
-  overflow: hidden;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  flex-shrink: 0;
+.Editor-toolbar-group-dark > *, .Editor-toolbar-group-dark > * > *{
+  font-family: Verdana, monospace;
+  color: #121212;
+  border: none;
 }
 .Editor-toolbar-group > *:not(:last-child) {
   margin-right: 6px;
@@ -201,7 +195,7 @@
 }
 .Editor-tbopmode {
   font-family: Verdana, monospace;
-  color: #1E1E1E;
+  font-size: 12pt;
 }
 .Editor-tbopmode select {
   margin-left: 5px;

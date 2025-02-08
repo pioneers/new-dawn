@@ -414,7 +414,7 @@ export default function App() {
 
   return (
     <StrictMode>
-      <div className="App">
+      <div className={`App-${isDarkMode ? 'dark' : 'light'}`}>
         <Topbar
           onConnectionConfigModalOpen={() =>
             changeActiveModal('ConnectionConfig')
@@ -423,7 +423,7 @@ export default function App() {
           dawnVersion={dawnVersion}
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}
-          // isDarkMode={isDarkMode}
+          isDarkMode={isDarkMode}
         />
         <div className="App-cols">
           <Editor
@@ -470,8 +470,9 @@ export default function App() {
             onUpdateResize={updateEditorResize}
             onEndResize={endEditorResize}
             axis="x"
+            isDarkMode={isDarkMode}
           />
-          <DeviceInfo deviceStates={deviceInfoState}/>
+          <DeviceInfo deviceStates={deviceInfoState} isDarkMode={isDarkMode} />
         </div>
         {consoleIsOpen && (
           <>
@@ -480,10 +481,11 @@ export default function App() {
               onUpdateResize={updateColsResize}
               onEndResize={endColsResize}
               axis="y"
+              isDarkMode={isDarkMode}
             />
-            <AppConsole 
-              height={consoleSize} 
-              messages={consoleMsgs} 
+            <AppConsole
+              height={consoleSize}
+              messages={consoleMsgs}
               isDarkMode={isDarkMode}
             />
           </>
