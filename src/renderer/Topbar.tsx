@@ -20,6 +20,7 @@ const FAIR_LATENCY_MS = 200;
  * @param props.robotBatteryVoltage - battery voltage in volts of the currently connected robot. The
  * value is not displayed to the user if robotLatencyMs is -1
  * @param props.dawnVersion - version string of Dawn
+ * @param props.isDarkMode - whether UI is in dark mode
  */
 export default function Topbar({
   onConnectionConfigModalOpen,
@@ -27,12 +28,14 @@ export default function Topbar({
   robotBatteryVoltage,
   robotLatencyMs,
   dawnVersion,
+  isDarkMode,
 }: {
   onConnectionConfigModalOpen: () => void;
   onHelpModalOpen: () => void;
   robotBatteryVoltage: number;
   robotLatencyMs: number;
   dawnVersion: string;
+  isDarkMode: boolean;
 }) {
   let batteryColor;
   if (robotBatteryVoltage > GOOD_BATTERY_VOLTAGE) {
@@ -66,7 +69,7 @@ export default function Topbar({
       </>
     );
   return (
-    <div className="Topbar">
+    <div className={`Topbar-${isDarkMode ? 'dark' : 'light'}`}>
       <div className="Topbar-left-group">
         <div className="Topbar-dawn-version">Dawn v{dawnVersion}</div>
         {robotInfo}
