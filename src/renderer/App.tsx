@@ -114,6 +114,8 @@ export default function App() {
   const [deviceInfoState, setDeviceInfoState] = useState(
     [] as DeviceInfoState[],
   );
+  // Dark Mode UI State
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const changeActiveModal = (newModalName: string) => {
     if (document.activeElement instanceof HTMLElement) {
@@ -176,6 +178,9 @@ export default function App() {
   const changeRunMode = (mode: RobotRunMode) => {
     window.electron.ipcRenderer.sendMessage('main-update-robot-mode', mode);
     setRobotRunning(mode !== RobotRunMode.IDLE);
+  };
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => !prev);
   };
 
   const closeWindow = useCallback(() => {
@@ -418,6 +423,7 @@ export default function App() {
           dawnVersion={dawnVersion}
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}
+          // isDarkMode={isDarkMode}
         />
         <div className="App-cols">
           <Editor
@@ -456,6 +462,8 @@ export default function App() {
                 v === 'on' ? 'offEdge' : 'on',
               );
             }}
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={toggleDarkMode}
           />
           <ResizeBar
             onStartResize={startEditorResize}
@@ -463,7 +471,7 @@ export default function App() {
             onEndResize={endEditorResize}
             axis="x"
           />
-          <DeviceInfo deviceStates={deviceInfoState} />
+          <DeviceInfo deviceStates={deviceInfoState}/>
         </div>
         {consoleIsOpen && (
           <>
@@ -473,7 +481,11 @@ export default function App() {
               onEndResize={endColsResize}
               axis="y"
             />
-            <AppConsole height={consoleSize} messages={consoleMsgs} />
+            <AppConsole 
+              height={consoleSize} 
+              messages={consoleMsgs} 
+              isDarkMode={isDarkMode}
+            />
           </>
         )}
         <div className="App-modal-container">

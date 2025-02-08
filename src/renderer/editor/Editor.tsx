@@ -31,6 +31,7 @@ import startRobot from '../../../assets/start-robot.svg';
 import stopRobot from '../../../assets/stop-robot.svg';
 import keyboardKeySvg from '../../../assets/keyboard-key.svg';
 import themeSvg from '../../../assets/theme.svg';
+import darkModeSvg from '../../../assets/dark-mode.svg';
 
 import './Editor.css';
 
@@ -108,6 +109,9 @@ const ACE_THEMES = {
  * @param props.onToggleConsole - handler called when the user wants to toggle the AppConsole's
  * visibility
  * @param props.onClearConsole - handler called when the user wants to clear the AppConsole
+ * dark mode
+ * @param props.isDarkMode - whether UI is in dark mode
+ * @param props.onToggleDarkMode - handler called when user wans to toggle UI's dark mode.
  */
 export default function Editor({
   width,
@@ -120,6 +124,7 @@ export default function Editor({
   keyboardControlsStatus,
   robotConnected,
   robotRunning,
+  isDarkMode,
   onOpen,
   onSave,
   onNewFile,
@@ -131,6 +136,7 @@ export default function Editor({
   onToggleConsole,
   onClearConsole,
   onToggleKeyboardControls,
+  onToggleDarkMode,
 }: {
   width: number;
   /**
@@ -146,6 +152,7 @@ export default function Editor({
   keyboardControlsStatus: KeyboardControlsStatus;
   robotConnected: boolean;
   robotRunning: boolean;
+  isDarkMode: boolean;
   onOpen: () => void;
   /**
    * handler called when the user wants to save the contents of the editor
@@ -165,6 +172,7 @@ export default function Editor({
   onToggleConsole: () => void;
   onClearConsole: () => void;
   onToggleKeyboardControls: () => void;
+  onToggleDarkMode: () => void;
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
@@ -297,6 +305,16 @@ export default function Editor({
               </option>
             ))}
           </select>
+        </div>
+        <div className="Editor-toolbar-group">
+          <button
+            type="button"
+            className="Editor-toolbar-button"
+            onClick={onToggleDarkMode}
+            title="Toggle Dark Mode"
+          >
+            <img src={darkModeSvg} alt="Toggle Dark Theme" />
+          </button>
         </div>
         <div className="Editor-toolbar-group">
           <label className="Editor-tbopmode" htmlFor="Editor-toolbar-opmode">
