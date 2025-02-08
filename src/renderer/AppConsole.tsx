@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect } from 'react';
 import AppConsoleMessage from '../common/AppConsoleMessage';
 import './AppConsole.css';
 
