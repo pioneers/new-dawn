@@ -12,7 +12,17 @@
   color: white;
   background-color: #121212;
 }
-
+.Editor-dark .ace_scrollbar.ace_scrollbar-v::-webkit-scrollbar,
+.Editor-dark .ace_scrollbar.ace_scrollbar-h::-webkit-scrollbar {
+  background-color: #2E2E2E;
+}
+.Editor-dark .ace_scrollbar::-webkit-scrollbar-thumb {
+  background-color: #6b6b6b;
+  border-radius: 4px;
+}
+.Editor-dark .ace_scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #7f7f7f;
+}
 .Editor-file-info {
   display: flex;
   padding-left: 15px;
