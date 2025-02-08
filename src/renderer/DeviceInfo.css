@@ -1,22 +1,3 @@
-.DeviceInfo {
-  flex-grow: 1;
-  flex-basis: 0;
-  overflow: auto scroll;
-  padding: 10px;
-}
-.DeviceInfo-device {
-  border: 1px solid var(--body-accent-color);
-  border-radius: 20px;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-.DeviceInfo-device-id {
-  font: bold 20px Verdana, sans-serif;
-  user-select: all;
-  margin-bottom: 2px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 .DeviceInfo-device-type {
   font-style: italic;
 }
@@ -24,15 +5,75 @@
   margin: 5px 10px 0 10px;
   overflow-x: auto;
 }
-.DeviceInfo-device-props {
+.DeviceInfo-device {
+  border: 1px solid var(--body-accent-color);
+  border-radius: 20px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+.DeviceInfo-prop-value {
+  text-align: right;
+}
+/* light mode */
+.DeviceInfo-light {
+  flex-grow: 1;
+  flex-basis: 0;
+  overflow: auto scroll;
+  padding: 10px;
+}
+.DeviceInfo-device-id-light {
+  font: bold 20px Verdana, sans-serif;
+  user-select: all;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.DeviceInfo-device-props-light {
   font-family: Verdana, sans-serif;
   width: 100%;
   height: 100%;
   user-select: text;
 }
-.DeviceInfo-prop-value {
-  text-align: right;
-}
-.DeviceInfo-disconnected {
+.DeviceInfo-disconnected-light {
   font: 15px Verdana, sans-serif;
+}
+
+/* dark mode */
+.DeviceInfo-dark {
+  flex-grow: 1;
+  flex-basis: 0;
+  overflow: auto scroll;
+  padding: 10px;
+  background-color: #121212;
+}
+.DeviceInfo-device-id-dark {
+  font: bold 20px Verdana, sans-serif;
+  user-select: all;
+  margin-bottom: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: white;
+}
+
+.DeviceInfo-device-props-dark {
+  font-family: Verdana, sans-serif;
+  width: 100%;
+  height: 100%;
+  user-select: text;
+  color: white;
+}
+.DeviceInfo-disconnected-dark {
+  font: 15px Verdana, sans-serif;
+  color: white;
+}
+
+.DeviceInfo-dark::-webkit-scrollbar {
+  width: 10px;
+  background-color: #2E2E2E;
+}
+
+.DeviceInfo-dark::-webkit-scrollbar-thumb {
+  background-color: #6b6b6b;
+  border-radius: 4px;
 }

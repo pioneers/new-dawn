@@ -7,14 +7,16 @@ import './DeviceInfo.css';
  * @param props.deviceStates - an array of DeviceInfoState objects describing the state of all devices
  * connected to the robot. If empty, the robot is assumed to be disconnected (because the PDB should
  * always be there).
+ * @param props.isDarkMode - whether UI is in dark mode
  */
 export default function DeviceInfo({
   deviceStates,
+  isDarkMode,
 }: {
   deviceStates: DeviceInfoState[];
 }) {
   return (
-    <div className="DeviceInfo">
+    <div className={`DeviceInfo-${isDarkMode ? 'dark' : 'light'}`}>
       {deviceStates.length > 0 ? (
         deviceStates.map((device) => {
           const deviceTypeNum = Number(device.id.split('_')[0]);
@@ -24,10 +26,20 @@ export default function DeviceInfo({
               : 'Unknown device';
           return (
             <div className="DeviceInfo-device" key={device.id}>
-              <div className="DeviceInfo-device-id">{device.id}</div>
+              <div
+                className={`DeviceInfo-device-id-${
+                  isDarkMode ? 'dark' : 'light'
+                }`}
+              >
+                {device.id}
+              </div>
               <div className="DeviceInfo-device-type">{deviceType}</div>
               <div className="DeviceInfo-device-props-wrapper">
-                <table className="DeviceInfo-device-props">
+                <table
+                  className={`DeviceInfo-device-props-${
+                    isDarkMode ? 'dark' : 'light'
+                  }`}
+                >
                   <tbody>
                     {Object.entries(device).map(
                       ([key, value]) =>
@@ -50,7 +62,9 @@ export default function DeviceInfo({
           );
         })
       ) : (
-        <div className="DeviceInfo-disconnected">
+        <div
+          className={`DeviceInfo-disconnected-${isDarkMode ? 'dark' : 'light'}`}
+        >
           Dawn is not connected to the robot.
         </div>
       )}
