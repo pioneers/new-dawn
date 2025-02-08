@@ -266,57 +266,67 @@ export default class RuntimeComms {
    */
   #handlePacket(packet: Packet) {
     const { type, data } = packet;
-    switch (type) {
-      case MsgType.LOG:
-        this.#commsListener.onReceiveRobotLogs(
-          protos.Text.decode(data).payload,
-        );
-        break;
-      case MsgType.TIME_STAMPS:
-        this.#commsListener.onReceiveLatency(
-          (Date.now() - Number(protos.TimeStamps.decode(data).dawnTimestamp)) /
-            2,
-        );
-        break;
-      case MsgType.DEVICE_DATA:
-        // Convert decoded Devices to DeviceInfoStates before passing to onReceiveDevices
-        this.#commsListener.onReceiveDevices(
-          protos.DevData.decode(data).devices.map(
-            (
-              deviceProps: protos.IDevice,
-              _devIdx: number,
-              _devArr: protos.IDevice[],
-            ) => {
-              const device = new protos.Device(deviceProps);
-              return {
-                id: `${device.type.toString()}_${device.uid.toString()}`,
-                ...Object.fromEntries(
-                  device.params.map(
-                    (
-                      paramProps: protos.IParam,
-                      _paramIdx: number,
-                      _paramArr: protos.IParam[],
-                    ) => {
-                      const param = new protos.Param(paramProps);
-                      return param.val
-                        ? [param.name, param[param.val].toString()]
-                        : [];
-                    },
+    try {
+      switch (type) {
+        case MsgType.LOG:
+          this.#commsListener.onReceiveRobotLogs(
+            protos.Text.decode(data).payload,
+          );
+          break;
+        case MsgType.TIME_STAMPS:
+          this.#commsListener.onReceiveLatency(
+            (Date.now() - Number(protos.TimeStamps.decode(data).dawnTimestamp)) /
+              2,
+          );
+          break;
+        case MsgType.DEVICE_DATA:
+          // Convert decoded Devices to DeviceInfoStates before passing to onReceiveDevices
+          this.#commsListener.onReceiveDevices(
+            protos.DevData.decode(data).devices.map(
+              (
+                deviceProps: protos.IDevice,
+                _devIdx: number,
+                _devArr: protos.IDevice[],
+              ) => {
+                const device = new protos.Device(deviceProps);
+                return {
+                  id: `${device.type.toString()}_${device.uid.toString()}`,
+                  ...Object.fromEntries(
+                    device.params.map(
+                      (
+                        paramProps: protos.IParam,
+                        _paramIdx: number,
+                        _paramArr: protos.IParam[],
+                      ) => {
+                        const param = new protos.Param(paramProps);
+                        return param.val
+                          ? [param.name, param[param.val].toString()]
+                          : [];
+                      },
+                    ),
                   ),
-                ),
-              };
-            },
-          ),
-        );
-        break;
-      default:
-        this.#commsListener.onRuntimeError(
-          new Error(
-            `Received unexpected packet MsgType ${type}.\nPacket: ${JSON.stringify(
-              packet,
-            )}`,
-          ),
-        );
+                };
+              },
+            ),
+          );
+          break;
+        default:
+          this.#commsListener.onRuntimeError(
+            new Error(
+              `Received unexpected packet MsgType ${type}.\nPacket: ${JSON.stringify(
+                packet,
+              )}`,
+            ),
+          );
+      }
+    } catch (e) {
+      this.#commsListener.onRuntimeError(
+        new Error(
+          `Uncaught error when reading packet.\nPacket: ${JSON.stringify(
+            packet,
+          )}`,
+        ),
+      );
     }
   }
 
