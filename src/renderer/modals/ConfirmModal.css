@@ -1,14 +1,32 @@
-.ConfirmModal-content {
+/* light mode */
+.ConfirmModal-content-light {
   margin-bottom: 7px;
   font-family: Arial, sans-serif;
 }
-.ConfirmModal-confirm-btn {
+.ConfirmModal-confirm-btn-light {
   width: 100%;
   outline: none;
   background-color: var(--body-accent-color);
   border: none;
   padding: 10px;
 }
-.ConfirmModal-confirm-btn:hover {
+.ConfirmModal-confirm-btn-light:hover {
   background-color: var(--window-accent-color);
+}
+/* dark mode */
+.ConfirmModal-content-dark {
+  margin-bottom: 7px;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+.ConfirmModal-confirm-btn-dark {
+  width: 100%;
+  outline: none;
+  background-color: #2E2E2E;
+  color: white;
+  border: none;
+  padding: 10px;
+}
+.ConfirmModal-confirm-btn-dark:hover {
+  background-color: #6b6b6b;
 }

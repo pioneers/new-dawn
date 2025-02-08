@@ -14,6 +14,7 @@ export default function DeviceInfo({
   isDarkMode,
 }: {
   deviceStates: DeviceInfoState[];
+  isDarkMode: boolean;
 }) {
   return (
     <div className={`DeviceInfo-${isDarkMode ? 'dark' : 'light'}`}>

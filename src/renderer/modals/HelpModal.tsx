@@ -5,16 +5,24 @@ import Modal from './Modal';
  * @param props - props
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.isActive - whether to display the modal
+ * @param props.isDarkMode - whether UI is in dark mode
  */
 export default function GamepadInfoModal({
   onClose,
   isActive,
+  isDarkMode,
 }: {
   onClose: () => void;
   isActive: boolean;
+  isDarkMode: boolean;
 }) {
   return (
-    <Modal modalTitle="Help" onClose={onClose} isActive={isActive}>
+    <Modal
+      modalTitle="Help"
+      onClose={onClose}
+      isActive={isActive}
+      isDarkMode={isDarkMode}
+    >
       This is a very helpful message. So helpful, in fact, that it&apos;s too
       helpful to even write here. Its helpfulness would blind your eyes with its
       brilliance.

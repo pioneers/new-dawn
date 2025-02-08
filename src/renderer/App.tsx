@@ -498,11 +498,17 @@ export default function App() {
             IPAddress={IPAddress}
             FieldIPAddress={FieldIPAddress}
             FieldStationNum={FieldStationNum}
+            isDarkMode={isDarkMode}
           />
-          <HelpModal isActive={activeModal === 'Help'} onClose={closeModal} />
+          <HelpModal
+            isActive={activeModal === 'Help'}
+            onClose={closeModal}
+            isDarkMode={isDarkMode}
+          />
           <GamepadInfoModal
             isActive={activeModal === 'GamepadInfo'}
             onClose={closeModal}
+            isDarkMode={isDarkMode}
           />
           <ConfirmModal
             isActive={activeModal === 'DirtyLoadConfirm'}
@@ -513,6 +519,7 @@ export default function App() {
               });
             }}
             modalTitle="Confirm load"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really load?
@@ -524,6 +531,7 @@ export default function App() {
             onConfirm={closeWindow}
             modalTitle="Confirm quit"
             noAutoClose
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really quit?
@@ -534,6 +542,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={() => uploadDownloadFile(true)}
             modalTitle="Confirm upload"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               Unsaved changes in the editor will not be uploaded. Really upload?
@@ -552,6 +561,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={() => uploadDownloadFile(false)}
             modalTitle="Confirm download"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really replace editor contents with
@@ -563,6 +573,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={createNewFile}
             modalTitle="Confirm create new file"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really close file?
@@ -573,6 +584,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={loadStaffCode}
             modalTitle="Confirm load staff code"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really replace contents of editor with
