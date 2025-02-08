@@ -79,11 +79,13 @@ export default function Topbar({
           onModalOpen={onHelpModalOpen}
           alt="Dawn and robot API help"
           src={questionSvg}
+          isDarkMode={isDarkMode}
         />
         <TopbarButton
           onModalOpen={onConnectionConfigModalOpen}
           alt="Connection configuration"
           src={robotLatencyMs === -1 ? noConnectionSvg : connectionSvg}
+          isDarkMode={isDarkMode}
         />
       </div>
     </div>

@@ -1,18 +1,39 @@
-.TopbarButton {
+/* light mode */
+.TopbarButton-light {
   height: 100%;
 }
-.TopbarButton button {
+.TopbarButton-light button {
   background-color: transparent;
   border: none;
   outline: none;
   cursor: pointer;
 }
-.TopbarButton img {
+.TopbarButton-light img {
   height: 25px;
   border: 3px solid lightgray;
   border-radius: 6px;
   pointer-events: none;
 }
-.TopbarButton button:active img {
+.TopbarButton-light button:active img {
   border-color: gray;
+}
+/* dark mode */
+.TopbarButton-dark {
+  height: 100%;
+}
+.TopbarButton-dark button {
+  background-color: white;
+  border: 3px solid #2E2E2E;
+  border-radius: 15px;
+  margin: 0 5px 0 0;
+  outline: none;
+  cursor: pointer;
+}
+.TopbarButton-dark img {
+  height: 25px;
+  border: none;
+  pointer-events: none;
+}
+.TopbarButton-dark button:active img {
+  border-color: #6b6b6b;
 }
