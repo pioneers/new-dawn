@@ -28,7 +28,10 @@ export default function AppConsole({
   }, [messages]);
 
   return (
-    <div className="AppConsole" style={{ height }}>
+    <div
+      className={`AppConsole-${isDarkMode ? 'dark' : 'light'}`}
+      style={{ height }}
+    >
       <pre
         ref={consoleRef}
         className={`AppConsole-inner-${isDarkMode ? 'dark' : 'light'}`}
