@@ -14,7 +14,7 @@ import Editor, {
 } from './editor/Editor';
 import DeviceInfo from './DeviceInfo';
 import AppConsole from './AppConsole';
-import type AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
+import AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
 import type DeviceInfoState from '../common/DeviceInfoState';
 import ConfirmModal from './modals/ConfirmModal';
 import ConnectionConfigModal, {
@@ -128,15 +128,27 @@ export default function App() {
     }
   };
   const closeModal = () => changeActiveModal('');
-  const handleConnectionChange = (event: ConnectionConfigChangeEvent) => {
+  const handleConnectionChange = useCallback((event: ConnectionConfigChangeEvent) => {
+    let robotIPAddress = IPAddress;
+    let fieldIPAddress = FieldIPAddress;
+    let fieldStationNumber = FieldStationNum;
     if (event.name === 'IPAddress') {
       setIPAddress(event.value);
+      robotIPAddress = event.value;
     } else if (event.name === 'FieldIPAddress') {
       setFieldIPAddress(event.value);
+      fieldIPAddress = event.value;
     } else if (event.name === 'FieldStationNum') {
       setFieldStationNum(event.value);
+      fieldStationNumber = event.value;
     }
-  };
+    window.electron.ipcRenderer.sendMessage('main-connection-config', {
+      robotIPAddress,
+      fieldIPAddress,
+      fieldStationNumber,
+    });
+    setConsoleMsgs((old) => [...old, new AppConsoleMessage('dawn-info', `Connection config, robot ip: ${robotIPAddress}`)]);
+  }, [IPAddress, FieldIPAddress, FieldStationNum]);
   const startEditorResize = () => setEditorInitialSize(editorSize);
   const updateEditorResize = (d: number) => {
     if (editorInitialSize === -1) {
@@ -180,12 +192,9 @@ export default function App() {
 
   const closeWindow = useCallback(() => {
     window.electron.ipcRenderer.sendMessage('main-quit', {
-      robotIPAddress: IPAddress,
-      fieldIPAddress: FieldIPAddress,
-      fieldStationNumber: FieldStationNum,
       showDirtyUploadWarning,
     });
-  }, [IPAddress, FieldIPAddress, FieldStationNum, showDirtyUploadWarning]);
+  }, [showDirtyUploadWarning]);
   const saveFile = useCallback(
     (forceDialog: boolean) => {
       window.electron.ipcRenderer.sendMessage('main-file-control', {

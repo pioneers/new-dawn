@@ -1,5 +1,3 @@
-import { randomUUID } from 'crypto';
-
 /**
  * A type of AppConsoleMessage.
  */
@@ -31,6 +29,9 @@ export default class AppConsoleMessage {
   constructor(type: MessageType, text: string) {
     this.type = type;
     this.text = text;
-    this.uuid = randomUUID();
+    this.uuid = '';
+    for (let i = 0; i < 8; i++) {
+      this.uuid += `${Math.floor(Math.random() * 10000000)}-`;
+    }
   }
 }

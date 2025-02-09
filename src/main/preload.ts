@@ -29,6 +29,10 @@ function sendMessage(
   channel: 'main-robot-input',
   data: MainRobotInputData,
 ): void;
+function sendMessage(
+  channel: 'main-connection-config',
+  data: MainRobotInputData,
+): void;
 function sendMessage(channel: MainChannels, data?: any): void {
   ipcRenderer.send(channel, data);
 }
