@@ -32,7 +32,6 @@
 }
 .Editor-file-name {
   margin-right: 10px;
-  font-family: Verdana, monospace;
 }
 .Editor-file-status {
   font-style: italic;
@@ -83,6 +82,7 @@
   padding: 5px 0 5px 20px;
   overflow-x: auto;
   border-bottom: 4px double var(--body-accent-color);
+  background-color: lightgrey;
 }
 .Editor-toolbar-group-light {
   margin-right: 20px;
@@ -95,6 +95,7 @@
   flex-direction: row;
   align-items: center;
   flex-shrink: 0;
+  background-color: white; 
 }
 /* dark */
 .Editor-toolbar-dark {
@@ -118,8 +119,8 @@
   background-color: #7f7f7f;
 }
 .Editor-toolbar-group-dark {
-  margin: 5px 20px 5px 0px;
-  border: none;
+  margin-right: 20px;
+  border: 1px solid var(--body-accent-color);
   padding: 4px;
   border-radius: 5px;
   white-space: nowrap;
@@ -131,9 +132,8 @@
   background-color: white;
 }
 .Editor-toolbar-group-dark > *, .Editor-toolbar-group-dark > * > *{
-  font-family: Verdana, monospace;
+  font-family: Arial;
   color: #121212;
-  border: none;
 }
 .Editor-toolbar-group > *:not(:last-child) {
   margin-right: 6px;
@@ -204,7 +204,7 @@
   z-index: 5;
 }
 .Editor-tbopmode {
-  font-family: Verdana, monospace;
+  font-family: Arial;
   font-size: 12pt;
 }
 .Editor-tbopmode select {

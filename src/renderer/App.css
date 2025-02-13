@@ -52,3 +52,9 @@ body {
 .App-confirm-dialog-text {
   margin-top: 0;
 }
+.link-dark {
+  color: lightblue;
+}
+.link-light {
+  color: blue;
+}

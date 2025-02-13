@@ -28,6 +28,7 @@ export default function GamepadInfoModal({
           href="https://github.com/pioneers/runtime/blob/master/docs/docs/api.md"
           target="_blank"
           rel="noopener noreferrer"
+          className={`link-${isDarkMode ? 'dark' : 'light'}`}
         >
           here
         </a>{' '}
