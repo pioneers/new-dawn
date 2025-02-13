@@ -1,5 +1,4 @@
 import Modal from './Modal';
-
 /**
  * Modal component displaying help for Dawn and the robot API.
  * @param props - props
@@ -23,9 +22,17 @@ export default function GamepadInfoModal({
       isActive={isActive}
       isDarkMode={isDarkMode}
     >
-      This is a very helpful message. So helpful, in fact, that it&apos;s too
-      helpful to even write here. Its helpfulness would blind your eyes with its
-      brilliance.
+      <p>
+        Click{' '}
+        <a
+          href="https://github.com/pioneers/runtime/blob/master/docs/docs/api.md"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          here
+        </a>{' '}
+        for Dawn&apos;s runtime documentation!
+      </p>
     </Modal>
   );
 }
