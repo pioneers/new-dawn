@@ -275,7 +275,8 @@ export default class RuntimeComms {
           break;
         case MsgType.TIME_STAMPS:
           this.#commsListener.onReceiveLatency(
-            (Date.now() - Number(protos.TimeStamps.decode(data).dawnTimestamp)) /
+            (Date.now() -
+              Number(protos.TimeStamps.decode(data).dawnTimestamp)) /
               2,
           );
           break;
