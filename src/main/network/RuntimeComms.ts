@@ -217,9 +217,6 @@ export default class RuntimeComms {
    * most recently known Runtime IP and port.
    */
   #connectTcp() {
-    if (this.#tcpSock && (this.#tcpSock.connecting || !this.#tcpSock.pending)) {
-      return; // Already trying to connect
-    }
     this.#tcpDisconnected = false;
     this.#disconnectTcp();
     const tcpStream = new PacketStream().on(
@@ -245,7 +242,8 @@ export default class RuntimeComms {
    */
   #disconnectTcp() {
     if (this.#tcpSock) {
-      this.#tcpSock.resetAndDestroy();
+      this.#tcpSock.removeAllListeners();
+      this.#tcpSock.destroy();
       this.#tcpSock = null;
     }
     if (this.#pingInterval) {

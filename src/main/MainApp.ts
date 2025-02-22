@@ -151,6 +151,12 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   #preventQuit: boolean;
 
   /**
+   * Whether the message informing the user the robot has discnonected will be
+   * suppressed. Used so disconnects only generate one log message.
+   */
+  #suppressDisconnectMsg: boolean;
+
+  /**
    * Whether error messages relating to connectivity will be suppressed. Used so disconnects only
    * generate one log message and possibly (hopefully?) the causing error.
    */
@@ -187,6 +193,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#watcher = null;
     this.#watchDebounce = true;
     this.#preventQuit = true;
+    this.#suppressDisconnectMsg = false;
     this.#suppressNetworkErrors = false;
     this.#suppressPdbErrors = false;
     this.#codeTransfer = new CodeTransfer(
@@ -349,7 +356,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   }
 
   onRuntimeDisconnect() {
-    if (!this.#suppressNetworkErrors) {
+    if (!this.#suppressDisconnectMsg) {
       this.#sendToRenderer(
         'renderer-latency-update',
         -1
@@ -358,12 +365,13 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
         'renderer-post-console',
         new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
       );
-      this.#suppressNetworkErrors = true;
+      this.#suppressDisconnectMsg = true;
     }
   }
 
   onRuntimeConnect() {
     this.#suppressNetworkErrors = false;
+    this.#suppressDisconnectMsg = false;
   }
 
   /**
