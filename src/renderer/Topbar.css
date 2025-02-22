@@ -6,6 +6,7 @@
   padding: 10px;
   font-family: Arial, sans-serif;
   border-bottom: 1px solid var(--body-accent-color);
+  
 }
 .Topbar-light > * {
   height: 100%;
