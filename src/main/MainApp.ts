@@ -13,6 +13,7 @@ import type {
   RendererLatencyUpdateData,
   RendererDevicesUpdateData,
   MainChannels,
+  MainConnectionConfigData,
   MainFileControlData,
   MainQuitData,
   MainUpdateRobotModeData,
@@ -87,6 +88,16 @@ function addRendererListener(
 ): void;
 
 /**
+ * Adds a listener for the main-connection-config IPC event fired by the renderer.
+ * @param channel - the event channel to listen to
+ * @param func - the listener to attach
+ */
+function addRendererListener(
+  channel: 'main-connection-config',
+  func: (data: MainConnectionConfigData) => void,
+): void;
+
+/**
  * Adds a listener for the main-robot-input IPC event fired by the renderer.
  * @param channel - the event channel to listen to
  * @param func - the listener to attach
@@ -141,10 +152,22 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   #preventQuit: boolean;
 
   /**
+   * Whether the message informing the user the robot has discnonected will be
+   * suppressed. Used so disconnects only generate one log message.
+   */
+  #suppressDisconnectMsg: boolean;
+
+  /**
    * Whether error messages relating to connectivity will be suppressed. Used so disconnects only
    * generate one log message and possibly (hopefully?) the causing error.
    */
   #suppressNetworkErrors: boolean;
+
+  /**
+   * Whether error messages relating to the PDB will be suppressed. Used so faulty PDBs do not flood
+   * the console.
+   */
+  #suppressPdbErrors: boolean;
 
   /**
    * Persistent configuration loaded when MainApp is constructed and saved when the main window is
@@ -171,7 +194,9 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#watcher = null;
     this.#watchDebounce = true;
     this.#preventQuit = true;
+    this.#suppressDisconnectMsg = false;
     this.#suppressNetworkErrors = false;
+    this.#suppressPdbErrors = false;
     this.#codeTransfer = new CodeTransfer(
       REMOTE_CODE_PATH,
       ROBOT_SSH_PORT,
@@ -201,10 +226,6 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       }
     });
     addRendererListener('main-quit', (data) => {
-      // Save config that may have been changed while the program was running
-      this.#config.robotIPAddress = data.robotIPAddress;
-      this.#config.fieldIPAddress = data.fieldIPAddress;
-      this.#config.fieldStationNumber = data.fieldStationNumber;
       this.#config.showDirtyUploadWarning = data.showDirtyUploadWarning;
       try {
         fs.writeFileSync(CONFIG_RELPATH, JSON.stringify(this.#config));
@@ -219,6 +240,9 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       'main-update-robot-mode',
       this.#runtimeComms.sendRunMode.bind(this.#runtimeComms),
     );
+    addRendererListener('main-connection-config', (data) => {
+      this.#runtimeComms.setRobotIp(data.robotIPAddress);
+    });
     addRendererListener(
       'main-robot-input',
       this.#runtimeComms.sendInputs.bind(this.#runtimeComms),
@@ -277,34 +301,50 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       (state) => state.id.split('_')[0] === DeviceType.PDB.toString(),
     );
     if (pdbs.length !== 1) {
-      this.#sendToRenderer(
-        'renderer-post-console',
-        new AppConsoleMessage(
-          'dawn-err',
-          'Cannot read battery voltage. Not exactly one PDB is connected to the robot.',
-        ),
-      );
+      if (!this.#suppressPdbErrors) {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            'Cannot read battery voltage. Not exactly one PDB is connected to the robot.',
+          ),
+        );
+        this.#suppressPdbErrors = true;
+      }
     } else if (!('v_batt' in pdbs[0]) || Number.isNaN(Number(pdbs[0].v_batt))) {
-      this.#sendToRenderer(
-        'renderer-post-console',
-        new AppConsoleMessage(
-          'dawn-err',
-          'PDB does not have v_batt property or it is not a number.',
-        ),
-      );
+      if (!this.#suppressPdbErrors) {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            'PDB does not have v_batt property or it is not a number.',
+          ),
+        );
+        this.#suppressPdbErrors = true;
+      }
     } else {
       this.#sendToRenderer('renderer-battery-update', Number(pdbs[0].v_batt));
+      this.#suppressPdbErrors = false;
     }
   }
 
   onRuntimeTcpError(err: Error) {
     if (!this.#suppressNetworkErrors) {
+      const rawMsg = err.toString();
+      let msg = `Encountered TCP error when communicating with Runtime. ${rawMsg}`;
+      if (rawMsg.includes('ETIMEDOUT')) {
+        msg =
+          "Can't find the robot! Please make sure you are connected to the robot's router.";
+      } else if (rawMsg.includes('ENETUNREACH')) {
+        msg =
+          "Can't find the robot! Please make sure the robot is turned on and you are connected" +
+          " to the robot's router.";
+      } else if (rawMsg.includes('ENOTFOUND')) {
+        msg = 'The robot ip is invalid. Please specify a valid ip.';
+      }
       this.#sendToRenderer(
         'renderer-post-console',
-        new AppConsoleMessage(
-          'dawn-err',
-          `Encountered TCP error when communicating with Runtime. ${err.toString()}`,
-        ),
+        new AppConsoleMessage('dawn-err', msg),
       );
     }
   }
@@ -322,17 +362,19 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   }
 
   onRuntimeDisconnect() {
-    if (!this.#suppressNetworkErrors) {
+    if (!this.#suppressDisconnectMsg) {
+      this.#sendToRenderer('renderer-latency-update', -1);
       this.#sendToRenderer(
         'renderer-post-console',
         new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
       );
-      this.#suppressNetworkErrors = true;
+      this.#suppressDisconnectMsg = true;
     }
   }
 
   onRuntimeConnect() {
     this.#suppressNetworkErrors = false;
+    this.#suppressDisconnectMsg = false;
   }
 
   /**

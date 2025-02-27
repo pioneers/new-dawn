@@ -128,10 +128,6 @@ export default class RuntimeComms {
    */
   disconnect() {
     this.#tcpDisconnected = true; // Don't reconnect
-    if (this.#pingInterval) {
-      clearInterval(this.#pingInterval);
-      this.#pingInterval = null;
-    }
     this.#disconnectTcp();
   }
 
@@ -153,6 +149,7 @@ export default class RuntimeComms {
     } catch {
       return false;
     }
+    this.#disconnectTcp();
     this.#connectTcp(); // Reconnect TCP
     return true;
   }
@@ -245,8 +242,13 @@ export default class RuntimeComms {
    */
   #disconnectTcp() {
     if (this.#tcpSock) {
-      this.#tcpSock.resetAndDestroy();
+      this.#tcpSock.removeAllListeners();
+      this.#tcpSock.destroy();
       this.#tcpSock = null;
+    }
+    if (this.#pingInterval) {
+      clearInterval(this.#pingInterval);
+      this.#pingInterval = null;
     }
   }
 
@@ -336,6 +338,7 @@ export default class RuntimeComms {
    */
   #handleTcpClose() {
     this.#commsListener.onRuntimeDisconnect();
+    this.#disconnectTcp();
     if (!this.#tcpDisconnected) {
       setTimeout(this.#connectTcp.bind(this), TCP_RECONNECT_DELAY);
     }
