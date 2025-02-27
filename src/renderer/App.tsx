@@ -128,27 +128,36 @@ export default function App() {
     }
   };
   const closeModal = () => changeActiveModal('');
-  const handleConnectionChange = useCallback((event: ConnectionConfigChangeEvent) => {
-    let robotIPAddress = IPAddress;
-    let fieldIPAddress = FieldIPAddress;
-    let fieldStationNumber = FieldStationNum;
-    if (event.name === 'IPAddress') {
-      setIPAddress(event.value);
-      robotIPAddress = event.value;
-    } else if (event.name === 'FieldIPAddress') {
-      setFieldIPAddress(event.value);
-      fieldIPAddress = event.value;
-    } else if (event.name === 'FieldStationNum') {
-      setFieldStationNum(event.value);
-      fieldStationNumber = event.value;
-    }
-    window.electron.ipcRenderer.sendMessage('main-connection-config', {
-      robotIPAddress,
-      fieldIPAddress,
-      fieldStationNumber,
-    });
-    setConsoleMsgs((old) => [...old, new AppConsoleMessage('dawn-info', `Connection config, robot ip: ${robotIPAddress}`)]);
-  }, [IPAddress, FieldIPAddress, FieldStationNum]);
+  const handleConnectionChange = useCallback(
+    (event: ConnectionConfigChangeEvent) => {
+      let robotIPAddress = IPAddress;
+      let fieldIPAddress = FieldIPAddress;
+      let fieldStationNumber = FieldStationNum;
+      if (event.name === 'IPAddress') {
+        setIPAddress(event.value);
+        robotIPAddress = event.value;
+      } else if (event.name === 'FieldIPAddress') {
+        setFieldIPAddress(event.value);
+        fieldIPAddress = event.value;
+      } else if (event.name === 'FieldStationNum') {
+        setFieldStationNum(event.value);
+        fieldStationNumber = event.value;
+      }
+      window.electron.ipcRenderer.sendMessage('main-connection-config', {
+        robotIPAddress,
+        fieldIPAddress,
+        fieldStationNumber,
+      });
+      setConsoleMsgs((old) => [
+        ...old,
+        new AppConsoleMessage(
+          'dawn-info',
+          `Connection config, robot ip: ${robotIPAddress}`,
+        ),
+      ]);
+    },
+    [IPAddress, FieldIPAddress, FieldStationNum],
+  );
   const startEditorResize = () => setEditorInitialSize(editorSize);
   const updateEditorResize = (d: number) => {
     if (editorInitialSize === -1) {

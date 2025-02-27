@@ -357,10 +357,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
 
   onRuntimeDisconnect() {
     if (!this.#suppressDisconnectMsg) {
-      this.#sendToRenderer(
-        'renderer-latency-update',
-        -1
-      );
+      this.#sendToRenderer('renderer-latency-update', -1);
       this.#sendToRenderer(
         'renderer-post-console',
         new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),

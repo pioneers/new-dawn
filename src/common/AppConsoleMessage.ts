@@ -30,7 +30,7 @@ export default class AppConsoleMessage {
     this.type = type;
     this.text = text;
     this.uuid = '';
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 8; i += 1) {
       this.uuid += `${Math.floor(Math.random() * 10000000)}-`;
     }
   }
