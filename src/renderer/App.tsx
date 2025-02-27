@@ -148,13 +148,6 @@ export default function App() {
         fieldIPAddress,
         fieldStationNumber,
       });
-      setConsoleMsgs((old) => [
-        ...old,
-        new AppConsoleMessage(
-          'dawn-info',
-          `Connection config, robot ip: ${robotIPAddress}`,
-        ),
-      ]);
     },
     [IPAddress, FieldIPAddress, FieldStationNum],
   );

@@ -330,11 +330,21 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
 
   onRuntimeTcpError(err: Error) {
     if (!this.#suppressNetworkErrors) {
+      const rawMsg = err.toString();
+      const msg = `Encountered TCP error when communicating with Runtime. ${rawMsg}`;
+      if (rawMsg.includes('ETIMEDOUT')) {
+        msg = "Can't find the robot! Please make sure you are connected to the robot's router.";
+      } else if (rawMsg.includes('ENETUNREACH')) {
+        msg = "Can't find the robot! Please make sure the robot is turned on and you are connected"
+          + " to the robot's router.";
+      } else if (rawMsg.includes('ENOTFOUND')) {
+        msg = "The robot ip is invalid. Please specify a valid ip.";
+      }
       this.#sendToRenderer(
         'renderer-post-console',
         new AppConsoleMessage(
           'dawn-err',
-          `Encountered TCP error when communicating with Runtime. ${err.toString()}`,
+          ms
         ),
       );
     }
