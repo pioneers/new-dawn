@@ -114,6 +114,8 @@ export default function App() {
   const [deviceInfoState, setDeviceInfoState] = useState(
     [] as DeviceInfoState[],
   );
+  // Dark Mode UI State
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const changeActiveModal = (newModalName: string) => {
     if (document.activeElement instanceof HTMLElement) {
@@ -176,6 +178,9 @@ export default function App() {
   const changeRunMode = (mode: RobotRunMode) => {
     window.electron.ipcRenderer.sendMessage('main-update-robot-mode', mode);
     setRobotRunning(mode !== RobotRunMode.IDLE);
+  };
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => !prev);
   };
 
   const closeWindow = useCallback(() => {
@@ -409,7 +414,7 @@ export default function App() {
 
   return (
     <StrictMode>
-      <div className="App">
+      <div className={`App-${isDarkMode ? 'dark' : 'light'}`}>
         <Topbar
           onConnectionConfigModalOpen={() =>
             changeActiveModal('ConnectionConfig')
@@ -418,6 +423,7 @@ export default function App() {
           dawnVersion={dawnVersion}
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}
+          isDarkMode={isDarkMode}
         />
         <div className="App-cols">
           <Editor
@@ -456,14 +462,17 @@ export default function App() {
                 v === 'on' ? 'offEdge' : 'on',
               );
             }}
+            isDarkMode={isDarkMode}
+            onToggleDarkMode={toggleDarkMode}
           />
           <ResizeBar
             onStartResize={startEditorResize}
             onUpdateResize={updateEditorResize}
             onEndResize={endEditorResize}
             axis="x"
+            isDarkMode={isDarkMode}
           />
-          <DeviceInfo deviceStates={deviceInfoState} />
+          <DeviceInfo deviceStates={deviceInfoState} isDarkMode={isDarkMode} />
         </div>
         {consoleIsOpen && (
           <>
@@ -472,8 +481,13 @@ export default function App() {
               onUpdateResize={updateColsResize}
               onEndResize={endColsResize}
               axis="y"
+              isDarkMode={isDarkMode}
             />
-            <AppConsole height={consoleSize} messages={consoleMsgs} />
+            <AppConsole
+              height={consoleSize}
+              messages={consoleMsgs}
+              isDarkMode={isDarkMode}
+            />
           </>
         )}
         <div className="App-modal-container">
@@ -484,11 +498,17 @@ export default function App() {
             IPAddress={IPAddress}
             FieldIPAddress={FieldIPAddress}
             FieldStationNum={FieldStationNum}
+            isDarkMode={isDarkMode}
           />
-          <HelpModal isActive={activeModal === 'Help'} onClose={closeModal} />
+          <HelpModal
+            isActive={activeModal === 'Help'}
+            onClose={closeModal}
+            isDarkMode={isDarkMode}
+          />
           <GamepadInfoModal
             isActive={activeModal === 'GamepadInfo'}
             onClose={closeModal}
+            isDarkMode={isDarkMode}
           />
           <ConfirmModal
             isActive={activeModal === 'DirtyLoadConfirm'}
@@ -499,6 +519,7 @@ export default function App() {
               });
             }}
             modalTitle="Confirm load"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really load?
@@ -510,6 +531,7 @@ export default function App() {
             onConfirm={closeWindow}
             modalTitle="Confirm quit"
             noAutoClose
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really quit?
@@ -520,6 +542,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={() => uploadDownloadFile(true)}
             modalTitle="Confirm upload"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               Unsaved changes in the editor will not be uploaded. Really upload?
@@ -538,6 +561,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={() => uploadDownloadFile(false)}
             modalTitle="Confirm download"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really replace editor contents with
@@ -549,6 +573,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={createNewFile}
             modalTitle="Confirm create new file"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really close file?
@@ -559,6 +584,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={loadStaffCode}
             modalTitle="Confirm load staff code"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really replace contents of editor with

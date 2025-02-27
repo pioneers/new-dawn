@@ -1,13 +1,27 @@
 body {
   margin: 0;
 }
-
-.App {
+/* Light Mode */
+.App-light {
   --window-head-color: navy;
   --window-head-text-color: white;
   --window-accent-color: grey;
   --body-color: white;
   --body-text-color: black;
+  --body-accent-color: lightgray;
+
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  user-select: none;
+}
+/* Dark Mode */
+.App-dark {
+  --window-head-color: #1F1A24;
+  --window-head-text-color: white;
+  --window-accent-color: grey;
+  --body-color: #1F1F1F;
+  --body-text-color: #FFFFFF;
   --body-accent-color: lightgray;
 
   display: flex;
@@ -37,4 +51,10 @@ body {
 }
 .App-confirm-dialog-text {
   margin-top: 0;
+}
+.link-dark {
+  color: lightblue;
+}
+.link-light {
+  color: blue;
 }

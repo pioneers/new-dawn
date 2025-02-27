@@ -4,22 +4,31 @@ import Modal from './Modal';
  * @param props - props
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.isActive - whether to display the modal
+ * @param props.isDarkMode - whether UI is in dark mode
  */
 export default function GamepadInfoModal({
   onClose,
   isActive,
+  isDarkMode,
 }: {
   onClose: () => void;
   isActive: boolean;
+  isDarkMode: boolean;
 }) {
   return (
-    <Modal modalTitle="Help" onClose={onClose} isActive={isActive}>
+    <Modal
+      modalTitle="Help"
+      onClose={onClose}
+      isActive={isActive}
+      isDarkMode={isDarkMode}
+    >
       <p>
         Click{' '}
         <a
           href="https://github.com/pioneers/runtime/blob/master/docs/docs/api.md"
           target="_blank"
           rel="noopener noreferrer"
+          className={`link-${isDarkMode ? 'dark' : 'light'}`}
         >
           here
         </a>{' '}

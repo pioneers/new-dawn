@@ -35,6 +35,10 @@
   width: 40px;
   height: 40px;
 }
-.Modal-content {
+.Modal-content-light {
   padding: 20px;
+}
+.Modal-content-dark {
+  padding: 20px;
+  color: #FFFFFF;
 }

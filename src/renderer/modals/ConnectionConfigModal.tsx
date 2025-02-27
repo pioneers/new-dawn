@@ -28,6 +28,7 @@ export interface ConnectionConfigChangeEvent {
  * @param props.IPAddress - displayed robot IP address
  * @param props.FieldIPAddress - displayed field IP address
  * @param props.FieldStationNum - displayed field station number
+ * @param props.isDarkMode - whether UI is in dark mode
  */
 export default function ConnectionConfigModal({
   onClose,
@@ -36,6 +37,7 @@ export default function ConnectionConfigModal({
   IPAddress,
   FieldIPAddress,
   FieldStationNum,
+  isDarkMode,
 }: {
   onClose: () => void;
   /**
@@ -47,6 +49,7 @@ export default function ConnectionConfigModal({
   IPAddress: string;
   FieldIPAddress: string;
   FieldStationNum: string;
+  isDarkMode: boolean;
 }) {
   const handleConfigChange = (e: ChangeEvent<HTMLInputElement>) => {
     const name = e.target.name.replace(/^ConnectionConfigModal-/, '');
@@ -60,7 +63,10 @@ export default function ConnectionConfigModal({
       modalTitle="Connection settings"
       onClose={onClose}
       isActive={isActive}
-      className="ConnectionConfigModal-content"
+      className={`ConnectionConfigModal-content-${
+        isDarkMode ? 'dark' : 'light'
+      }`}
+      isDarkMode={isDarkMode}
     >
       <label
         htmlFor="ConnectionConfigModal-IPAddress"
@@ -71,6 +77,7 @@ export default function ConnectionConfigModal({
           name="ConnectionConfigModal-IPAddress"
           onChange={handleConfigChange}
           value={IPAddress}
+          className={`ConnectionModalInput-${isDarkMode ? 'dark' : 'light'}`}
         />
       </label>
       <div className="ConnectionConfigModal-section">
@@ -86,6 +93,7 @@ export default function ConnectionConfigModal({
             name="ConnectionConfigModal-FieldIPAddress"
             onChange={handleConfigChange}
             value={FieldIPAddress}
+            className={`ConnectionModalInput-${isDarkMode ? 'dark' : 'light'}`}
           />
         </label>
         <label
@@ -97,6 +105,7 @@ export default function ConnectionConfigModal({
             name="ConnectionConfigModal-FieldStationNum"
             onChange={handleConfigChange}
             value={FieldStationNum}
+            className={`ConnectionModalInput-${isDarkMode ? 'dark' : 'light'}`}
           />
         </label>
       </div>

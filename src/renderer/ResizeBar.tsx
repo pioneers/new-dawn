@@ -7,12 +7,14 @@ import './ResizeBar.css';
  * @param props.onStartResize - handler called when the user initiates a resize
  * @param props.onEndResize - handler called when the user ends a resize
  * @param props.axis - the axis the bar moves along
+ * @param props.isDarkMode - whether UI is in dark mode
  */
 export default function ResizeBar({
   onStartResize = () => {},
   onUpdateResize,
   onEndResize = () => {},
   axis,
+  isDarkMode,
 }: {
   onStartResize: () => void;
   /**
@@ -22,6 +24,7 @@ export default function ResizeBar({
   onUpdateResize: (pos: number) => boolean;
   onEndResize: () => void;
   axis: 'x' | 'y';
+  isDarkMode: boolean;
 }) {
   const [isResizing, setIsResizing] = useState(false);
   const [initialSize, setInitialSize] = useState(0);
@@ -46,7 +49,9 @@ export default function ResizeBar({
   };
   return (
     <div
-      className={`ResizeBar ResizeBar-axis-${axis}`}
+      className={`ResizeBar-${
+        isDarkMode ? 'dark' : 'light'
+      } ResizeBar-axis-${axis}`}
       onMouseDown={startResize}
       role="presentation" // Not sure how else to write this so jsx-a11y is happy
     >

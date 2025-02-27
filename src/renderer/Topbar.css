@@ -1,10 +1,29 @@
-.Topbar {
+
+/* light mode */
+/* unoptimized code... o-o */
+.Topbar-light { 
   width: calc(100% - 20px);
   padding: 10px;
   font-family: Arial, sans-serif;
   border-bottom: 1px solid var(--body-accent-color);
+  
 }
-.Topbar > * {
+.Topbar-light > * {
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+/* dark mode */
+.Topbar-dark { 
+  width: calc(100% - 20px);
+  padding: 10px;
+  font-family: Arial, sans-serif;
+  border-bottom: 1px solid var(--body-accent-color);
+  color: white;
+  background-color: #121212;
+}
+.Topbar-dark > * {
   height: 100%;
   display: flex;
   flex-direction: row;

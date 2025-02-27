@@ -10,6 +10,7 @@ import './ConfirmModal.css';
  * @param props.isActive - whether to display the modal
  * @param props.modalTitle - displayed title of the modal
  * @param props.noAutoClose - whether the modal should not call onClose after confirmation
+ * @param props.isDarkMode - whether UI is in dark mode
  */
 export default function ConfirmModal({
   onClose,
@@ -18,6 +19,7 @@ export default function ConfirmModal({
   modalTitle,
   noAutoClose = false,
   children,
+  isDarkMode,
 }: {
   onClose: () => void;
   onConfirm: () => void;
@@ -25,6 +27,7 @@ export default function ConfirmModal({
   modalTitle: string;
   noAutoClose?: boolean;
   children: ReactNode;
+  isDarkMode: boolean;
 }) {
   const handleConfirm = () => {
     onConfirm();
@@ -33,10 +36,17 @@ export default function ConfirmModal({
     }
   };
   return (
-    <Modal modalTitle={modalTitle} onClose={onClose} isActive={isActive}>
-      <div className="ConfirmModal-content">{children}</div>
+    <Modal
+      modalTitle={modalTitle}
+      onClose={onClose}
+      isActive={isActive}
+      isDarkMode={isDarkMode}
+    >
+      <div className={`ConfirmModal-content-${isDarkMode ? 'dark' : 'light'}`}>
+        {children}
+      </div>
       <button
-        className="ConfirmModal-confirm-btn"
+        className={`ConfirmModal-confirm-btn-${isDarkMode ? 'dark' : 'light'}`}
         type="button"
         onClick={handleConfirm}
       >
