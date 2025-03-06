@@ -331,16 +331,28 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   onRuntimeTcpError(err: Error) {
     if (!this.#suppressNetworkErrors) {
       const rawMsg = err.toString();
-      let msg = `Encountered TCP error when communicating with Runtime. ${rawMsg}`;
-      if (rawMsg.includes('ETIMEDOUT')) {
+      let msg;
+      if (
+        rawMsg.includes('ETIMEDOUT') ||
+        rawMsg.includes('ENETUNREACH') ||
+        rawMsg.includes('ECONNREFUSED') ||
+        rawMsg.includes('EHOSTUNREACH')
+      ) {
         msg =
-          "Can't find the robot! Please make sure you are connected to the robot's router.";
-      } else if (rawMsg.includes('ENETUNREACH')) {
-        msg =
-          "Can't find the robot! Please make sure the robot is turned on and you are connected" +
-          " to the robot's router.";
+          "Can't find the robot! Please make sure you are connected to the robot's router," +
+          ' the IP is set correctly, and the robot is turned on.';
       } else if (rawMsg.includes('ENOTFOUND')) {
         msg = 'The robot ip is invalid. Please specify a valid ip.';
+      } else if (
+        rawMsg.includes('ECONNABORTED') ||
+        rawMsg.includes('ECONNRESET')
+      ) {
+        msg =
+          'Temporary robot communication error! Dawn will attempt to reconnect.';
+      } else if (rawMsg.includes('Timeout!')) {
+        msg = 'The robot is not responding. Dawn will attempt to reconnect.';
+      } else {
+        msg = `Encountered TCP error when communicating with Runtime. ${rawMsg}`;
       }
       this.#sendToRenderer(
         'renderer-post-console',
