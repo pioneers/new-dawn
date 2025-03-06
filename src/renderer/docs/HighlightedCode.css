@@ -1,0 +1,12 @@
+.HighlightedCode-editor .ace_scroller {
+  width: 100%;
+}
+.HighlightedCode-editor .ace_cursor {
+  opacity: 0;
+}
+.HighlightedCode-editor .ace_marker-layer {
+  display: none;
+}
+.HighlightedCode-editor .ace_print-margin {
+  display: none;
+}
