@@ -110,11 +110,6 @@ export default class RuntimeComms {
   #tcpDisconnected: boolean;
 
   /**
-   * Whether the onRuntimeDisconnect handler has been called for the last TCP disconnection.
-   */
-  #handledClose: boolean;
-
-  /**
    * The JavaScript interval id for the periodic ping.
    */
   #pingInterval: NodeJS.Timeout | null;
@@ -125,7 +120,6 @@ export default class RuntimeComms {
     this.#runtimePort = 0;
     this.#tcpSock = null;
     this.#tcpDisconnected = false;
-    this.#handledClose = false;
     this.#pingInterval = null;
   }
 
@@ -230,13 +224,8 @@ export default class RuntimeComms {
       this.#handlePacket.bind(this),
     );
     this.#tcpSock = createTcpConnection(this.#runtimePort, this.#runtimeAddr)
-      .setKeepAlive()
       .on('connect', this.#handleTcpConnection.bind(this))
       .on('close', this.#handleTcpClose.bind(this))
-      .on('timeout', () => {
-        this.#disconnectTcp();
-        this.#commsListener.onRuntimeTcpError(new Error('Timeout!'));
-      })
       .on(
         'error',
         this.#commsListener.onRuntimeTcpError.bind(this.#commsListener),
@@ -254,7 +243,7 @@ export default class RuntimeComms {
   #disconnectTcp() {
     if (this.#tcpSock) {
       this.#tcpSock.removeAllListeners();
-      this.#tcpSock.end();
+      //this.#tcpSock.end();
       this.#tcpSock.destroy();
       this.#tcpSock = null;
     }
@@ -269,7 +258,6 @@ export default class RuntimeComms {
    */
   #handleTcpConnection() {
     this.#commsListener.onRuntimeConnect();
-    this.#handledClose = true;
     if (this.#tcpSock) {
       this.#tcpSock.write(new Uint8Array([1])); // Tell Runtime that we are Dawn, not Shepherd
     }
@@ -334,7 +322,7 @@ export default class RuntimeComms {
               )}`,
             ),
           );
-          this.#rstAndRetry();
+          //this.#rstAndRetry();
       }
     } catch (e) {
       this.#commsListener.onRuntimeError(
@@ -351,10 +339,6 @@ export default class RuntimeComms {
    * Handles TCP 'close' event and tries to reconnect if we didn't cause the disconnection.
    */
   #handleTcpClose() {
-    if (this.#handledClose) {
-      return;
-    }
-    this.#handledClose = true;
     this.#commsListener.onRuntimeDisconnect();
     this.#disconnectTcp();
     if (!this.#tcpDisconnected) {
