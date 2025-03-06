@@ -366,8 +366,8 @@ export default class RuntimeComms {
    * Sends a RST packet, cleans up the socket, and attempts to reconnect.
    */
   #rstAndRetry() {
-    this.#tcpSock.removeAllListeners();
-    this.#tcpSock.resetAndDestroy();
+    this.#tcpSock!.removeAllListeners();
+    this.#tcpSock!.resetAndDestroy();
     this.#tcpSock = null;
     this.#handleTcpClose();
   }
