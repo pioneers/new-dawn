@@ -126,3 +126,11 @@
   margin-left: 5px;
   outline: none;
 }
+.Editor-auto-scroll-button {
+  width: auto;
+  height: 20px; 
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none; 
+}

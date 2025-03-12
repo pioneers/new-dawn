@@ -129,6 +129,7 @@ export default function Editor({
   onStartRobot,
   onStopRobot,
   onToggleConsole,
+  onToggleAutoScroll,
   onClearConsole,
   onToggleKeyboardControls,
 }: {
@@ -164,6 +165,7 @@ export default function Editor({
   onStopRobot: () => void;
   onToggleConsole: () => void;
   onClearConsole: () => void;
+  onToggleAutoScroll: () => void;
   onToggleKeyboardControls: () => void;
 }) {
   const [opmode, setOpmode] = useState('auto');
@@ -255,6 +257,14 @@ export default function Editor({
           </button>
           <button type="button" onClick={onClearConsole} title="Clear console">
             <img src={consoleClearSvg} alt="Clear console" />
+          </button>
+          <button
+            type="button"
+            title="Turn on auto-scroll"
+            className="Editor-auto-scroll-button"
+            onClick={onToggleAutoScroll}
+          >
+            ↕
           </button>
         </div>
         <div className="Editor-toolbar-group">

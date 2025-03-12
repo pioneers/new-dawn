@@ -74,6 +74,8 @@ export default function App() {
   const [consoleMsgs, setConsoleMsgs] = useState([] as AppConsoleMessage[]);
   // Whether the AppConsole is open
   const [consoleIsOpen, setConsoleIsOpen] = useState(true);
+  // Whether the AppConsole will have auto-scroll
+  const [consoleAutoScroll, setConsoleAutoScroll] = useState(false);
   // Whether a new message has been added to the AppConsole since it has been closed (if it is
   // closed)
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
@@ -451,6 +453,13 @@ export default function App() {
               setConsoleMsgs([]);
               setConsoleIsAlerted(false);
             }}
+            onToggleAutoScroll={() => {
+              if (!consoleAutoScroll) {
+                setConsoleAutoScroll(true);
+              } else {
+                setConsoleAutoScroll(false);
+              }
+            }}
             onToggleKeyboardControls={() => {
               setKeyboardControlsEnabled((v) =>
                 v === 'on' ? 'offEdge' : 'on',
@@ -473,7 +482,11 @@ export default function App() {
               onEndResize={endColsResize}
               axis="y"
             />
-            <AppConsole height={consoleSize} messages={consoleMsgs} />
+            <AppConsole
+              height={consoleSize}
+              messages={consoleMsgs}
+              autoscroll={consoleAutoScroll}
+            />
           </>
         )}
         <div className="App-modal-container">
