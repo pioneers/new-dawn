@@ -223,13 +223,17 @@ export default class RuntimeComms {
       'data',
       this.#handlePacket.bind(this),
     );
+    this.#commsListener.onRuntimeError(new Error('attempting connection to ' + this.#runtimeAddr));
     this.#tcpSock = createTcpConnection(this.#runtimePort, this.#runtimeAddr)
       .on('connect', this.#handleTcpConnection.bind(this))
       .on('close', this.#handleTcpClose.bind(this))
       .on(
         'error',
         this.#commsListener.onRuntimeTcpError.bind(this.#commsListener),
-      );
+      )
+      .on('connect', () => this.#commsListener.onRuntimeError(new Error('connect')))
+      .on('close', () => this.#commsListener.onRuntimeError(new Error('close')))
+      .on('error', () => this.#commsListener.onRuntimeError(new Error('error')));
     this.#tcpSock.pipe(tcpStream);
     this.#pingInterval = setInterval(
       this.#sendLatencyTest.bind(this),
@@ -257,6 +261,7 @@ export default class RuntimeComms {
    * Handler for TCP 'connect' event.
    */
   #handleTcpConnection() {
+    this.#commsListener.onRuntimeError(new Error('connected!'));
     this.#commsListener.onRuntimeConnect();
     if (this.#tcpSock) {
       this.#tcpSock.write(new Uint8Array([1])); // Tell Runtime that we are Dawn, not Shepherd
@@ -339,9 +344,11 @@ export default class RuntimeComms {
    * Handles TCP 'close' event and tries to reconnect if we didn't cause the disconnection.
    */
   #handleTcpClose() {
+    this.#commsListener.onRuntimeError(new Error('tcp connection closed'));
     this.#commsListener.onRuntimeDisconnect();
     this.#disconnectTcp();
     if (!this.#tcpDisconnected) {
+      this.#commsListener.onRuntimeError(new Error('attempting reconnect'));
       setTimeout(this.#connectTcp.bind(this), TCP_RECONNECT_DELAY);
     }
   }
