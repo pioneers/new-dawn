@@ -187,6 +187,9 @@
   filter: invert(100%) sepia(100%) hue-rotate(180deg) saturate(0);
   pointer-events: none;
 }
+.Editor-toolbar-dark .Editor-tbopmode {
+  color: white;
+}
 .Editor-toolbar-dark.Editor-tbbtn-toggled img {
   /* CSS filter witchcraft producing #0088ff */
   filter: invert(100%) sepia(100%) hue-rotate(180deg) saturate(10);
