@@ -1,4 +1,5 @@
-.DeviceInfo-device-type {
+.DeviceInfo-device-type-light {
+  font: 15px Verdana, sans-serif;
   font-style: italic;
 }
 .DeviceInfo-device-props-wrapper {
@@ -51,6 +52,11 @@
   margin-bottom: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: white;
+}
+.DeviceInfo-device-type-dark {
+  font: 15px Verdana, sans-serif;
+  font-style: italic;
   color: white;
 }
 .DeviceInfo-device-props-dark {

@@ -1,6 +1,17 @@
 import DeviceInfoState, { DeviceTypeNames } from '../common/DeviceInfoState';
 import './DeviceInfo.css';
 
+// helper function for making floats round to 4 digits after the decimal point
+function roundNumber(value: string, decimalPlaces: number) {
+  if (value === 'true' || value === 'false') {
+    return value; // do nothing, value is just a boolean
+  }
+
+  const numberValue = parseFloat(value);
+  const truncatedNumber = Math.trunc(numberValue * 10 ** 4) / 10 ** 4;
+  return parseFloat(truncatedNumber.toFixed(decimalPlaces));
+}
+
 /**
  * Component displaying information about input devices and peripherals connected to the robot.
  * @param props - props
@@ -34,7 +45,13 @@ export default function DeviceInfo({
               >
                 {device.id}
               </div>
-              <div className="DeviceInfo-device-type">{deviceType}</div>
+              <div
+                className={`DeviceInfo-device-type-${
+                  isDarkMode ? 'dark' : 'light'
+                }`}
+              >
+                {deviceType}
+              </div>
               <div className="DeviceInfo-device-props-wrapper">
                 <table
                   className={`DeviceInfo-device-props-${
@@ -51,7 +68,7 @@ export default function DeviceInfo({
                           >
                             <td className="DeviceInfo-prop-key">{key}</td>
                             <td className="DeviceInfo-prop-value">
-                              {String(value)}
+                              {String(roundNumber(value, 4))}
                             </td>
                           </tr>
                         ),
