@@ -32,6 +32,7 @@ import stopRobot from '../../../assets/stop-robot.svg';
 import keyboardKeySvg from '../../../assets/keyboard-key.svg';
 import themeSvg from '../../../assets/theme.svg';
 import darkModeSvg from '../../../assets/dark-mode.svg';
+import autoscrollSvg from '../../../assets/auto-scroll.svg';
 
 import './Editor.css';
 
@@ -284,7 +285,7 @@ export default function Editor({
             className="Editor-auto-scroll-button"
             onClick={onToggleAutoScroll}
           >
-            ↕
+            <img src={autoscrollSvg} alt="Turn on auto-scroll" />
           </button>
         </div>
         <div

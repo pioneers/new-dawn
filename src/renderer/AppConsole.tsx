@@ -14,6 +14,7 @@ export default function AppConsole({
   height,
   messages,
   isDarkMode,
+  autoscroll
 }: {
   height: number;
   messages: AppConsoleMessage[];
