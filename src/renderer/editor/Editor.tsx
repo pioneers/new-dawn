@@ -134,6 +134,7 @@ export default function Editor({
   onStartRobot,
   onStopRobot,
   onToggleConsole,
+  onToggleAutoScroll,
   onClearConsole,
   onToggleKeyboardControls,
   onToggleDarkMode,
@@ -171,6 +172,7 @@ export default function Editor({
   onStopRobot: () => void;
   onToggleConsole: () => void;
   onClearConsole: () => void;
+  onToggleAutoScroll: () => void;
   onToggleKeyboardControls: () => void;
   onToggleDarkMode: () => void;
 }) {
@@ -275,6 +277,14 @@ export default function Editor({
           </button>
           <button type="button" onClick={onClearConsole} title="Clear console">
             <img src={consoleClearSvg} alt="Clear console" />
+          </button>
+          <button
+            type="button"
+            title="Turn on auto-scroll"
+            className="Editor-auto-scroll-button"
+            onClick={onToggleAutoScroll}
+          >
+            ↕
           </button>
         </div>
         <div
