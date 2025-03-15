@@ -191,8 +191,9 @@ export default function App() {
       fieldIPAddress: FieldIPAddress,
       fieldStationNumber: FieldStationNum,
       showDirtyUploadWarning,
+      darkmode: isDarkMode
     });
-  }, [IPAddress, FieldIPAddress, FieldStationNum, showDirtyUploadWarning]);
+  }, [IPAddress, FieldIPAddress, FieldStationNum, showDirtyUploadWarning, isDarkMode]);
   const saveFile = useCallback(
     (forceDialog: boolean) => {
       window.electron.ipcRenderer.sendMessage('main-file-control', {
@@ -331,6 +332,7 @@ export default function App() {
           setFieldIPAddress(data.fieldIPAddress);
           setFieldStationNum(data.fieldStationNumber);
           setShowDirtyUploadWarning(data.showDirtyUploadWarning);
+          setIsDarkMode(data.darkmode);
           document.getElementsByTagName(
             'title',
           )[0].innerText = `Dawn ${data.dawnVersion}`;

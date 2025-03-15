@@ -51,6 +51,10 @@ export interface RendererInitData {
    * these won't be uploaded), retrieved from persistent config.
    */
   showDirtyUploadWarning: boolean;
+  /**
+   * Darkmode setting, to be saved to persistent config.
+   */
+  darkmode: boolean;
 }
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process wants to
@@ -295,6 +299,10 @@ export interface MainQuitData {
    * these won't be uploaded), to be saved to persistent config.
    */
   showDirtyUploadWarning: boolean;
+  /**
+   * Darkmode setting, to be saved to persistent config.
+   */
+  darkmode: boolean;
 }
 /**
  * Data for the main-update-robot-mode event sent by the renderer to stop the robot or start it with
