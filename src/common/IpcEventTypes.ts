@@ -53,6 +53,10 @@ export interface RendererInitData {
    * these won't be uploaded), retrieved from persistent config.
    */
   showDirtyUploadWarning: boolean;
+  /**
+   * Darkmode setting, to be saved to persistent config.
+   */
+  darkmode: boolean;
 }
 
 /**
@@ -306,6 +310,10 @@ export interface MainQuitData {
    * these won't be uploaded), to be saved to persistent config.
    */
   showDirtyUploadWarning: boolean;
+  /**
+   * Darkmode setting, to be saved to persistent config.
+   */
+  darkmode: boolean;
 }
 
 /**

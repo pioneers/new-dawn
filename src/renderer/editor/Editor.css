@@ -1,6 +1,27 @@
-.Editor {
+/* light mode */
+.Editor-light {
   display: flex;
   flex-direction: column;
+}
+/* dark mode */
+.Editor-dark {
+  display: flex;
+  flex-direction: column;
+}
+.Editor-dark > * {
+  color: white;
+  background-color: #121212;
+}
+.Editor-dark .ace_scrollbar.ace_scrollbar-v::-webkit-scrollbar,
+.Editor-dark .ace_scrollbar.ace_scrollbar-h::-webkit-scrollbar {
+  background-color: #2E2E2E;
+}
+.Editor-dark .ace_scrollbar::-webkit-scrollbar-thumb {
+  background-color: #6b6b6b;
+  border-radius: 4px;
+}
+.Editor-dark .ace_scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #7f7f7f;
 }
 .Editor-file-info {
   display: flex;
@@ -11,7 +32,6 @@
 }
 .Editor-file-name {
   margin-right: 10px;
-  font-family: Verdana, monospace;
 }
 .Editor-file-status {
   font-style: italic;
@@ -54,14 +74,17 @@
 .Editor-kbctrl-enabled .ace_scrollbar-h {
   overflow: hidden;
 }
-.Editor-toolbar {
+/* inefficient code T_T */
+/* light */
+.Editor-toolbar-light {
   display: flex;
   flex-direction: row;
   padding: 5px 0 5px 20px;
   overflow-x: auto;
   border-bottom: 4px double var(--body-accent-color);
+  background-color: lightgrey;
 }
-.Editor-toolbar-group {
+.Editor-toolbar-group-light {
   margin-right: 20px;
   border: 1px solid var(--body-accent-color);
   padding: 4px;
@@ -72,6 +95,45 @@
   flex-direction: row;
   align-items: center;
   flex-shrink: 0;
+  background-color: white; 
+}
+/* dark */
+.Editor-toolbar-dark {
+  display: flex;
+  flex-direction: row;
+  padding: 5px 0 5px 20px;
+  margin: 0px 0  0;
+  overflow-x: auto;
+  border-bottom: 4px double var(--body-accent-color);
+  background-color: #1E1E1E;
+}
+.Editor-toolbar-dark::-webkit-scrollbar {
+  width: 10px;
+  background-color: #2E2E2E; 
+}
+.Editor-toolbar-dark::-webkit-scrollbar-thumb {
+  background-color: #6b6b6b;
+  border-radius: 4px;
+}
+.Editor-toolbar-dark::-webkit-scrollbar-thumb:hover {
+  background-color: #7f7f7f;
+}
+.Editor-toolbar-group-dark {
+  margin-right: 20px;
+  border: 1px solid var(--body-accent-color);
+  padding: 4px;
+  border-radius: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-shrink: 0;
+  background-color: #121212;
+}
+.Editor-toolbar-group-dark > *, .Editor-toolbar-group-dark > * > *{
+  font-family: Arial;
+  color: #121212;
 }
 .Editor-toolbar-group > *:not(:last-child) {
   margin-right: 6px;
@@ -79,7 +141,8 @@
 .Editor-toolbar-group:last-child {
   margin-left: auto;
 }
-.Editor-toolbar button {
+/* light mode */
+.Editor-toolbar-light button {
   position: relative;
   outline: none;
   border: none;
@@ -89,7 +152,7 @@
   padding: 0;
   background-color: transparent;
 }
-.Editor-toolbar img {
+.Editor-toolbar-light img {
   width: 100%;
   height: 100%;
   width: 20px;
@@ -99,9 +162,37 @@
   filter: invert(0%) sepia(100%) hue-rotate(180deg) saturate(0);
   pointer-events: none;
 }
-.Editor-tbbtn-toggled img {
+.Editor-toolbar-light.Editor-tbbtn-toggled img {
   /* CSS filter witchcraft producing #0088ff */
-  filter: invert(40%) sepia(100%) hue-rotate(180deg) saturate(10);
+  filter: invert(0%) sepia(100%) hue-rotate(180deg) saturate(10);
+}
+/* dark mode */
+.Editor-toolbar-dark button {
+  position: relative;
+  outline: none;
+  border: none;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  padding: 0;
+  background-color: #121212;
+}
+.Editor-toolbar-dark img {
+  width: 100%;
+  height: 100%;
+  width: 20px;
+  height: 20px;
+  transition: filter 0.25s;
+  /* Fix other filter variables so transition is directly from black to blue: */
+  filter: invert(100%) sepia(100%) hue-rotate(180deg) saturate(0);
+  pointer-events: none;
+}
+.Editor-toolbar-dark .Editor-tbopmode {
+  color: white;
+}
+.Editor-toolbar-dark.Editor-tbbtn-toggled img {
+  /* CSS filter witchcraft producing #0088ff */
+  filter: invert(100%) sepia(100%) hue-rotate(180deg) saturate(10);
 }
 .Editor-toolbar .Editor-tbbtn-disabled {
   cursor: default;
@@ -120,9 +211,18 @@
   z-index: 5;
 }
 .Editor-tbopmode {
-  font-family: Verdana, monospace;
+  font-family: Arial;
+  font-size: 12pt;
 }
 .Editor-tbopmode select {
   margin-left: 5px;
   outline: none;
+}
+.Editor-auto-scroll-button {
+  width: auto;
+  height: 20px; 
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  outline: none; 
 }

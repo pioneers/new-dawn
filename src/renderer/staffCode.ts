@@ -38,7 +38,7 @@ RIGHT_MTR_INVERT = True
 # Misc
 ARM_SPEED = 0.05 # Change this
 
-def autonomous_setup():
+def autonomous():
     # Set motor inversions
     Robot.set_value(MOTOR_ID, "invert_" + LEFT_MTR, LEFT_MTR_INVERT)
     Robot.set_value(MOTOR_ID, "invert_" + RIGHT_MTR, RIGHT_MTR_INVERT)
@@ -51,7 +51,6 @@ def autonomous_setup():
     # This line will set the position of the arm to an encoder value of 0
     Robot.set_value(ARM_MOTOR_ID, "enc_" + ARM_MTR, 0)
 
-def autonomous_main():
     # Autonomous code can go here (or, if more complex,
     # put in separate function and Robot.run() in autonomous_setup() )
     Robot.set_value(MOTOR_ID, "velocity_" + LEFT_MTR, -0.15)
@@ -78,24 +77,23 @@ def arm_code():
         else:
             Robot.set_value(ARM_MOTOR_ID, "velocity_" + ARM_MTR, 0.0)
 
-def teleop_setup():
-    # Start the arm_code() function running simultaneously with teleop_main()
+def teleop():
+    # Start the arm_code() function running simultaneously with rest of teleop function
     # Robot.run(arm_code)
-    pass
 
-def teleop_main():
     # Drive code
-    if Keyboard.get_value(LEFT_MOTOR_FORWARD):
-        Robot.set_value(MOTOR_ID, "velocity_" + LEFT_MTR, 1.0)
-    elif Keyboard.get_value(LEFT_MOTOR_BACKWARD):
-        Robot.set_value(MOTOR_ID, "velocity_" + LEFT_MTR, -1.0)
-    else:
-        Robot.set_value(MOTOR_ID, "velocity_" + LEFT_MTR, 0.0)
+    while True:
+      if Keyboard.get_value(LEFT_MOTOR_FORWARD):
+          Robot.set_value(MOTOR_ID, "velocity_" + LEFT_MTR, 1.0)
+      elif Keyboard.get_value(LEFT_MOTOR_BACKWARD):
+          Robot.set_value(MOTOR_ID, "velocity_" + LEFT_MTR, -1.0)
+      else:
+          Robot.set_value(MOTOR_ID, "velocity_" + LEFT_MTR, 0.0)
 
-    if Keyboard.get_value(RIGHT_MOTOR_FORWARD):
-        Robot.set_value(MOTOR_ID, "velocity_" + RIGHT_MTR, 1.0)
-    elif Keyboard.get_value(RIGHT_MOTOR_BACKWARD):
-        Robot.set_value(MOTOR_ID, "velocity_" + RIGHT_MTR, -1.0)
-    else:
-        Robot.set_value(MOTOR_ID, "velocity_" + RIGHT_MTR, 0.0)
+      if Keyboard.get_value(RIGHT_MOTOR_FORWARD):
+          Robot.set_value(MOTOR_ID, "velocity_" + RIGHT_MTR, 1.0)
+      elif Keyboard.get_value(RIGHT_MOTOR_BACKWARD):
+          Robot.set_value(MOTOR_ID, "velocity_" + RIGHT_MTR, -1.0)
+      else:
+          Robot.set_value(MOTOR_ID, "velocity_" + RIGHT_MTR, 0.0)
 ` as string;

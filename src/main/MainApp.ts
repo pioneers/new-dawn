@@ -234,6 +234,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     });
     addRendererListener('main-quit', (data) => {
       this.#config.showDirtyUploadWarning = data.showDirtyUploadWarning;
+      this.#config.darkmode = data.darkmode;
       try {
         fs.writeFileSync(CONFIG_RELPATH, JSON.stringify(this.#config));
       } catch (e) {
@@ -287,6 +288,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       fieldIPAddress: this.#config.fieldIPAddress,
       fieldStationNumber: this.#config.fieldStationNumber,
       showDirtyUploadWarning: this.#config.showDirtyUploadWarning,
+      darkmode: this.#config.darkmode,
     });
   }
 

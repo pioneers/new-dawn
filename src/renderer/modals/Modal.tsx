@@ -8,6 +8,7 @@ import './Modal.css';
  * @param props.isActive - whether to display the modal
  * @param props.modalTitle - displayed title of the modal
  * @param props.className - additional className given to the modal content wrapper
+ * @param props.isDarkMode - whether UI is in dark mode
  */
 export default function Modal({
   onClose,
@@ -15,12 +16,14 @@ export default function Modal({
   modalTitle,
   children,
   className = '',
+  isDarkMode,
 }: {
   onClose: () => void;
   isActive: boolean;
   modalTitle: string;
   className?: string;
   children: ReactNode;
+  isDarkMode: boolean;
 }) {
   return (
     <div className={`Modal${isActive ? ' Modal-active' : ''}`}>
@@ -30,7 +33,13 @@ export default function Modal({
           X
         </button>
       </div>
-      <div className={`Modal-content ${className}`}>{children}</div>
+      <div
+        className={`Modal-content-${
+          isDarkMode ? 'dark' : 'light'
+        } ${className}`}
+      >
+        {children}
+      </div>
     </div>
   );
 }
