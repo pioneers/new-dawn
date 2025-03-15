@@ -436,52 +436,71 @@ export default function App() {
           isDarkMode={isDarkMode}
         />
         <div className="App-cols">
-          <Editor
-            width={editorSize}
-            onChange={changeEditorContent}
-            fileStatus={editorStatus}
-            filePath={editorPath}
-            content={editorContent}
-            consoleAlert={consoleIsAlerted}
-            consoleIsOpen={consoleIsOpen}
-            keyboardControlsStatus={keyboardControlsStatus}
-            robotConnected={robotLatencyMs !== -1}
-            robotRunning={robotRunning}
-            onOpen={loadFile}
-            onSave={saveFile}
-            onNewFile={createNewFile}
-            onLoadStaffCode={loadStaffCode}
-            onRobotUpload={() => uploadDownloadFile(true)}
-            onRobotDownload={() => uploadDownloadFile(false)}
-            onStartRobot={(opmode: 'auto' | 'teleop') => {
-              changeRunMode(
-                opmode === 'auto' ? RobotRunMode.AUTO : RobotRunMode.TELEOP,
-              );
-            }}
-            onStopRobot={() => changeRunMode(RobotRunMode.IDLE)}
-            onToggleConsole={() => {
-              setConsoleIsOpen((v) => !v);
-              setConsoleIsAlerted(false);
-            }}
-            onClearConsole={() => {
-              setConsoleMsgs([]);
-              setConsoleIsAlerted(false);
-            }}
-            onToggleAutoScroll={() => {
-              if (!consoleAutoScroll) {
-                setConsoleAutoScroll(true);
-              } else {
-                setConsoleAutoScroll(false);
-              }
-            }}
-            onToggleKeyboardControls={() => {
-              setKeyboardControlsEnabled((v) =>
-                v === 'on' ? 'offEdge' : 'on',
-              );
-            }}
-            isDarkMode={isDarkMode}
-            onToggleDarkMode={toggleDarkMode}
-          />
+          <div className="editor-container">
+            <Editor
+              width={editorSize}
+              onChange={changeEditorContent}
+              fileStatus={editorStatus}
+              filePath={editorPath}
+              content={editorContent}
+              consoleAlert={consoleIsAlerted}
+              consoleIsOpen={consoleIsOpen}
+              keyboardControlsStatus={keyboardControlsStatus}
+              robotConnected={robotLatencyMs !== -1}
+              robotRunning={robotRunning}
+              onOpen={loadFile}
+              onSave={saveFile}
+              onNewFile={createNewFile}
+              onLoadStaffCode={loadStaffCode}
+              onRobotUpload={() => uploadDownloadFile(true)}
+              onRobotDownload={() => uploadDownloadFile(false)}
+              onStartRobot={(opmode: 'auto' | 'teleop') => {
+                changeRunMode(
+                  opmode === 'auto' ? RobotRunMode.AUTO : RobotRunMode.TELEOP,
+                );
+              }}
+              onStopRobot={() => changeRunMode(RobotRunMode.IDLE)}
+              onToggleConsole={() => {
+                setConsoleIsOpen((v) => !v);
+                setConsoleIsAlerted(false);
+              }}
+              onClearConsole={() => {
+                setConsoleMsgs([]);
+                setConsoleIsAlerted(false);
+              }}
+              onToggleAutoScroll={() => {
+                if (!consoleAutoScroll) {
+                  setConsoleAutoScroll(true);
+                } else {
+                  setConsoleAutoScroll(false);
+                }
+              }}
+              onToggleKeyboardControls={() => {
+                setKeyboardControlsEnabled((v) =>
+                  v === 'on' ? 'offEdge' : 'on',
+                );
+              }}
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={toggleDarkMode}
+            />
+            {consoleIsOpen && (
+              <>
+                <ResizeBar
+                  onStartResize={startColsResize}
+                  onUpdateResize={updateColsResize}
+                  onEndResize={endColsResize}
+                  axis="y"
+                  isDarkMode={isDarkMode}
+                />
+                <AppConsole
+                  height={consoleSize}
+                  messages={consoleMsgs}
+                  isDarkMode={isDarkMode}
+                  autoscroll={consoleAutoScroll}
+                />
+              </>
+            )}
+          </div>
           <ResizeBar
             onStartResize={startEditorResize}
             onUpdateResize={updateEditorResize}
@@ -491,23 +510,6 @@ export default function App() {
           />
           <DeviceInfo deviceStates={deviceInfoState} isDarkMode={isDarkMode} />
         </div>
-        {consoleIsOpen && (
-          <>
-            <ResizeBar
-              onStartResize={startColsResize}
-              onUpdateResize={updateColsResize}
-              onEndResize={endColsResize}
-              axis="y"
-              isDarkMode={isDarkMode}
-            />
-            <AppConsole
-              height={consoleSize}
-              messages={consoleMsgs}
-              isDarkMode={isDarkMode}
-              autoscroll={consoleAutoScroll}
-            />
-          </>
-        )}
         <div className="App-modal-container">
           <ConnectionConfigModal
             isActive={activeModal === 'ConnectionConfig'}
