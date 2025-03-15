@@ -389,7 +389,7 @@ export default function Editor({
             <img src={stopRobot} alt="Stop robot" />
           </button>
         </div>
-        <div></div>
+        <div aria-hidden="true" />
       </div>
       <div className="Editor-ace-wrapper">
         <div className="Editor-kbctrl-overlay">
