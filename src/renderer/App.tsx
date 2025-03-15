@@ -191,9 +191,15 @@ export default function App() {
       fieldIPAddress: FieldIPAddress,
       fieldStationNumber: FieldStationNum,
       showDirtyUploadWarning,
-      darkmode: isDarkMode
+      darkmode: isDarkMode,
     });
-  }, [IPAddress, FieldIPAddress, FieldStationNum, showDirtyUploadWarning, isDarkMode]);
+  }, [
+    IPAddress,
+    FieldIPAddress,
+    FieldStationNum,
+    showDirtyUploadWarning,
+    isDarkMode,
+  ]);
   const saveFile = useCallback(
     (forceDialog: boolean) => {
       window.electron.ipcRenderer.sendMessage('main-file-control', {

@@ -14,12 +14,12 @@ export default function AppConsole({
   height,
   messages,
   isDarkMode,
-  autoscroll
+  autoscroll,
 }: {
   height: number;
   messages: AppConsoleMessage[];
   isDarkMode: boolean;
-  autoscroll: boolean,
+  autoscroll: boolean;
 }) {
   // Add autoscroll feature to AppConsole by setting the current scrollTop prop to the current scrollHeight value
   const consoleRef = useRef<HTMLPreElement>(null);
@@ -57,7 +57,6 @@ export default function AppConsole({
         ref={consoleRef}
         className={`AppConsole-inner-${isDarkMode ? 'dark' : 'light'}`}
         onScroll={handleScroll}
-
       >
         {messages.map((msg: AppConsoleMessage) => (
           <div

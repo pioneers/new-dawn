@@ -75,10 +75,7 @@ export function coerceToConfig(template: unknown): Config {
   ) {
     config.showDirtyUploadWarning = true;
   }
-  if (
-    !('darkmode' in config) ||
-    typeof config.darkmode !== 'boolean'
-  ) {
+  if (!('darkmode' in config) || typeof config.darkmode !== 'boolean') {
     config.darkmode = false;
   }
   // By now we're sure all the required fields are set (and really typescript should be too, so I
