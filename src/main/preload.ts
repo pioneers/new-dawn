@@ -4,6 +4,7 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import type {
   RendererChannels,
   MainChannels,
+  MainConnectionConfigData,
   MainFileControlData,
   MainUpdateRobotModeData,
   RendererInitData,
@@ -28,6 +29,10 @@ function sendMessage(
 function sendMessage(
   channel: 'main-robot-input',
   data: MainRobotInputData,
+): void;
+function sendMessage(
+  channel: 'main-connection-config',
+  data: MainConnectionConfigData,
 ): void;
 function sendMessage(channel: MainChannels, data?: any): void {
   ipcRenderer.send(channel, data);

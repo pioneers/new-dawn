@@ -16,6 +16,7 @@ export type RendererChannels =
   | 'renderer-post-console'
   | 'renderer-file-control'
   | 'renderer-quit-request';
+
 /**
  * IPC event channels used for communication from the renderer to the main process.
  */
@@ -23,6 +24,7 @@ export type MainChannels =
   | 'main-file-control'
   | 'main-quit'
   | 'main-update-robot-mode'
+  | 'main-connection-config'
   | 'main-robot-input';
 
 /**
@@ -56,6 +58,7 @@ export interface RendererInitData {
    */
   darkmode: boolean;
 }
+
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process wants to
  * try saving the code and needs to ask the renderer process for the content of the editor.
@@ -71,6 +74,7 @@ export interface RendererFileControlPromptSaveData {
    */
   forceDialog: boolean;
 }
+
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process wants to
  * try loading a file into the editor and needs to ask the renderer process if this is ok (if there
@@ -82,6 +86,7 @@ export interface RendererFileControlPromptLoadData {
    */
   type: 'promptLoad';
 }
+
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process has
  * successfully saved the code and the renderer should clear the dirty editor indicator.
@@ -92,6 +97,7 @@ export interface RendererFileControlSaveData {
    */
   type: 'didSave';
 }
+
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process has
  * successfully loaded code and the renderer should store the retrieved content in the editor.
@@ -111,6 +117,7 @@ export interface RendererFileControlOpenData {
    */
   isCleanFile: boolean;
 }
+
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process has
  * successfully saved or loaded code and the renderer should update the path shown in the editor.
@@ -125,6 +132,7 @@ export interface RendererFileControlPathData {
    */
   path: string;
 }
+
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process detects
  * external changes to the currently open file and the renderer should set the dirty editor
@@ -136,6 +144,7 @@ export interface RendererFileControlExtChangeData {
    */
   type: 'didExternalChange';
 }
+
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process wants to
  * upload code from the last saved file to the robot and needs to ask the renderer process to notify
@@ -147,6 +156,7 @@ export interface RendererFileControlPromptUploadData {
    */
   type: 'promptUpload';
 }
+
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process wants to
  * download code from the robot into the editor and needs to ask the renderer if this is ok (if
@@ -158,6 +168,7 @@ export interface RendererFileControlPromptDownloadData {
    */
   type: 'promptDownload';
 }
+
 /**
  * Data for a specialization of the renderer-file-control event, sent when the main process wants to
  * close the file open in the editor.
@@ -165,6 +176,7 @@ export interface RendererFileControlPromptDownloadData {
 interface RendererFileControlPromptCreateNewFile {
   type: 'promptCreateNewFile';
 }
+
 /**
  * Data for the renderer-file-control event sent by the main process to request or submit
  * information related to the code file and editor.
@@ -179,26 +191,31 @@ export type RendererFileControlData =
   | RendererFileControlPromptUploadData
   | RendererFileControlPromptDownloadData
   | RendererFileControlPromptCreateNewFile;
+
 /**
  * Data for the renderer-post-console event sent by the main process to add a console message to the
  * AppConsole.
  */
 export type RendererPostConsoleData = AppConsoleMessage;
+
 /**
  * Data for the renderer-battery-update event sent by the main process to update the robot's battery
  * voltage.
  */
 export type RendererBatteryUpdateData = number;
+
 /**
  * Data for the renderer-latency-update event sent by the main process to update the displayed robot
  * connection latency.
  */
 export type RendererLatencyUpdateData = number;
+
 /**
  * Data for the renderer-devices-update event sent by the main process to update the state of
  * connected lowcar devices.
  */
 export type RendererDevicesUpdateData = DeviceInfoState[];
+
 /**
  * Data for a specialization of the main-file-control event, sent by the renderer to
  * initiate/respond to a request to save the code.
@@ -218,6 +235,7 @@ export interface MainFileControlSaveData {
    */
   content: string;
 }
+
 /**
  * Data for a specialization of the main-file-control event, sent by the renderer to
  * initiate/authorize a request to load code into the editor.
@@ -228,6 +246,7 @@ export interface MainFileControlLoadData {
    */
   type: 'load';
 }
+
 /**
  * Data for a specialization of the main-file-control event, sent by the renderer to
  * initiate/respond to a request to upload the last opened file to the robot.
@@ -242,6 +261,7 @@ export interface MainFileControlUploadData {
    */
   robotSSHAddress: string;
 }
+
 /**
  * Data for a specialization of the main-file-control event, sent by the renderer to
  * initiate/respond to a request to download the code on the robot into the editor.
@@ -256,6 +276,7 @@ export interface MainFileControlDownloadData {
    */
   robotSSHAddress: string;
 }
+
 /**
  * Data for a specialization of the main-file-control event, sent by the renderer to
  * inititate/respond to a request to clear the save path (so the next request to save must prompt
@@ -267,6 +288,7 @@ export interface MainFileControlClearSavePathData {
    */
   type: 'clearSavePath';
 }
+
 /**
  * Data for the main-file-control event sent by the renderer process to submit information related
  * to the code file and editor.
@@ -277,23 +299,12 @@ export type MainFileControlData =
   | MainFileControlUploadData
   | MainFileControlDownloadData
   | MainFileControlClearSavePathData;
+
 /**
  * Data for the main-quit event sent by the renderer both to authorize a request to quit and to send
  * updated configuration data that should be saved before the program closes.
  */
 export interface MainQuitData {
-  /**
-   * The IP address used to communicate with the robot's runtime, to be saved to persistent config.
-   */
-  robotIPAddress: string;
-  /**
-   * The IP address of the field controller, to be saved to persistent config.
-   */
-  fieldIPAddress: string;
-  /**
-   * The field station number to connect to, to be saved to persistent config.
-   */
-  fieldStationNumber: string;
   /**
    * Whether the user should be warned when uploading code with unsaved changes in the editor (since
    * these won't be uploaded), to be saved to persistent config.
@@ -304,11 +315,32 @@ export interface MainQuitData {
    */
   darkmode: boolean;
 }
+
 /**
  * Data for the main-update-robot-mode event sent by the renderer to stop the robot or start it with
  * a specified opmode.
  */
 export type MainUpdateRobotModeData = RobotRunMode;
+
+/**
+ * Data for the main-connection-config event sent by the renderer to notify the main process of a
+ * change in the Runtime or field connection config.
+ */
+export interface MainConnectionConfigData {
+  /**
+   * The IP address used to communicate with the robot's runtime.
+   */
+  robotIPAddress: string;
+  /**
+   * The IP address of the field controller.
+   */
+  fieldIPAddress: string;
+  /**
+   * The field station number to connect to.
+   */
+  fieldStationNumber: string;
+}
+
 /**
  * Data for the main-robot-input event sent by the renderer with gamepad or keyboard inputs bound
  * for the robot.

@@ -71,6 +71,11 @@ export interface RuntimeCommsListener {
    */
   onRuntimeError: (err: Error) => void;
   /**
+   * Called with verbose debugging messages that should be handled separately from robot logs.
+   * @param msg - the log message.
+   */
+  onTrace: (msg: string) => void;
+  /**
    * Called when the TCP connection to the robot is lost for any reason.
    */
   onRuntimeDisconnect: () => void;
@@ -128,10 +133,6 @@ export default class RuntimeComms {
    */
   disconnect() {
     this.#tcpDisconnected = true; // Don't reconnect
-    if (this.#pingInterval) {
-      clearInterval(this.#pingInterval);
-      this.#pingInterval = null;
-    }
     this.#disconnectTcp();
   }
 
@@ -153,6 +154,7 @@ export default class RuntimeComms {
     } catch {
       return false;
     }
+    this.#disconnectTcp();
     this.#connectTcp(); // Reconnect TCP
     return true;
   }
@@ -226,13 +228,16 @@ export default class RuntimeComms {
       'data',
       this.#handlePacket.bind(this),
     );
+    this.#commsListener.onTrace(
+      `Attempting connection to ${this.#runtimeAddr}`,
+    );
     this.#tcpSock = createTcpConnection(this.#runtimePort, this.#runtimeAddr)
       .on('connect', this.#handleTcpConnection.bind(this))
       .on('close', this.#handleTcpClose.bind(this))
-      .on(
-        'error',
-        this.#commsListener.onRuntimeTcpError.bind(this.#commsListener),
-      );
+      .on('error', () => {
+        this.#commsListener.onTrace("TCP socket emit 'error'");
+        this.#commsListener.onRuntimeTcpError.bind(this.#commsListener);
+      });
     this.#tcpSock.pipe(tcpStream);
     this.#pingInterval = setInterval(
       this.#sendLatencyTest.bind(this),
@@ -245,8 +250,14 @@ export default class RuntimeComms {
    */
   #disconnectTcp() {
     if (this.#tcpSock) {
-      this.#tcpSock.resetAndDestroy();
+      this.#tcpSock.removeAllListeners();
+      // this.#tcpSock.end();
+      this.#tcpSock.destroy();
       this.#tcpSock = null;
+    }
+    if (this.#pingInterval) {
+      clearInterval(this.#pingInterval);
+      this.#pingInterval = null;
     }
   }
 
@@ -254,9 +265,13 @@ export default class RuntimeComms {
    * Handler for TCP 'connect' event.
    */
   #handleTcpConnection() {
+    this.#commsListener.onTrace(
+      "TCP socket emit 'connected', firing onRuntimeConnect",
+    );
     this.#commsListener.onRuntimeConnect();
     if (this.#tcpSock) {
       this.#tcpSock.write(new Uint8Array([1])); // Tell Runtime that we are Dawn, not Shepherd
+      this.#commsListener.onTrace('Sent identity byte');
     }
   }
 
@@ -319,6 +334,7 @@ export default class RuntimeComms {
               )}`,
             ),
           );
+        // this.#rstAndRetry();
       }
     } catch (e) {
       this.#commsListener.onRuntimeError(
@@ -335,10 +351,27 @@ export default class RuntimeComms {
    * Handles TCP 'close' event and tries to reconnect if we didn't cause the disconnection.
    */
   #handleTcpClose() {
+    this.#commsListener.onTrace(
+      "TCP socket emitted 'close', firing onRuntimeDisconnect",
+    );
     this.#commsListener.onRuntimeDisconnect();
+    this.#disconnectTcp();
     if (!this.#tcpDisconnected) {
+      this.#commsListener.onTrace(
+        'Scheduling reconnect due to connection close',
+      );
       setTimeout(this.#connectTcp.bind(this), TCP_RECONNECT_DELAY);
     }
+  }
+
+  /**
+   * Sends a RST packet, cleans up the socket, and attempts to reconnect.
+   */
+  #rstAndRetry() {
+    this.#tcpSock!.removeAllListeners();
+    this.#tcpSock!.resetAndDestroy();
+    this.#tcpSock = null;
+    this.#handleTcpClose();
   }
 
   /**

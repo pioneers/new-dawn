@@ -13,6 +13,7 @@ import type {
   RendererLatencyUpdateData,
   RendererDevicesUpdateData,
   MainChannels,
+  MainConnectionConfigData,
   MainFileControlData,
   MainQuitData,
   MainUpdateRobotModeData,
@@ -87,6 +88,16 @@ function addRendererListener(
 ): void;
 
 /**
+ * Adds a listener for the main-connection-config IPC event fired by the renderer.
+ * @param channel - the event channel to listen to
+ * @param func - the listener to attach
+ */
+function addRendererListener(
+  channel: 'main-connection-config',
+  func: (data: MainConnectionConfigData) => void,
+): void;
+
+/**
  * Adds a listener for the main-robot-input IPC event fired by the renderer.
  * @param channel - the event channel to listen to
  * @param func - the listener to attach
@@ -141,10 +152,28 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   #preventQuit: boolean;
 
   /**
+   * Whether the message informing the user the robot has discnonected will be
+   * suppressed. Used so disconnects only generate one log message.
+   */
+  #suppressDisconnectMsg: boolean;
+
+  /**
    * Whether error messages relating to connectivity will be suppressed. Used so disconnects only
    * generate one log message and possibly (hopefully?) the causing error.
    */
   #suppressNetworkErrors: boolean;
+
+  /**
+   * Whether error messages relating to the PDB will be suppressed. Used so faulty PDBs do not flood
+   * the console.
+   */
+  #suppressPdbErrors: boolean;
+
+  /**
+   * Whether verbose debugging logs should be written to the AppConsole. Also changes the behavior
+   * of some error reporting code.
+   */
+  #runtimeTraceMode: boolean;
 
   /**
    * Persistent configuration loaded when MainApp is constructed and saved when the main window is
@@ -171,7 +200,10 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#watcher = null;
     this.#watchDebounce = true;
     this.#preventQuit = true;
+    this.#suppressDisconnectMsg = false;
     this.#suppressNetworkErrors = false;
+    this.#suppressPdbErrors = false;
+    this.#runtimeTraceMode = false;
     this.#codeTransfer = new CodeTransfer(
       REMOTE_CODE_PATH,
       ROBOT_SSH_PORT,
@@ -201,10 +233,6 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       }
     });
     addRendererListener('main-quit', (data) => {
-      // Save config that may have been changed while the program was running
-      this.#config.robotIPAddress = data.robotIPAddress;
-      this.#config.fieldIPAddress = data.fieldIPAddress;
-      this.#config.fieldStationNumber = data.fieldStationNumber;
       this.#config.showDirtyUploadWarning = data.showDirtyUploadWarning;
       this.#config.darkmode = data.darkmode;
       try {
@@ -220,6 +248,10 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       'main-update-robot-mode',
       this.#runtimeComms.sendRunMode.bind(this.#runtimeComms),
     );
+    addRendererListener('main-connection-config', (data) => {
+      this.onTrace(`Robot ip changed to ${data.robotIPAddress}`);
+      this.#runtimeComms.setRobotIp(data.robotIPAddress);
+    });
     addRendererListener(
       'main-robot-input',
       this.#runtimeComms.sendInputs.bind(this.#runtimeComms),
@@ -279,62 +311,114 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       (state) => state.id.split('_')[0] === DeviceType.PDB.toString(),
     );
     if (pdbs.length !== 1) {
-      this.#sendToRenderer(
-        'renderer-post-console',
-        new AppConsoleMessage(
-          'dawn-err',
-          'Cannot read battery voltage. Not exactly one PDB is connected to the robot.',
-        ),
-      );
+      if (!this.#suppressPdbErrors) {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            'Cannot read battery voltage. Not exactly one PDB is connected to the robot.',
+          ),
+        );
+        this.#suppressPdbErrors = true;
+      }
     } else if (!('v_batt' in pdbs[0]) || Number.isNaN(Number(pdbs[0].v_batt))) {
-      this.#sendToRenderer(
-        'renderer-post-console',
-        new AppConsoleMessage(
-          'dawn-err',
-          'PDB does not have v_batt property or it is not a number.',
-        ),
-      );
+      if (!this.#suppressPdbErrors) {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            'PDB does not have v_batt property or it is not a number.',
+          ),
+        );
+        this.#suppressPdbErrors = true;
+      }
     } else {
       this.#sendToRenderer('renderer-battery-update', Number(pdbs[0].v_batt));
+      this.#suppressPdbErrors = false;
     }
   }
 
   onRuntimeTcpError(err: Error) {
-    if (!this.#suppressNetworkErrors) {
+    if (!this.#suppressNetworkErrors || this.#runtimeTraceMode) {
+      const rawMsg = err.toString();
+      let msg;
+      if (
+        rawMsg.includes('ETIMEDOUT') ||
+        rawMsg.includes('ENETUNREACH') ||
+        rawMsg.includes('ECONNREFUSED') ||
+        rawMsg.includes('EHOSTUNREACH')
+      ) {
+        msg =
+          "Can't find the robot! Please make sure you are connected to the robot's router," +
+          ' the IP is set correctly, and the robot is turned on.';
+      } else if (rawMsg.includes('ENOTFOUND')) {
+        msg = 'The robot ip is invalid. Please specify a valid ip.';
+      } else if (
+        rawMsg.includes('ECONNABORTED') ||
+        rawMsg.includes('ECONNRESET')
+      ) {
+        msg =
+          'Temporary robot communication error! Dawn will attempt to reconnect.';
+      } else if (rawMsg.includes('Timeout!')) {
+        msg = 'The robot is not responding. Dawn will attempt to reconnect.';
+      } else {
+        msg = `Encountered TCP error when communicating with Runtime. ${rawMsg}`;
+      }
       this.#sendToRenderer(
         'renderer-post-console',
         new AppConsoleMessage(
           'dawn-err',
-          `Encountered TCP error when communicating with Runtime. ${err.toString()}`,
+          `${
+            this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''
+          }${msg}${
+            this.#runtimeTraceMode ? ` (Original message: ${rawMsg})` : ''
+          }`,
         ),
       );
     }
   }
 
   onRuntimeError(err: Error) {
-    if (!this.#suppressNetworkErrors) {
+    if (!this.#suppressNetworkErrors || this.#runtimeTraceMode) {
       this.#sendToRenderer(
         'renderer-post-console',
         new AppConsoleMessage(
           'dawn-err',
-          `Encountered error when communicating with Runtime. ${err.toString()}`,
+          `{this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''}` +
+            `Encountered error when communicating with Runtime. ${err.toString()}`,
         ),
       );
     }
   }
 
-  onRuntimeDisconnect() {
-    if (!this.#suppressNetworkErrors) {
+  onTrace(msg: string) {
+    if (this.#runtimeTraceMode) {
       this.#sendToRenderer(
         'renderer-post-console',
-        new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
+        new AppConsoleMessage('dawn-info', msg),
       );
-      this.#suppressNetworkErrors = true;
+    }
+  }
+
+  onRuntimeDisconnect() {
+    this.#sendToRenderer('renderer-latency-update', -1);
+    if (!this.#suppressDisconnectMsg || this.#runtimeTraceMode) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-info',
+          `${
+            this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''
+          }Disconnected from robot.`,
+        ),
+      );
+      this.#suppressDisconnectMsg = true;
     }
   }
 
   onRuntimeConnect() {
     this.#suppressNetworkErrors = false;
+    this.#suppressDisconnectMsg = false;
   }
 
   /**
@@ -383,6 +467,14 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#sendToRenderer('renderer-file-control', {
       type: 'promptCreateNewFile',
     });
+  }
+
+  getRuntimeTraceMode() {
+    return this.#runtimeTraceMode;
+  }
+
+  setRuntimeTraceMode(mode: boolean) {
+    this.#runtimeTraceMode = mode;
   }
 
   /**
