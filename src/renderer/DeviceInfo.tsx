@@ -43,7 +43,7 @@ export default function DeviceInfo({
                   isDarkMode ? 'dark' : 'light'
                 }`}
               >
-                {device.id}
+                {String(device.id)}
               </div>
               <div
                 className={`DeviceInfo-device-type-${
