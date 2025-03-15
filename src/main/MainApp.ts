@@ -251,6 +251,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     addRendererListener('main-connection-config', (data) => {
       this.onTrace(`Robot ip changed to ${data.robotIPAddress}`);
       this.#runtimeComms.setRobotIp(data.robotIPAddress);
+      Object.assign(this.#config, data);
     });
     addRendererListener(
       'main-robot-input',
