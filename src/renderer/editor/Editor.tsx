@@ -336,12 +336,6 @@ export default function Editor({
               </option>
             ))}
           </select>
-        </div>
-        <div
-          className={`Editor-toolbar-group Editor-toolbar-group-${
-            isDarkMode ? 'dark' : 'light'
-          }`}
-        >
           <button
             type="button"
             className="Editor-toolbar-button"
@@ -395,6 +389,7 @@ export default function Editor({
             <img src={stopRobot} alt="Stop robot" />
           </button>
         </div>
+        <div aria-hidden="true" />
       </div>
       <div className="Editor-ace-wrapper">
         <div className="Editor-kbctrl-overlay">

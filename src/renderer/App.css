@@ -58,3 +58,16 @@ body {
 .link-light {
   color: blue;
 }
+.editor-container {
+  display: flex; 
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.editor-container > * {
+  flex-shrink: 0; 
+}
+.editor-container > :first-child {
+  flex: 1;
+  min-height: 0; 
+}
