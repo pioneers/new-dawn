@@ -7,15 +7,18 @@ import './AppConsole.css';
  * @param props - props
  * @param props.height - the height of the console in pixels
  * @param props.messages - array of console messages to display
+ * @param props.isDarkMode - whether UI is in dark mode
  * @param props.autoscroll - whether auto-scrolling is enabled
  */
 export default function AppConsole({
   height,
   messages,
+  isDarkMode,
   autoscroll,
 }: {
   height: number;
   messages: AppConsoleMessage[];
+  isDarkMode: boolean;
   autoscroll: boolean;
 }) {
   // Add autoscroll feature to AppConsole by setting the current scrollTop prop to the current scrollHeight value
@@ -46,16 +49,21 @@ export default function AppConsole({
   }, [messages, autoscroll, scrolledUp]);
 
   return (
-    <div className="AppConsole" style={{ height }}>
+    <div
+      className={`AppConsole-${isDarkMode ? 'dark' : 'light'}`}
+      style={{ height }}
+    >
       <pre
         ref={consoleRef}
-        className="AppConsole-inner"
+        className={`AppConsole-inner-${isDarkMode ? 'dark' : 'light'}`}
         onScroll={handleScroll}
       >
         {messages.map((msg: AppConsoleMessage) => (
           <div
             key={msg.uuid}
-            className={`AppConsole-message AppConsole-message-${msg.type}`}
+            className={`AppConsole-message-${
+              isDarkMode ? 'dark' : 'light'
+            } AppConsole-message-${msg.type}-${isDarkMode ? 'dark' : 'light'}`}
           >
             {msg.text}
           </div>
