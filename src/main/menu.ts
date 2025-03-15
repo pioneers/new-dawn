@@ -37,6 +37,15 @@ export interface MenuHandler {
    * Requests that student code on the robot be downloaded into the editor.
    */
   promptDownloadCodeFile: () => void;
+  /**
+   * Sets whether verbose debugging logs from RuntimeComms are reported to the user.
+   * @param mode - whether trace messages should be sent for presentation to the user.
+   */
+  setRuntimeTraceMode: (mode: boolean) => void;
+  /**
+   * Gets whether verbose debugging logs from RuntimeComms are reported to the user.
+   */
+  getRuntimeTraceMode: () => boolean;
 }
 
 /**
@@ -107,17 +116,15 @@ export default class MenuBuilder {
    */
   buildDarwinTemplate(): MenuItemConstructorOptions[] {
     const subMenuAbout: DarwinMenuItemConstructorOptions = {
-      label: 'Electron',
+      label: 'Dawn',
       submenu: [
         {
-          label: 'About ElectronReact',
+          label: 'About Dawn',
           selector: 'orderFrontStandardAboutPanel:',
         },
         { type: 'separator' },
-        { label: 'Services', submenu: [] },
-        { type: 'separator' },
         {
-          label: 'Hide ElectronReact',
+          label: 'Hide Dawn',
           accelerator: 'Command+H',
           selector: 'hide:',
         },
@@ -352,24 +359,33 @@ export default class MenuBuilder {
       },
       {
         label: '&View',
-        submenu:
+        submenu: [
+          {
+            label: 'Toggle &Full Screen',
+            accelerator: 'F11',
+            click: () => {
+              this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
+            },
+          },
+          {
+            label: 'Connection Trace Info',
+            type: 'checkbox' as 'checkbox',
+            checked: this.menuHandler.getRuntimeTraceMode(),
+            click: () => {
+              this.menuHandler.setRuntimeTraceMode(
+                !this.menuHandler.getRuntimeTraceMode(),
+              );
+            },
+          },
+        ].concat(
           process.env.NODE_ENV === 'development' ||
-          process.env.DEBUG_PROD === 'true'
+            process.env.DEBUG_PROD === 'true'
             ? [
                 {
                   label: '&Reload',
                   accelerator: 'Ctrl+R',
                   click: () => {
                     this.mainWindow.webContents.reload();
-                  },
-                },
-                {
-                  label: 'Toggle &Full Screen',
-                  accelerator: 'F11',
-                  click: () => {
-                    this.mainWindow.setFullScreen(
-                      !this.mainWindow.isFullScreen(),
-                    );
                   },
                 },
                 {
@@ -380,17 +396,8 @@ export default class MenuBuilder {
                   },
                 },
               ]
-            : [
-                {
-                  label: 'Toggle &Full Screen',
-                  accelerator: 'F11',
-                  click: () => {
-                    this.mainWindow.setFullScreen(
-                      !this.mainWindow.isFullScreen(),
-                    );
-                  },
-                },
-              ],
+            : [],
+        ),
       },
       /* {
         label: 'Help',

@@ -170,6 +170,12 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   #suppressPdbErrors: boolean;
 
   /**
+   * Whether verbose debugging logs should be written to the AppConsole. Also changes the behavior
+   * of some error reporting code.
+   */
+  #runtimeTraceMode: boolean;
+
+  /**
    * Persistent configuration loaded when MainApp is constructed and saved when the main window is
    * closed.
    */
@@ -197,6 +203,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#suppressDisconnectMsg = false;
     this.#suppressNetworkErrors = false;
     this.#suppressPdbErrors = false;
+    this.#runtimeTraceMode = false;
     this.#codeTransfer = new CodeTransfer(
       REMOTE_CODE_PATH,
       ROBOT_SSH_PORT,
@@ -241,6 +248,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       this.#runtimeComms.sendRunMode.bind(this.#runtimeComms),
     );
     addRendererListener('main-connection-config', (data) => {
+      this.onTrace(`Robot ip changed to ${data.robotIPAddress}`);
       this.#runtimeComms.setRobotIp(data.robotIPAddress);
     });
     addRendererListener(
@@ -329,7 +337,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   }
 
   onRuntimeTcpError(err: Error) {
-    if (!this.#suppressNetworkErrors) {
+    if (!this.#suppressNetworkErrors || this.#runtimeTraceMode) {
       const rawMsg = err.toString();
       let msg;
       if (
@@ -356,29 +364,51 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       }
       this.#sendToRenderer(
         'renderer-post-console',
-        new AppConsoleMessage('dawn-err', msg),
-      );
-    }
-  }
-
-  onRuntimeError(err: Error) {
-    if (!this.#suppressNetworkErrors) {
-      this.#sendToRenderer(
-        'renderer-post-console',
         new AppConsoleMessage(
           'dawn-err',
-          `Encountered error when communicating with Runtime. ${err.toString()}`,
+          `${
+            this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''
+          }${msg}${
+            this.#runtimeTraceMode ? ` (Original message: ${rawMsg})` : ''
+          }`,
         ),
       );
     }
   }
 
-  onRuntimeDisconnect() {
-    if (!this.#suppressDisconnectMsg) {
-      this.#sendToRenderer('renderer-latency-update', -1);
+  onRuntimeError(err: Error) {
+    if (!this.#suppressNetworkErrors || this.#runtimeTraceMode) {
       this.#sendToRenderer(
         'renderer-post-console',
-        new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
+        new AppConsoleMessage(
+          'dawn-err',
+          `{this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''}` +
+            `Encountered error when communicating with Runtime. ${err.toString()}`,
+        ),
+      );
+    }
+  }
+
+  onTrace(msg: string) {
+    if (this.#runtimeTraceMode) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage('dawn-info', msg),
+      );
+    }
+  }
+
+  onRuntimeDisconnect() {
+    this.#sendToRenderer('renderer-latency-update', -1);
+    if (!this.#suppressDisconnectMsg || this.#runtimeTraceMode) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-info',
+          `${
+            this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''
+          }Disconnected from robot.`,
+        ),
       );
       this.#suppressDisconnectMsg = true;
     }
@@ -435,6 +465,14 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#sendToRenderer('renderer-file-control', {
       type: 'promptCreateNewFile',
     });
+  }
+
+  getRuntimeTraceMode() {
+    return this.#runtimeTraceMode;
+  }
+
+  setRuntimeTraceMode(mode: boolean) {
+    this.#runtimeTraceMode = mode;
   }
 
   /**
