@@ -138,9 +138,11 @@
 .Editor-toolbar-group > *:not(:last-child) {
   margin-right: 6px;
 }
+/*
 .Editor-toolbar-group:last-child {
   margin-left: auto;
 }
+*/
 /* light mode */
 .Editor-toolbar-light button {
   position: relative;
