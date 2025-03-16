@@ -1,4 +1,5 @@
 import * as $protobuf from "protobufjs";
+import Long = require("long");
 /** Properties of a Param. */
 export interface IParam {
 
@@ -31,13 +32,13 @@ export class Param implements IParam {
     public name: string;
 
     /** Param fval. */
-    public fval: number;
+    public fval?: (number|null);
 
     /** Param ival. */
-    public ival: number;
+    public ival?: (number|null);
 
     /** Param bval. */
-    public bval: boolean;
+    public bval?: (boolean|null);
 
     /** Param readonly. */
     public readonly: boolean;
@@ -114,6 +115,13 @@ export class Param implements IParam {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Param
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** Properties of a Device. */
@@ -222,6 +230,13 @@ export class Device implements IDevice {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for Device
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** Properties of a DevData. */
@@ -312,6 +327,13 @@ export class DevData implements IDevData {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for DevData
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** State enum. */
@@ -320,13 +342,6 @@ export enum State {
     DEHYDRATION = 1,
     HYPOTHERMIA_START = 2,
     HYPOTHERMIA_END = 3
-}
-
-/** Properties of a GameState. */
-export interface IGameState {
-
-    /** GameState state */
-    state?: (State|null);
 }
 
 /** Represents a GameState. */
@@ -410,28 +425,19 @@ export class GameState implements IGameState {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for GameState
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** Source enum. */
 export enum Source {
     GAMEPAD = 0,
     KEYBOARD = 1
-}
-
-/** Properties of an Input. */
-export interface IInput {
-
-    /** Input connected */
-    connected?: (boolean|null);
-
-    /** Input buttons */
-    buttons?: (number|Long|null);
-
-    /** Input axes */
-    axes?: (number[]|null);
-
-    /** Input source */
-    source?: (Source|null);
 }
 
 /** Represents an Input. */
@@ -524,13 +530,13 @@ export class Input implements IInput {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
-}
 
-/** Properties of a UserInputs. */
-export interface IUserInputs {
-
-    /** UserInputs inputs */
-    inputs?: (IInput[]|null);
+    /**
+     * Gets the default type url for Input
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** Represents a UserInputs. */
@@ -614,6 +620,13 @@ export class UserInputs implements IUserInputs {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for UserInputs
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** Mode enum. */
@@ -621,13 +634,6 @@ export enum Mode {
     IDLE = 0,
     AUTO = 1,
     TELEOP = 2
-}
-
-/** Properties of a RunMode. */
-export interface IRunMode {
-
-    /** RunMode mode */
-    mode?: (Mode|null);
 }
 
 /** Represents a RunMode. */
@@ -711,25 +717,13 @@ export class RunMode implements IRunMode {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
-}
 
-/** Properties of a RuntimeStatus. */
-export interface IRuntimeStatus {
-
-    /** RuntimeStatus shepConnected */
-    shepConnected?: (boolean|null);
-
-    /** RuntimeStatus dawnConnected */
-    dawnConnected?: (boolean|null);
-
-    /** RuntimeStatus mode */
-    mode?: (Mode|null);
-
-    /** RuntimeStatus battery */
-    battery?: (number|null);
-
-    /** RuntimeStatus version */
-    version?: (string|null);
+    /**
+     * Gets the default type url for RunMode
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** Represents a RuntimeStatus. */
@@ -825,31 +819,19 @@ export class RuntimeStatus implements IRuntimeStatus {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for RuntimeStatus
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** Type enum. */
 export enum Type {
     Request = 0,
     EncryptKey = 1
-}
-
-/** Properties of a SecurityMessage. */
-export interface ISecurityMessage {
-
-    /** SecurityMessage type */
-    type?: (Type|null);
-
-    /** SecurityMessage publicKey */
-    publicKey?: (string[]|null);
-
-    /** SecurityMessage signature */
-    signature?: (string[]|null);
-
-    /** SecurityMessage encryptedPassword */
-    encryptedPassword?: (string[]|null);
-
-    /** SecurityMessage signaturePublicKey */
-    signaturePublicKey?: (string[]|null);
 }
 
 /** Represents a SecurityMessage. */
@@ -945,19 +927,19 @@ export class SecurityMessage implements ISecurityMessage {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for SecurityMessage
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** Pos enum. */
 export enum Pos {
     LEFT = 0,
     RIGHT = 1
-}
-
-/** Properties of a StartPos. */
-export interface IStartPos {
-
-    /** StartPos pos */
-    pos?: (Pos|null);
 }
 
 /** Represents a StartPos. */
@@ -1041,13 +1023,13 @@ export class StartPos implements IStartPos {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
-}
 
-/** Properties of a Text. */
-export interface IText {
-
-    /** Text payload */
-    payload?: (string[]|null);
+    /**
+     * Gets the default type url for StartPos
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** Represents a Text. */
@@ -1131,16 +1113,13 @@ export class Text implements IText {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
-}
 
-/** Properties of a TimeStamps. */
-export interface ITimeStamps {
-
-    /** TimeStamps dawnTimestamp */
-    dawnTimestamp?: (number|Long|null);
-
-    /** TimeStamps runtimeTimestamp */
-    runtimeTimestamp?: (number|Long|null);
+    /**
+     * Gets the default type url for Text
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
 
 /** Represents a TimeStamps. */
@@ -1227,4 +1206,11 @@ export class TimeStamps implements ITimeStamps {
      * @returns JSON object
      */
     public toJSON(): { [k: string]: any };
+
+    /**
+     * Gets the default type url for TimeStamps
+     * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+     * @returns The default type url
+     */
+    public static getTypeUrl(typeUrlPrefix?: string): string;
 }
