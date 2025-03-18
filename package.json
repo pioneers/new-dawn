@@ -155,7 +155,7 @@
   "build": {
     "productName": "Dawn",
     "appId": "edu.berkeley.pioneers.Dawn",
-    "asar": false,
+    "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
       "dist",

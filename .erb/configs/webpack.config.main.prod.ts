@@ -41,7 +41,6 @@ const configuration: webpack.Configuration = {
         parallel: true,
       }),
     ],
-    minimize: false,
   },
 
   plugins: [
