@@ -213,7 +213,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#runtimeComms = new RuntimeComms(this);
 
     mainWindow.on('close', (e) => {
-      if (this.#preventQuit) {
+      if (this.#preventQuit && !this.#mainWindow.webContents.isDestroyed()) {
         e.preventDefault();
         this.#sendToRenderer('renderer-quit-request');
       }
@@ -242,7 +242,9 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
         console.error(`Failed to write config on quit. ${String(e)}`);
       }
       this.#preventQuit = false;
-      this.#mainWindow.close();
+      if (!this.#mainWindow.isDestroyed() && !this.#mainWindow.webContents.isDestroyed()) {
+        this.#mainWindow.close();
+      }
     });
     addRendererListener(
       'main-update-robot-mode',
