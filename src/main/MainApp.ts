@@ -213,7 +213,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#runtimeComms = new RuntimeComms(this);
 
     mainWindow.on('close', (e) => {
-      if (this.#preventQuit) {
+      if (this.#preventQuit && !this.#mainWindow.webContents.isDestroyed()) {
         e.preventDefault();
         this.#sendToRenderer('renderer-quit-request');
       }
