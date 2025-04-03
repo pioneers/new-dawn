@@ -242,7 +242,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
         console.error(`Failed to write config on quit. ${String(e)}`);
       }
       this.#preventQuit = false;
-      if (!this.#mainWindow.webContents.isDestroyed()) {
+      if (!this.#mainWindow.isDestroyed() && !this.#mainWindow.webContents.isDestroyed()) {
         this.#mainWindow.close();
       }
     });
