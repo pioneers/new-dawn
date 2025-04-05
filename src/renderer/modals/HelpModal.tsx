@@ -14,17 +14,10 @@ export default function GamepadInfoModal({
 }) {
   return (
     <Modal modalTitle="Help" onClose={onClose} isActive={isActive}>
-      <p>
-        Click{' '}
-        <a
-          href="https://github.com/pioneers/runtime/blob/master/docs/docs/api.md"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          here
-        </a>{' '}
-        for Dawn&apos;s runtime documentation!
-      </p>
+      {Object.entries(apiHelpComponents).toSorted().map([k, v]) => (
+        <h1 className="docTitle">{k}</h1>
+        {v()}
+      )}
     </Modal>
   );
 }
