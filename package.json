@@ -160,6 +160,7 @@
     "files": [
       "dist",
       "node_modules",
+      "dawn-config.json",
       "package.json"
     ],
     "afterSign": ".erb/scripts/notarize.js",
