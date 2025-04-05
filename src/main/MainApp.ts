@@ -1,10 +1,10 @@
 import { dialog, ipcMain, app } from 'electron';
 import type { BrowserWindow, FileFilter } from 'electron';
 import fs from 'fs';
+import { join, resolve } from 'path';
 import { version as dawnVersion } from '../../package.json';
 import AppConsoleMessage from '../common/AppConsoleMessage';
 import DeviceInfoState, { DeviceType } from '../common/DeviceInfoState';
-import { join, resolve } from 'path';
 import type {
   RendererChannels,
   RendererInitData,
@@ -241,14 +241,18 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       } catch (e) {
         dialog.showErrorBox(
           'Error',
-          `Failed to write config to ${resolve(CONFIG_PATH)} on quit. ${String(e)}`
+          `Failed to write config to ${resolve(CONFIG_PATH)} on quit. ${String(
+            e,
+          )}`,
         );
       }
       this.#preventQuit = false;
-      if (!this.#mainWindow.isDestroyed() && !this.#mainWindow.webContents.isDestroyed()) {
+      if (
+        !this.#mainWindow.isDestroyed() &&
+        !this.#mainWindow.webContents.isDestroyed()
+      ) {
         this.#mainWindow.close();
       }
-
     });
     addRendererListener(
       'main-update-robot-mode',
