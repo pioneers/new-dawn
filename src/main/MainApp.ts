@@ -214,10 +214,8 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#runtimeComms = new RuntimeComms(this);
 
     mainWindow.on('close', (e) => {
-      console.log('close handler fired');
       if (this.#preventQuit && !this.#mainWindow.webContents.isDestroyed()) {
         e.preventDefault();
-        console.log('preventing close, sending quit request to renderer');
         this.#sendToRenderer('renderer-quit-request');
       }
     });
@@ -236,7 +234,6 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       }
     });
     addRendererListener('main-quit', (data) => {
-      console.log('received quit message from renderer, saving config and firing close again');
       this.#config.showDirtyUploadWarning = data.showDirtyUploadWarning;
       this.#config.darkmode = data.darkmode;
       try {
