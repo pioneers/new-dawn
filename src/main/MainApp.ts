@@ -239,7 +239,6 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       try {
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(this.#config));
       } catch (e) {
-        // eslint-disable-next-line no-console
         dialog.showErrorBox(
           'Error',
           `Failed to write config to ${resolve(CONFIG_PATH)} on quit. ${String(e)}`
