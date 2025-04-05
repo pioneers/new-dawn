@@ -200,6 +200,7 @@ export default function App() {
   };
 
   const closeWindow = useCallback(() => {
+    console.log('sending quit message back to main');
     window.electron.ipcRenderer.sendMessage('main-quit', {
       showDirtyUploadWarning,
       darkmode: isDarkMode,
@@ -417,9 +418,11 @@ export default function App() {
   useEffect(() => {
     if (window.electron) {
       return window.electron.ipcRenderer.on('renderer-quit-request', () => {
+        console.log('renderer received quit request');
         if (activeModal !== 'DirtyQuitConfirm' && editorStatus !== 'clean') {
           changeActiveModal('DirtyQuitConfirm');
         } else {
+          console.log('renderer confirmed quit request');
           closeWindow();
         }
       });
