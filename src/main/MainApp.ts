@@ -1,6 +1,7 @@
-import { dialog, ipcMain } from 'electron';
+import { dialog, ipcMain, app } from 'electron';
 import type { BrowserWindow, FileFilter } from 'electron';
 import fs from 'fs';
+import { join, resolve } from 'path';
 import { version as dawnVersion } from '../../package.json';
 import AppConsoleMessage from '../common/AppConsoleMessage';
 import DeviceInfoState, { DeviceType } from '../common/DeviceInfoState';
@@ -37,9 +38,9 @@ const CODE_FILE_FILTERS: FileFilter[] = [
   { name: 'All Files', extensions: ['*'] },
 ];
 /**
- * Relative path to persistent configuration file.
+ * Path to persistent configuration file.
  */
-const CONFIG_RELPATH = 'dawn-config.json';
+const CONFIG_PATH = join(app.getPath('userData'), 'dawn-config.json');
 /**
  * Port to use when connecting to robot with SSH.
  */
@@ -236,13 +237,20 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       this.#config.showDirtyUploadWarning = data.showDirtyUploadWarning;
       this.#config.darkmode = data.darkmode;
       try {
-        fs.writeFileSync(CONFIG_RELPATH, JSON.stringify(this.#config));
+        fs.writeFileSync(CONFIG_PATH, JSON.stringify(this.#config));
       } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(`Failed to write config on quit. ${String(e)}`);
+        dialog.showErrorBox(
+          'Error',
+          `Failed to write config to ${resolve(CONFIG_PATH)} on quit. ${String(
+            e,
+          )}`,
+        );
       }
       this.#preventQuit = false;
-      if (!this.#mainWindow.isDestroyed() && !this.#mainWindow.webContents.isDestroyed()) {
+      if (
+        !this.#mainWindow.isDestroyed() &&
+        !this.#mainWindow.webContents.isDestroyed()
+      ) {
         this.#mainWindow.close();
       }
     });
@@ -263,7 +271,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     try {
       this.#config = coerceToConfig(
         JSON.parse(
-          fs.readFileSync(CONFIG_RELPATH, {
+          fs.readFileSync(CONFIG_PATH, {
             encoding: 'utf8',
             flag: 'r',
           }),
