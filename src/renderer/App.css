@@ -46,6 +46,11 @@ body {
   z-index: 20;
   backdrop-filter: blur(2px);
 }
+.App-wrapper {
+  display: flex;
+  height: 100%;
+}
+
 .App-modal-container:has(.Modal-active) {
   display: block;
 }

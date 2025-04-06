@@ -173,8 +173,8 @@ export default function App() {
     return true;
   };
   const endEditorResize = () => setEditorInitialSize(-1);
-  const startColsResize = () => setConsoleInitSize(consoleSize);
-  const updateColsResize = (d: number) => {
+  const startRowsResize = () => setConsoleInitSize(consoleSize);
+  const updateRowsResize = (d: number) => {
     if (consoleInitialSize === -1) {
       return false;
     }
@@ -190,7 +190,7 @@ export default function App() {
     );
     return true;
   };
-  const endColsResize = () => setConsoleInitSize(-1);
+  const endRowsResize = () => setConsoleInitSize(-1);
   const changeRunMode = (mode: RobotRunMode) => {
     window.electron.ipcRenderer.sendMessage('main-update-robot-mode', mode);
     setRobotRunning(mode !== RobotRunMode.IDLE);
@@ -440,10 +440,9 @@ export default function App() {
           robotBatteryVoltage={robotBatteryVoltage}
           isDarkMode={isDarkMode}
         />
-        <div className="App-cols">
-          <div className="editor-container">
+        <div className="App-wrapper">
+          <div className="editor-container" style={{width: editorSize}}>
             <Editor
-              width={editorSize}
               onChange={changeEditorContent}
               fileStatus={editorStatus}
               filePath={editorPath}
@@ -491,9 +490,9 @@ export default function App() {
             {consoleIsOpen && (
               <>
                 <ResizeBar
-                  onStartResize={startColsResize}
-                  onUpdateResize={updateColsResize}
-                  onEndResize={endColsResize}
+                  onStartResize={startRowsResize}
+                  onUpdateResize={updateRowsResize}
+                  onEndResize={endRowsResize}
                   axis="y"
                   isDarkMode={isDarkMode}
                 />
