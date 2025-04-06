@@ -1,12 +1,7 @@
-/* light mode */
-.Editor-light {
+.Editor-light, .Editor-dark {
   display: flex;
   flex-direction: column;
-}
-/* dark mode */
-.Editor-dark {
-  display: flex;
-  flex-direction: column;
+  width: 100%;
 }
 .Editor-dark > * {
   color: white;

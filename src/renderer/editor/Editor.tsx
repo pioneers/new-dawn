@@ -84,7 +84,6 @@ const ACE_THEMES = {
 /**
  * Component holding the Ace editor and editor toolbar.
  * @param props - props
- * @param props.width - width in pixels of Editor container
  * @param props.fileStatus - dirty status of the currently open file
  * @param props.filePath - path of the currently open file, or an empty string if no file is open
  * @param props.content - the content that should be displayed in the code editor
@@ -115,7 +114,6 @@ const ACE_THEMES = {
  * @param props.onToggleDarkMode - handler called when user wans to toggle UI's dark mode.
  */
 export default function Editor({
-  width,
   onChange,
   fileStatus,
   filePath,
@@ -140,7 +138,6 @@ export default function Editor({
   onToggleKeyboardControls,
   onToggleDarkMode,
 }: {
-  width: number;
   /**
    * change handler for the content of the code editor
    * @param content - the new content of the code editor
@@ -203,7 +200,6 @@ export default function Editor({
       className={`Editor-${isDarkMode ? 'dark' : 'light'}${
         keyboardControlsStatus === 'on' ? ' Editor-kbctrl-enabled' : ''
       }`}
-      style={{ width }}
     >
       <div className="Editor-file-info">
         <span className="Editor-file-name">{filePath || '[New file]'}</span>
