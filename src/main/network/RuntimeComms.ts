@@ -119,6 +119,8 @@ export default class RuntimeComms {
    */
   #pingInterval: NodeJS.Timeout | null;
 
+  #reconnectAttemptNum: number;
+
   constructor(commsListener: RuntimeCommsListener) {
     this.#commsListener = commsListener;
     this.#runtimeAddr = '';
@@ -126,6 +128,7 @@ export default class RuntimeComms {
     this.#tcpSock = null;
     this.#tcpDisconnected = false;
     this.#pingInterval = null;
+    this.#reconnectAttemptNum = 0;
   }
 
   /**
@@ -222,21 +225,21 @@ export default class RuntimeComms {
    * most recently known Runtime IP and port.
    */
   #connectTcp() {
+    this.#commsListener.onTrace(
+      `Attempting connection to ${this.#runtimeAddr}`,
+    );
     this.#tcpDisconnected = false;
     this.#disconnectTcp();
     const tcpStream = new PacketStream().on(
       'data',
       this.#handlePacket.bind(this),
     );
-    this.#commsListener.onTrace(
-      `Attempting connection to ${this.#runtimeAddr}`,
-    );
     this.#tcpSock = createTcpConnection(this.#runtimePort, this.#runtimeAddr)
       .on('connect', this.#handleTcpConnection.bind(this))
       .on('close', this.#handleTcpClose.bind(this))
-      .on('error', () => {
+      .on('error', e => {
         this.#commsListener.onTrace("TCP socket emit 'error'");
-        this.#commsListener.onRuntimeTcpError.bind(this.#commsListener);
+        this.#commsListener.onRuntimeTcpError(e);
       });
     this.#tcpSock.pipe(tcpStream);
     this.#pingInterval = setInterval(
@@ -249,7 +252,9 @@ export default class RuntimeComms {
    * Ends and disconnects the TCP socket if open.
    */
   #disconnectTcp() {
+    this.#commsListener.onTrace('TCP cleanup');
     if (this.#tcpSock) {
+      this.#commsListener.onTrace('Found old socket, destroying');
       this.#tcpSock.removeAllListeners();
       // this.#tcpSock.end();
       this.#tcpSock.destroy();
@@ -360,7 +365,12 @@ export default class RuntimeComms {
       this.#commsListener.onTrace(
         'Scheduling reconnect due to connection close',
       );
-      setTimeout(this.#connectTcp.bind(this), TCP_RECONNECT_DELAY);
+      const attempt = ++this.#reconnectAttemptNum;
+      setTimeout(() => {
+        if (this.#reconnectAttemptNum === attempt) {
+          this.#connectTcp();
+        }
+      }, TCP_RECONNECT_DELAY);
     }
   }
 

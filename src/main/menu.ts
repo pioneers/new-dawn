@@ -231,6 +231,16 @@ export default class MenuBuilder {
             this.mainWindow.webContents.toggleDevTools();
           },
         },
+        {
+          label: 'Connection Trace Info',
+          type: 'checkbox' as 'checkbox',
+          checked: this.menuHandler.getRuntimeTraceMode(),
+          click: () => {
+            this.menuHandler.setRuntimeTraceMode(
+              !this.menuHandler.getRuntimeTraceMode(),
+            );
+          },
+        },
       ],
     };
     const subMenuViewProd: MenuItemConstructorOptions = {
@@ -241,6 +251,16 @@ export default class MenuBuilder {
           accelerator: 'Ctrl+Command+F',
           click: () => {
             this.mainWindow.setFullScreen(!this.mainWindow.isFullScreen());
+          },
+        },
+        {
+          label: 'Connection Trace Info',
+          type: 'checkbox' as 'checkbox',
+          checked: this.menuHandler.getRuntimeTraceMode(),
+          click: () => {
+            this.menuHandler.setRuntimeTraceMode(
+              !this.menuHandler.getRuntimeTraceMode(),
+            );
           },
         },
       ],
