@@ -395,7 +395,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
         'renderer-post-console',
         new AppConsoleMessage(
           'dawn-err',
-          `{this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''}` +
+          `${this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''}` +
             `Encountered error when communicating with Runtime. ${err.toString()}`,
         ),
       );
