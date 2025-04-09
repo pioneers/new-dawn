@@ -237,7 +237,7 @@ export default class RuntimeComms {
     this.#tcpSock = createTcpConnection(this.#runtimePort, this.#runtimeAddr)
       .on('connect', this.#handleTcpConnection.bind(this))
       .on('close', this.#handleTcpClose.bind(this))
-      .on('error', e => {
+      .on('error', (e) => {
         this.#commsListener.onTrace("TCP socket emit 'error'");
         this.#commsListener.onRuntimeTcpError(e);
       });
@@ -341,10 +341,10 @@ export default class RuntimeComms {
           );
         // this.#rstAndRetry();
       }
-    } catch (e) {
+    } catch (e: any) {
       this.#commsListener.onRuntimeError(
         new Error(
-          `Uncaught error when reading packet.\nPacket: ${JSON.stringify(
+          `Uncaught error when reading packet. ${e.toString()}\nPacket: ${JSON.stringify(
             packet,
           )}`,
         ),
@@ -365,7 +365,8 @@ export default class RuntimeComms {
       this.#commsListener.onTrace(
         'Scheduling reconnect due to connection close',
       );
-      const attempt = ++this.#reconnectAttemptNum;
+      const attempt = this.#reconnectAttemptNum;
+      this.#reconnectAttemptNum += 1;
       setTimeout(() => {
         if (this.#reconnectAttemptNum === attempt) {
           this.#connectTcp();
