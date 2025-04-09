@@ -351,6 +351,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
 
   onRuntimeTcpError(err: Error) {
     if (!this.#suppressNetworkErrors || this.#runtimeTraceMode) {
+      this.#suppressNetworkErrors = true;
       const rawMsg = err.toString();
       let msg;
       if (
@@ -391,6 +392,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
 
   onRuntimeError(err: Error) {
     if (!this.#suppressNetworkErrors || this.#runtimeTraceMode) {
+      this.#suppressNetworkErrors = true;
       this.#sendToRenderer(
         'renderer-post-console',
         new AppConsoleMessage(
