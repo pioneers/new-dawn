@@ -495,56 +495,73 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * currently open file.
    */
   #saveCodeFile(code: string, forceDialog: boolean) {
-    let success = true;
+    let promise = Promise.resolve(true);
     if (this.#savePath === null || forceDialog) {
-      success = this.#showCodePathDialog('save');
+      promise = this.#showCodePathDialog('save');
     }
-    if (success) {
-      // Temporarily disable watcher
-      this.#watcher?.close();
-      this.#watcher = null;
-      fs.writeFile(
-        this.#savePath as string,
-        code,
-        { encoding: 'utf8', flag: 'w' },
-        (err) => {
-          if (err) {
-            this.#sendToRenderer(
-              'renderer-post-console',
-              new AppConsoleMessage(
-                'dawn-err',
-                `Failed to save code to ${this.#savePath}. ${err}`,
-              ),
-            );
-          } else {
-            this.#sendToRenderer('renderer-file-control', { type: 'didSave' });
-          }
-          this.#watchCodeFile();
-        },
-      );
-    }
+    promise
+      .then((success) => {
+        if (success) {
+          // Temporarily disable watcher
+          this.#watcher?.close();
+          this.#watcher = null;
+          fs.writeFile(
+            this.#savePath as string,
+            code,
+            { encoding: 'utf8', flag: 'w' },
+            (err) => {
+              if (err) {
+                throw err;
+              } else {
+                this.#sendToRenderer('renderer-file-control', {
+                  type: 'didSave',
+                });
+              }
+              this.#watchCodeFile();
+            },
+          );
+        }
+        return null;
+      })
+      .catch((err) => {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            `Failed to save code to ${this.#savePath}. ${err}`,
+          ),
+        );
+      });
   }
 
   /**
    * Tries to load code from a file into the editor. Fails if the user does not choose a path.
    */
   #openCodeFile() {
-    const success = this.#showCodePathDialog('load');
-    if (success) {
-      try {
-        const content = fs.readFileSync(this.#savePath as string, {
-          encoding: 'utf8',
-          flag: 'r',
-        });
-        this.#sendToRenderer('renderer-file-control', {
-          type: 'didOpen',
-          content,
-          isCleanFile: true,
-        });
-      } catch {
-        // Don't care
-      }
-    }
+    this.#showCodePathDialog('load')
+      .then((success) => {
+        if (success) {
+          const content = fs.readFileSync(this.#savePath as string, {
+            encoding: 'utf8',
+            flag: 'r',
+          });
+          this.#sendToRenderer('renderer-file-control', {
+            type: 'didOpen',
+            content,
+            isCleanFile: true,
+          });
+        }
+        return null;
+      })
+      .catch((err) => {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            `Failed to load code from ${this.#savePath}. ${err}`,
+          ),
+        );
+      });
   }
 
   /**
@@ -647,35 +664,41 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * Shows an open or save dialog to the user to select a new save path. On success, this.#savePath
    * is known to be non-null and non-empty.
    * @param mode - the type of dialog that should be shown
-   * @returns Whether a new path was chosen successfully.
+   * @returns A Promise that resolves to whether a new path was chosen successfully.
    */
-  #showCodePathDialog(mode: 'save' | 'load'): Promise<string[]> {
-    return new Promise((resolve, reject) => {
-      let result: string | string[] | undefined;
+  #showCodePathDialog(mode: 'save' | 'load'): Promise<boolean> {
+    return new Promise((res, rej) => {
+      let promise;
       if (mode === 'save') {
-        result = dialog.showSaveDialog(this.#mainWindow, {
+        promise = dialog.showSaveDialog(this.#mainWindow, {
           filters: CODE_FILE_FILTERS,
           ...(this.#savePath === null ? {} : { defaultPath: this.#savePath }),
         });
       } else {
-        result = dialog.showOpenDialog(this.#mainWindow, {
+        promise = dialog.showOpenDialog(this.#mainWindow, {
           filters: CODE_FILE_FILTERS,
           properties: ['openFile'],
         });
       }
-      if (result && result.length) {
-        this.#savePath = typeof result === 'string' ? result : result[0];
-        const data: RendererFileControlData = {
-          type: 'didChangePath',
-          path: this.#savePath,
-        };
-        this.#sendToRenderer('renderer-file-control', data);
-        if (mode === 'load') {
-          this.#watchCodeFile();
-        }
-        return true;
-      }
-      return false;
+      promise
+        .then(({ canceled, filePaths }) => {
+          if (!canceled) {
+            [this.#savePath] = filePaths;
+            const data: RendererFileControlData = {
+              type: 'didChangePath',
+              path: this.#savePath,
+            };
+            this.#sendToRenderer('renderer-file-control', data);
+            if (mode === 'load') {
+              this.#watchCodeFile();
+            }
+            res(true);
+          } else {
+            res(false);
+          }
+          return null;
+        })
+        .catch(rej);
     });
   }
 

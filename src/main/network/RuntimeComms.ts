@@ -237,7 +237,7 @@ export default class RuntimeComms {
     this.#tcpSock = createTcpConnection(this.#runtimePort, this.#runtimeAddr)
       .on('connect', this.#handleTcpConnection.bind(this))
       .on('close', this.#handleTcpClose.bind(this))
-      .on('error', e => {
+      .on('error', (e) => {
         this.#commsListener.onTrace("TCP socket emit 'error'");
         this.#commsListener.onRuntimeTcpError(e);
       });
