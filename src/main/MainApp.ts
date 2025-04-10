@@ -649,32 +649,34 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * @param mode - the type of dialog that should be shown
    * @returns Whether a new path was chosen successfully.
    */
-  #showCodePathDialog(mode: 'save' | 'load') {
-    let result: string | string[] | undefined;
-    if (mode === 'save') {
-      result = dialog.showSaveDialogSync(this.#mainWindow, {
-        filters: CODE_FILE_FILTERS,
-        ...(this.#savePath === null ? {} : { defaultPath: this.#savePath }),
-      });
-    } else {
-      result = dialog.showOpenDialogSync(this.#mainWindow, {
-        filters: CODE_FILE_FILTERS,
-        properties: ['openFile'],
-      });
-    }
-    if (result && result.length) {
-      this.#savePath = typeof result === 'string' ? result : result[0];
-      const data: RendererFileControlData = {
-        type: 'didChangePath',
-        path: this.#savePath,
-      };
-      this.#sendToRenderer('renderer-file-control', data);
-      if (mode === 'load') {
-        this.#watchCodeFile();
+  #showCodePathDialog(mode: 'save' | 'load'): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      let result: string | string[] | undefined;
+      if (mode === 'save') {
+        result = dialog.showSaveDialog(this.#mainWindow, {
+          filters: CODE_FILE_FILTERS,
+          ...(this.#savePath === null ? {} : { defaultPath: this.#savePath }),
+        });
+      } else {
+        result = dialog.showOpenDialog(this.#mainWindow, {
+          filters: CODE_FILE_FILTERS,
+          properties: ['openFile'],
+        });
       }
-      return true;
-    }
-    return false;
+      if (result && result.length) {
+        this.#savePath = typeof result === 'string' ? result : result[0];
+        const data: RendererFileControlData = {
+          type: 'didChangePath',
+          path: this.#savePath,
+        };
+        this.#sendToRenderer('renderer-file-control', data);
+        if (mode === 'load') {
+          this.#watchCodeFile();
+        }
+        return true;
+      }
+      return false;
+    });
   }
 
   /**
