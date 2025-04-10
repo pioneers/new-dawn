@@ -1,7 +1,7 @@
 import { dialog, ipcMain, app } from 'electron';
 import type { BrowserWindow, FileFilter } from 'electron';
 import fs from 'fs';
-import { join, resolve } from 'path';
+import path from 'path';
 import { version as dawnVersion } from '../../package.json';
 import AppConsoleMessage from '../common/AppConsoleMessage';
 import DeviceInfoState, { DeviceType } from '../common/DeviceInfoState';
@@ -40,7 +40,7 @@ const CODE_FILE_FILTERS: FileFilter[] = [
 /**
  * Path to persistent configuration file.
  */
-const CONFIG_PATH = join(app.getPath('userData'), 'dawn-config.json');
+const CONFIG_PATH = path.join(app.getPath('userData'), 'dawn-config.json');
 /**
  * Port to use when connecting to robot with SSH.
  */
@@ -241,9 +241,9 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       } catch (e) {
         dialog.showErrorBox(
           'Error',
-          `Failed to write config to ${resolve(CONFIG_PATH)} on quit. ${String(
-            e,
-          )}`,
+          `Failed to write config to ${path.resolve(
+            CONFIG_PATH,
+          )} on quit. ${String(e)}`,
         );
       }
       this.#preventQuit = false;
@@ -667,7 +667,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * @returns A Promise that resolves to whether a new path was chosen successfully.
    */
   #showCodePathDialog(mode: 'save' | 'load'): Promise<boolean> {
-    return new Promise((res, rej) => {
+    return new Promise((resolve, reject) => {
       let promise;
       if (mode === 'save') {
         promise = dialog.showSaveDialog(this.#mainWindow, {
@@ -692,13 +692,13 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
             if (mode === 'load') {
               this.#watchCodeFile();
             }
-            res(true);
+            resolve(true);
           } else {
-            res(false);
+            resolve(false);
           }
           return null;
         })
-        .catch(rej);
+        .catch(reject);
     });
   }
 

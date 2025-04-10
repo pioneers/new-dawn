@@ -441,7 +441,7 @@ export default function App() {
           isDarkMode={isDarkMode}
         />
         <div className="App-wrapper">
-          <div className="editor-container" style={{width: editorSize}}>
+          <div className="editor-container" style={{ width: editorSize }}>
             <Editor
               onChange={changeEditorContent}
               fileStatus={editorStatus}
