@@ -346,10 +346,10 @@ export default class RuntimeComms {
           );
         // this.#rstAndRetry();
       }
-    } catch (e) {
+    } catch (e: any) {
       this.#commsListener.onRuntimeError(
         new Error(
-          `Uncaught error when reading packet.\nPacket: ${JSON.stringify(
+          `Uncaught error when reading packet. ${e.toString()}\nPacket: ${JSON.stringify(
             packet,
           )}`,
         ),
