@@ -435,6 +435,7 @@ export default function App() {
             changeActiveModal('ConnectionConfig')
           }
           onHelpModalOpen={() => changeActiveModal('Help')}
+          onGamepadModalOpen={() => changeActiveModal('GamepadInfo')}
           dawnVersion={dawnVersion}
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}

@@ -1,5 +1,6 @@
 import TopbarButton from './TopbarButton';
 import questionSvg from '../../assets/question.svg';
+import gamepadSvg from '../../assets/gamepad.svg';
 import connectionSvg from '../../assets/network.svg';
 import noConnectionSvg from '../../assets/no-network.svg';
 import './Topbar.css';
@@ -15,6 +16,7 @@ const FAIR_LATENCY_MS = 200;
  * @param props.onConnectionConfigModalOpen - handler called when the ConnectionConfigModal should
  * be opened
  * @param props.onHelpModalOpen - handler called when the HelpModal should be opened
+ * @param props.onGamepadModalOpen - handler called when the GamepadInfoModal should be opened
  * @param props.robotLatencyMs - latency in milliseconds of the connection to the currently
  * connected robot, or -1 if there is no robot connected
  * @param props.robotBatteryVoltage - battery voltage in volts of the currently connected robot. The
@@ -25,6 +27,7 @@ const FAIR_LATENCY_MS = 200;
 export default function Topbar({
   onConnectionConfigModalOpen,
   onHelpModalOpen,
+  onGamepadModalOpen,
   robotBatteryVoltage,
   robotLatencyMs,
   dawnVersion,
@@ -32,6 +35,7 @@ export default function Topbar({
 }: {
   onConnectionConfigModalOpen: () => void;
   onHelpModalOpen: () => void;
+  onGamepadModalOpen: () => void;
   robotBatteryVoltage: number;
   robotLatencyMs: number;
   dawnVersion: string;
@@ -75,6 +79,12 @@ export default function Topbar({
         {robotInfo}
       </div>
       <div className="Topbar-right-group">
+        <TopbarButton
+          onModalOpen={onGamepadModalOpen}
+          alt="Gamepad info"
+          src={gamepadSvg}
+          isDarkMode={isDarkMode}
+        />
         <TopbarButton
           onModalOpen={onHelpModalOpen}
           alt="Dawn and robot API help"
