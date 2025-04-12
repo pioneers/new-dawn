@@ -48,6 +48,7 @@ const GAMEPAD_UPDATE_PERIOD_MS = 50;
 const PREFIX = 'logitech-gamepad_svg__';
 const AXIS_THRESHOLD = 0.25;
 const DATA_PER_ROW = 7;
+const GAMEPAD_AXIS_DECIMALS = 6;
 
 /**
  * Modal component displaying info about a connected gamepad.
@@ -139,19 +140,25 @@ export default function GamepadInfoModal({
         <tbody>
           {rows.map((row) => (
             <tr key={row.map((x) => x[0]).join(' ')}>
-              {row.map((datum: [string, boolean]) => (
-                <td
-                  key={datum[0]}
-                  className={
-                    CONTROL_NAMES[hoverControl] === datum[0] ||
-                    CONTROL_NAMES[hoverControl]?.includes?.(datum[0])
-                      ? 'GamepadInfoModal-datum-hovered'
-                      : ''
-                  }
-                >
-                  {datum[0]}: {String(datum[1])}
-                </td>
-              ))}
+              {row.map((datum: [string, boolean | number]) => {
+                const pow = Math.pow(10, GAMEPAD_AXIS_DECIMALS);
+                const val = typeof datum[1] === 'number'
+                  ? String(Math.round(datum[1] * pow) / pow).padEnd(GAMEPAD_AXIS_DECIMALS, '0')
+                  : String(datum[1])[0].toUpperCase() + String(datum[1]).slice(1);
+                return (
+                  <td
+                    key={datum[0]}
+                    className={
+                      CONTROL_NAMES[hoverControl] === datum[0] ||
+                      CONTROL_NAMES[hoverControl]?.includes?.(datum[0])
+                        ? 'GamepadInfoModal-datum-hovered'
+                        : ''
+                    }
+                  >
+                    {datum[0]}: {val}
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
