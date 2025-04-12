@@ -685,7 +685,9 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       promise
         .then((result) => {
           if (!result.canceled) {
-            this.#savePath = result.filePaths ? result.filePaths[0] : result.filePath;
+            this.#savePath = result.filePaths
+              ? result.filePaths[0]
+              : result.filePath;
             const data: RendererFileControlData = {
               type: 'didChangePath',
               path: this.#savePath,

@@ -3,7 +3,7 @@ import Modal from './Modal';
 import LogitechGamepadSvgr from '../../../assets/logitech-gamepad.svg?svgr';
 import './GamepadInfoModal.css';
 
-const BUTTON_ORDER = [
+const BUTTON_ORDER: string[] = [
   'button_a',
   'button_b',
   'button_x',
@@ -22,13 +22,13 @@ const BUTTON_ORDER = [
   'dpad_right',
   'button_xbox',
 ];
-const AXIS_ORDER = [
+const AXIS_ORDER: string[] = [
   'joystick_left_x',
   'joystick_left_y',
   'joystick_right_x',
   'joystick_right_y',
 ];
-const CONTROL_NAMES = {
+const CONTROL_NAMES: {[string]: string | [string]} = {
   'a-button': 'button_a',
   'b-button': 'button_b',
   'x-button': 'button_x',
@@ -108,7 +108,10 @@ export default function GamepadInfoModal({
         );
       if (inputs.length) {
         setButtons(
-          inputs[0].buttons.map((button, i) => [BUTTON_ORDER[i], button.pressed]),
+          inputs[0].buttons.map((button, i) => [
+            BUTTON_ORDER[i],
+            button.pressed,
+          ]),
         );
         setAxes(inputs[0].axes.slice());
       } else {
