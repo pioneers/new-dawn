@@ -10,6 +10,7 @@ import * as protos from '../../../protos-main/protos';
 const DEFAULT_RUNTIME_PORT = 8101;
 const TCP_RECONNECT_DELAY = 2000;
 const PING_INTERVAL = 5000;
+const CONNECTION_TIMEOUT = 6000;
 
 /**
  * A type of packet.
@@ -121,6 +122,8 @@ export default class RuntimeComms {
 
   #reconnectAttemptNum: number;
 
+  #connectionTimeout: NodeJS.Timeout | null;
+
   constructor(commsListener: RuntimeCommsListener) {
     this.#commsListener = commsListener;
     this.#runtimeAddr = '';
@@ -129,6 +132,7 @@ export default class RuntimeComms {
     this.#tcpDisconnected = false;
     this.#pingInterval = null;
     this.#reconnectAttemptNum = 0;
+    this.#connectionTimeout = null;
   }
 
   /**
@@ -285,6 +289,7 @@ export default class RuntimeComms {
    * @param packet - the received packet.
    */
   #handlePacket(packet: Packet) {
+    this.#resetConnectionTimeout();
     const { type, data } = packet;
     try {
       switch (type) {
@@ -365,8 +370,8 @@ export default class RuntimeComms {
       this.#commsListener.onTrace(
         'Scheduling reconnect due to connection close',
       );
-      const attempt = this.#reconnectAttemptNum;
       this.#reconnectAttemptNum += 1;
+      const attempt = this.#reconnectAttemptNum;
       setTimeout(() => {
         if (this.#reconnectAttemptNum === attempt) {
           this.#connectTcp();
@@ -383,6 +388,18 @@ export default class RuntimeComms {
     this.#tcpSock!.resetAndDestroy();
     this.#tcpSock = null;
     this.#handleTcpClose();
+  }
+
+  #resetConnectionTimeout() {
+    if (this.#connectionTimeout) {
+      clearTimeout(this.#connectionTimeout);
+    }
+    const connectionNum = this.#reconnectAttemptNum;
+    this.#connectionTimeout = setTimeout(() => {
+      if (connectionNum === this.#reconnectAttemptNum) {
+        this.#rstAndRetry();
+      }
+    }, CONNECTION_TIMEOUT);
   }
 
   /**
