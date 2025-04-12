@@ -73,12 +73,14 @@ const configuration: webpack.Configuration = {
       {
         test: /\.svg$/i,
         resourceQuery: /svgr/,
-        use: [{
-          loader: '@svgr/webpack',
-          options: {
-            svgo: false,
+        use: [
+          {
+            loader: '@svgr/webpack',
+            options: {
+              svgo: false,
+            },
           },
-        }],
+        ],
       },
     ],
   },

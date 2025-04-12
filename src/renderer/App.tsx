@@ -317,7 +317,8 @@ export default function App() {
           new RobotInput({
             connected: keyboardControlsStatus === 'on',
             axes: [],
-            buttons: keyboardControlsStatus === 'off' ? Number(keyboardBitmap) : 0,
+            buttons:
+              keyboardControlsStatus === 'off' ? Number(keyboardBitmap) : 0,
             source: RobotInputSource.KEYBOARD,
           }),
         );
