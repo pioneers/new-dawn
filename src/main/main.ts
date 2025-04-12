@@ -10,19 +10,9 @@
  */
 import path from 'path';
 import { app, BrowserWindow, shell } from 'electron';
-import { autoUpdater } from 'electron-updater';
-import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import MainApp from './MainApp';
-
-class AppUpdater {
-  constructor() {
-    log.transports.file.level = 'info';
-    autoUpdater.logger = log;
-    autoUpdater.checkForUpdatesAndNotify();
-  }
-}
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -38,24 +28,7 @@ if (isDebug) {
   require('electron-debug')();
 }
 
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
-
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload,
-    )
-    .catch(console.log);
-};
-
 const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions();
-  }
-
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
     : path.join(__dirname, '../../assets');
@@ -105,7 +78,7 @@ const createWindow = async () => {
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line no-new
-  new AppUpdater();
+  // new AppUpdater();
 };
 
 /**

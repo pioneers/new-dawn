@@ -317,7 +317,8 @@ export default function App() {
           new RobotInput({
             connected: keyboardControlsStatus === 'on',
             axes: [],
-            buttons: keyboardControlsStatus ? Number(keyboardBitmap) : 0,
+            buttons:
+              keyboardControlsStatus === 'off' ? Number(keyboardBitmap) : 0,
             source: RobotInputSource.KEYBOARD,
           }),
         );
@@ -435,6 +436,7 @@ export default function App() {
             changeActiveModal('ConnectionConfig')
           }
           onHelpModalOpen={() => changeActiveModal('Help')}
+          onGamepadModalOpen={() => changeActiveModal('GamepadInfo')}
           dawnVersion={dawnVersion}
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}
