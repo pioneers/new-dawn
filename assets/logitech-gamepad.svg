@@ -67,11 +67,11 @@
        id="logitech-gamepad_svg__right-joystick"
        class="logitech-gamepad_svg__control" /><path
        d="M 38.16607,32.48139 C 34.8224,25.029777 23.54945,32.43362 23.35838,34.82196"
-       id="logitech-gamepad_svg__left-trigger-silhouette"
-       class="logitech-gamepad_svg__control" /><path
+       id="logitech-gamepad_svg__left-bumper-silhouette"
+       style="fill: black" /><path
        d="m 115.83437,32.48139 c 3.34367,-7.451613 14.61662,-0.04777 14.80769,2.34057"
        id="logitech-gamepad_svg__right-bumper-silhouette"
-       class="logitech-gamepad_svg__control" /><path
+       style="fill: black" /><path
        d="m 114.62639,32.309925 c 0,4.977163 4.03479,9.011952 9.01195,9.011952 4.97717,0 9.01195,-4.034789 9.01195,-9.011952 0,-4.977163 -4.03478,-9.011951 -9.01195,-9.011951 -4.97716,0 -9.01195,4.034788 -9.01195,9.011951 z"
        id="logitech-gamepad_svg__path51"
        class="logitech-gamepad_svg__eye" /><path

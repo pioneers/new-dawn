@@ -1,155 +1,93 @@
-.Modal-content-dark:has(.logitech-gamepad-svg) .Modal-content-light:has(.logitech-gamepad_svg) {
-  padding: 20%;
+.GamepadInfoModal-data {
+  border: 1px solid black;
+}
+
+.GamepadInfoModal-datum-hovered {
+  font-weight: bold;
 }
 
 .logitech-gamepad_svg {
   --hover: lightgray;
   --active: orange;
   pointer-events: none;
-  margin: 0 auto;
+  fill: none;
+  stroke-opacity: 1;
+  stroke: none;
+  fill-opacity: 1;
 }
 
 .logitech-gamepad_svg__control {
   pointer-events: fill;
 }
 
-.logitech-gamepad_svg__dpad-overlay {
-  fill: none;
+.logitech-gamepad_svg__control:hover {
+  fill: var(--hover);
 }
 
 .logitech-gamepad_svg__eye {
-  fill: none;
-  fill-opacity: 1;
-  stroke: #000000;
-  stroke-dasharray: none;
-  stroke-opacity: 1;
+  stroke: black;
   stroke-width: 1.871;
 }
 
 .logitech-gamepad_svg__frame {
-  fill: none;
-  stroke: #000000;
-  stroke-dasharray: none;
-  stroke-opacity: 1;
+  stroke: black;
   stroke-width: 1.3;
 }
 
 .logitech-gamepad_svg__control {
-  fill: #000000;
-  fill-opacity: 1;
-  stroke: none;
-  stroke-opacity: 1;
-}
-
-.hover-a-button #logitech-gamepad_svg__a-button {
-  fill: var(--hover);
-}
-
-.hover-b-button #logitech-gamepad_svg__b-button {
-  fill: var(--hover);
-}
-
-.hover-x-button #logitech-gamepad_svg__x-button {
-  fill: var(--hover);
-}
-
-.hover-y-button #logitech-gamepad_svg__y-button {
-  fill: var(--hover);
-}
-
-.hover-dpad #logitech-gamepad_svg__dpad {
-  fill: var(--hover);
-}
-
-.hover-right-bumper #logitech-gamepad_svg__right-bumper {
-  fill: var(--hover);
-}
-
-.hover-right-trigger #logitech-gamepad_svg__right-trigger {
-  fill: var(--hover);
-}
-
-.hover-left-bumper #logitech-gamepad_svg__left-bumper {
-  fill: var(--hover);
-}
-
-.hover-left-trigger #logitech-gamepad_svg__left-trigger {
-  fill: var(--hover);
-}
-
-.hover-back-button #logitech-gamepad_svg__back-button {
-  fill: var(--hover);
-}
-
-.hover-start-button #logitech-gamepad_svg__start-button {
-  fill: var(--hover);
-}
-
-.hover-brand-button #logitech-gamepad_svg__brand-button {
-  fill: var(--hover);
-}
-
-.hover-left-joystick #logitech-gamepad_svg__left-joystick {
-  fill: var(--hover);
-}
-
-.hover-right-joystick #logitech-gamepad_svg__right-joystick {
-  fill: var(--hover);
+  fill: black;
+  transition: fill 0.15s ease-out;
 }
 
 
-.active-a-button #logitech-gamepad_svg__a-button {
-  fill: var(--active);
+.positive-joystick_left_x #logitech-gamepad_svg__left-joystick {
+
 }
 
-.active-b-button #logitech-gamepad_svg__b-button {
-  fill: var(--active);
+.negative-joystick_left_x #logitech-gamepad_svg__left-joystick {
+
 }
 
-.active-x-button #logitech-gamepad_svg__x-button {
-  fill: var(--active);
+.positive-joystick_right_x #logitech-gamepad_svg__right-joystick {
+
 }
 
-.active-y-button #logitech-gamepad_svg__y-button {
-  fill: var(--active);
+.negative-joystick_right_x #logitech-gamepad_svg__right-joystick {
+
 }
 
-.active-dpad #logitech-gamepad_svg__dpad {
-  fill: var(--active);
+.positive-joystick_left_y #logitech-gamepad_svg__left-joystick {
+
 }
 
-.active-right-bumper #logitech-gamepad_svg__right-bumper {
-  fill: var(--active);
+.negative-joystick_left_y #logitech-gamepad_svg__left-joystick {
+
 }
 
-.active-right-trigger #logitech-gamepad_svg__right-trigger {
-  fill: var(--active);
+.positive-joystick_right_y #logitech-gamepad_svg__right-joystick {
+
 }
 
-.active-left-bumper #logitech-gamepad_svg__left-bumper {
-  fill: var(--active);
+.negative-joystick_right_y #logitech-gamepad_svg__right-joystick {
+
 }
 
-.active-left-trigger #logitech-gamepad_svg__left-trigger {
-  fill: var(--active);
-}
-
-.active-back-button #logitech-gamepad_svg__back-button {
-  fill: var(--active);
-}
-
-.active-start-button #logitech-gamepad_svg__start-button {
-  fill: var(--active);
-}
-
-.active-brand-button #logitech-gamepad_svg__brand-button {
-  fill: var(--active);
-}
-
-.active-left-joystick #logitech-gamepad_svg__left-joystick {
-  fill: var(--active);
-}
-
-.active-right-joystick #logitech-gamepad_svg__right-joystick {
+.active-button_a #logitech-gamepad_svg__a-button,
+.active-button_b #logitech-gamepad_svg__b-button,
+.active-button_x #logitech-gamepad_svg__x-button,
+.active-button_y #logitech-gamepad_svg__y-button,
+.active-dpad-up #logitech-gamepad_svg__dpad,
+.active-dpad-down #logitech-gamepad_svg__dpad,
+.active-dpad-left #logitech-gamepad_svg__dpad,
+.active-dpad-right #logitech-gamepad_svg__dpad,
+.active-r_bumper #logitech-gamepad_svg__right-bumper,
+.active-r_trigger #logitech-gamepad_svg__right-trigger,
+.active-l_bumper #logitech-gamepad_svg__left-bumper,
+.active-l_trigger #logitech-gamepad_svg__left-trigger,
+.active-button_back #logitech-gamepad_svg__back-button,
+.active-button_start #logitech-gamepad_svg__start-button,
+.active-button_xbox #logitech-gamepad_svg__brand-button,
+.active-l_stick #logitech-gamepad_svg__left-joystick,
+.active-r_stick #logitech-gamepad_svg__right-joystick {
   fill: var(--active);
 }
