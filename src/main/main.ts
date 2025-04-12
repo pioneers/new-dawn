@@ -53,7 +53,7 @@ const installExtensions = async () => {
 
 const createWindow = async () => {
   if (isDebug) {
-    await installExtensions();
+    //await installExtensions();
   }
 
   const RESOURCES_PATH = app.isPackaged
@@ -105,7 +105,7 @@ const createWindow = async () => {
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line no-new
-  new AppUpdater();
+  //new AppUpdater();
 };
 
 /**

@@ -24,7 +24,7 @@
     "start:renderer": "cross-env NODE_ENV=development TS_NODE_TRANSPILE_ONLY=true webpack serve --config ./.erb/configs/webpack.config.renderer.dev.ts",
     "test": "jest",
     "build-protos": "pbjs -t static-module -w es6 -o protos-main/protos.js protos-main/protos/*.proto && pbts -o protos-main/protos.d.ts protos-main/protos.js ",
-    "pre-push": "npm run build && concurrently \"npm run package\" \"npm run lint\" \"npx tsc\" \"npm run test\""
+    "pre-push": "npm run package && concurrently \"npm run lint\" \"npx tsc\" \"npm run test\""
   },
   "browserslist": [],
   "prettier": {
