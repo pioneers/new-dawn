@@ -1,3 +1,5 @@
+import type { RefObject } from 'react';
+import type HelpModal from '../modal/HelpModal.tsx';
 import './ApiLink.css';
 
 /**
@@ -5,22 +7,31 @@ import './ApiLink.css';
  * the appropriate section if the window is already open. The single text node child of this
  * component is used as the link text.
  * @param props
- * @param props.dest - the section of the docs to jump to. TODO: figure out format
+ * @param props.dest - the section of the docs to jump to. For the format, see {@link HelpModal}.
  * @param props.code - whether to display the link text in a monospaced font.
+ * @param props.docsRef - a ref to a dictionary of doc section names to elements, populated by
+ * {@link HelpModal}.
  */
 export default function ApiLink({
   dest,
   code = false,
+  onShowHelpModal,
+  docsRef,
   children,
 }: {
   dest: string;
   code?: boolean;
+  onShowHelpModal: () => void;
+  docsRef: RefObject<{[key: string]: HTMLElement}>;
   children: string;
 }) {
   const text = `(${children})[${dest}]`;
-  // Placeholder
+  const onClick = () => {
+    onShowHelpModal();
+    docsRef.current?.[dest]?.scrollIntoView();
+  };
   return (
-    <button type="button" className="ApiLink">
+    <button onClick={onClick} type="button" className="ApiLink">
       {code ? <code>{text}</code> : text}
     </button>
   );

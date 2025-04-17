@@ -5,7 +5,7 @@ import HighlightedCode from './HighlightedCode';
 const apiDocsComponents: {
   [matchText: string]: () => ReactNode;
 } = {
-  'Robot.get_value': () => (
+  'api/Robot.get_value': () => (
     <div>
       The <code>get_value</code> function returns the current value of a
       specified <code>param</code> on a device with the specified{' '}
@@ -22,7 +22,7 @@ const apiDocsComponents: {
           parameter on the specified PiE device will be read. Possible param
           values depend on the specified device. Find a list of params for each
           type of device on the{' '}
-          <ApiLink dest="lowcar-devices">lowcar devices</ApiLink> page.
+          <ApiLink dest="misc/lowcar-devices">lowcar devices</ApiLink> page.
         </li>
       </ul>
       The function is useful for checking the current state of devices. For
@@ -46,7 +46,7 @@ const apiDocsComponents: {
       `}</HighlightedCode>
     </div>
   ),
-  'Robot': () => <div>Documentation for Robot object.</div>,
+  'api/Robot': () => <div>Documentation for Robot object.</div>,
 };
 
 export default apiDocsComponents;

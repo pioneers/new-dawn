@@ -96,6 +96,8 @@ const ACE_THEMES = {
  * be enabled.
  * @param props.robotRunning - whether the robot is running, which affects whether some toolbar
  * buttons are enabled.
+ * @param props.onShowHelpModalRef - ref containing a callback to call when the help modal should be
+ * shown.
  * @param props.onOpen - handler called when the user wants to open a file in the editor
  * @param props.onNewFile - handler called when the user wants to close the current file
  * @param props.onLoadStaffCode - handler called when the user wants to load staff code into the
@@ -120,6 +122,7 @@ export default function Editor({
   keyboardControlsStatus,
   robotConnected,
   robotRunning,
+  onShowHelpModalRef,
   onOpen,
   onSave,
   onNewFile,
@@ -146,6 +149,7 @@ export default function Editor({
   keyboardControlsStatus: KeyboardControlsStatus;
   robotConnected: boolean;
   robotRunning: boolean;
+  onShowHelpModalRef: RefObject<() => void>;
   onOpen: () => void;
   /**
    * handler called when the user wants to save the contents of the editor
@@ -173,13 +177,12 @@ export default function Editor({
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
   };
-  useEffect(() => {
-    if (editorRef.current !== null) {
-      const { editor } = editorRef.current;
+  const setEditorRef = (editor: HTMLElement) => {
+    if (editor) {
       addEditorAutocomplete(editor);
-      addEditorTooltips(editor);
+      addEditorTooltips(editor, onShowHelpModalRef);
     }
-  }, [editorRef]);
+  };
 
   const [theme, setTheme] = useState('dawn'); // Default theme
   const handleThemeChange = (newTheme: string) => {
@@ -351,7 +354,7 @@ export default function Editor({
           onChange={onChange}
           value={content}
           readOnly={keyboardControlsStatus === 'on'}
-          ref={editorRef}
+          ref={setEditorRef}
           enableBasicAutocompletion
           enableLiveAutocompletion
           enableSnippets
