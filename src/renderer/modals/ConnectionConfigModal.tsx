@@ -62,7 +62,7 @@ export default function ConnectionConfigModal({
   };
   return (
     <Modal
-      modalTitle="Connection settings"
+      modalTitle="Connection Settings"
       onClose={onClose}
       isActive={isActive}
       className={`ConnectionConfigModal-content-${

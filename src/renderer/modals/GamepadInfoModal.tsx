@@ -192,7 +192,7 @@ export default function GamepadInfoModal({
 
   return (
     <Modal
-      modalTitle="Gamepad info"
+      modalTitle="Gamepad Info"
       onClose={onClose}
       isActive={isActive}
       isDarkMode={isDarkMode}
