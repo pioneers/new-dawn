@@ -27,14 +27,14 @@ export default function ApiLink({
   docsRef: DocsRef;
   children: string;
 }) {
-  const text = `(${children})[${dest}]`;
   const onClick = () => {
+    console.log(onShowHelpModal);
     onShowHelpModal();
     docsRef.current?.[dest]?.scrollIntoView();
   };
   return (
     <button onClick={onClick} type="button" className="ApiLink">
-      {code ? <code>{text}</code> : text}
+      {code ? <code>{children}</code> : children}
     </button>
   );
 }

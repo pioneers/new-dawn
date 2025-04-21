@@ -97,8 +97,7 @@ const ACE_THEMES = {
  * be enabled.
  * @param props.robotRunning - whether the robot is running, which affects whether some toolbar
  * buttons are enabled.
- * @param props.onShowHelpModal - ref containing a callback to call when the help modal should be
- * shown.
+ * @param props.onShowHelpModal - a callback to call when the help modal should be shown.
  * @param props.onOpen - handler called when the user wants to open a file in the editor
  * @param props.onNewFile - handler called when the user wants to close the current file
  * @param props.onLoadStaffCode - handler called when the user wants to load staff code into the
@@ -179,10 +178,10 @@ export default function Editor({
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
   };
-  const setEditorRef = (editor: HTMLElement) => {
+  const setEditorRef = (editor) => {
     if (editor) {
-      addEditorAutocomplete(editor);
-      addEditorTooltips(editor, onShowHelpModal, docsRef);
+      addEditorAutocomplete(editor.editor);
+      addEditorTooltips(editor.editor, onShowHelpModal, docsRef);
     }
   };
 

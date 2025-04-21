@@ -29,7 +29,13 @@ const apiDocs: {
             parameter on the specified PiE device will be read. Possible param
             values depend on the specified device. Find a list of params for each
             type of device on the{' '}
-            <ApiLink dest="misc/lowcar-devices">lowcar devices</ApiLink> page.
+            <ApiLink
+              dest="misc/lowcar-devices"
+              onShowHelpModal={onShowHelpModal}
+              docsRef={docsRef}
+            >
+              lowcar devices
+            </ApiLink> page.
           </li>
         </ul>
         The function is useful for checking the current state of devices. For
@@ -57,6 +63,29 @@ const apiDocs: {
   'api/Robot': {
     title: 'Robot',
     component: (onShowHelpModal, docsRef) => <div>Documentation for Robot object.</div>,
+  },
+  'misc/lowcar-devices': {
+    title: 'Lowcar devices',
+    component: (onShowHelpModal, docsRef) => <div>
+      Lowcar documentation
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
+    </div>,
   },
 };
 
