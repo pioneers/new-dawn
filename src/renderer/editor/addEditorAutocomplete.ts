@@ -123,6 +123,7 @@ function adaptGlobalCompleter(completer: Ace.Completer) {
  * @param editor - the editor to modify
  */
 export default function addEditorAutocomplete(editor: Ace.Editor) {
+  console.dir(editor);
   editor.commands.addCommand({
     name: 'dotAutoComplete',
     bindKey: {

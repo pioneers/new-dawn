@@ -2,6 +2,8 @@ import type { RefObject } from 'react';
 import type HelpModal from '../modal/HelpModal.tsx';
 import './ApiLink.css';
 
+export type DocsRef = RefObject<{[key: string]: HTMLElement}>;
+
 /**
  * Links to a section of the student API documentation, opening the help window or just jumping to
  * the appropriate section if the window is already open. The single text node child of this
@@ -22,7 +24,7 @@ export default function ApiLink({
   dest: string;
   code?: boolean;
   onShowHelpModal: () => void;
-  docsRef: RefObject<{[key: string]: HTMLElement}>;
+  docsRef: DocsRef;
   children: string;
 }) {
   const text = `(${children})[${dest}]`;

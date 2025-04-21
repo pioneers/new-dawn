@@ -4,6 +4,7 @@ import {
   useState,
   useCallback,
   useReducer,
+  useRef,
   useEffect,
   useLayoutEffect,
 } from 'react';
@@ -114,6 +115,8 @@ export default function App() {
   const [deviceInfoState, setDeviceInfoState] = useState(
     [] as DeviceInfoState[],
   );
+  // Stores references to HelpModal sections so ApiLinks can jump to them
+  const docsRef = useRef(null);
 
   const changeActiveModal = (newModalName: string) => {
     if (document.activeElement instanceof HTMLElement) {
@@ -431,6 +434,8 @@ export default function App() {
             keyboardControlsStatus={keyboardControlsStatus}
             robotConnected={robotLatencyMs !== -1}
             robotRunning={robotRunning}
+            docsRef={docsRef}
+            onShowHelpModal={() => changeActiveModal('Help')}
             onOpen={loadFile}
             onSave={saveFile}
             onNewFile={createNewFile}
@@ -485,7 +490,11 @@ export default function App() {
             FieldIPAddress={FieldIPAddress}
             FieldStationNum={FieldStationNum}
           />
-          <HelpModal isActive={activeModal === 'Help'} onClose={closeModal} />
+          <HelpModal
+            isActive={activeModal === 'Help'}
+            onClose={closeModal}
+            docsRef={docsRef}
+          />
           <GamepadInfoModal
             isActive={activeModal === 'GamepadInfo'}
             onClose={closeModal}

@@ -1,23 +1,33 @@
 import Modal from './Modal';
+import type { DocsRef } from '../docs/ApiLink';
+import apiDocs from '../docs/apiDocs';
+
 /**
  * Modal component displaying help for Dawn and the robot API.
- * @param props - props
+ * @param props
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.isActive - whether to display the modal
  */
 export default function HelpModal({
   onClose,
   isActive,
+  docsRef,
 }: {
   onClose: () => void;
   isActive: boolean;
+  docsRef: DocsRef;
 }) {
+  docsRef.current ??= {};
   return (
     <Modal modalTitle="Help" onClose={onClose} isActive={isActive}>
-      {Object.entries(apiHelpComponents).toSorted().map([k, v]) => (
-        <h1 className="docTitle">{k}</h1>
-        {v({ onShowHelpModal: () => {} })}
-      )}
+      {Object.entries(apiDocs).toSorted().map(([k, v]) => (
+        <div className="HelpModal-doc-section" key={k}>
+          <h1 className="HelpModal-doc-title" ref={(elem) => docsRef.current[k] = elem}>
+            {v.title}
+          </h1>
+          {v.component(() => {}, docsRef)}
+        </div>
+      ))}
     </Modal>
   );
 }

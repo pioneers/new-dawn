@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import AceEditor from 'react-ace';
 import addEditorAutocomplete from './addEditorAutocomplete';
 import addEditorTooltips from './addEditorTooltips';
+import type { DocsRef } from '../docs/ApiLink';
 
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/snippets/python';
@@ -96,7 +97,7 @@ const ACE_THEMES = {
  * be enabled.
  * @param props.robotRunning - whether the robot is running, which affects whether some toolbar
  * buttons are enabled.
- * @param props.onShowHelpModalRef - ref containing a callback to call when the help modal should be
+ * @param props.onShowHelpModal - ref containing a callback to call when the help modal should be
  * shown.
  * @param props.onOpen - handler called when the user wants to open a file in the editor
  * @param props.onNewFile - handler called when the user wants to close the current file
@@ -122,7 +123,8 @@ export default function Editor({
   keyboardControlsStatus,
   robotConnected,
   robotRunning,
-  onShowHelpModalRef,
+  docsRef,
+  onShowHelpModal,
   onOpen,
   onSave,
   onNewFile,
@@ -149,7 +151,8 @@ export default function Editor({
   keyboardControlsStatus: KeyboardControlsStatus;
   robotConnected: boolean;
   robotRunning: boolean;
-  onShowHelpModalRef: RefObject<() => void>;
+  docsRef: DocsRef;
+  onShowHelpModal: () => void;
   onOpen: () => void;
   /**
    * handler called when the user wants to save the contents of the editor
@@ -172,7 +175,6 @@ export default function Editor({
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
-  const editorRef = useRef(null as AceEditor | null);
 
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
@@ -180,7 +182,7 @@ export default function Editor({
   const setEditorRef = (editor: HTMLElement) => {
     if (editor) {
       addEditorAutocomplete(editor);
-      addEditorTooltips(editor, onShowHelpModalRef);
+      addEditorTooltips(editor, onShowHelpModal, docsRef);
     }
   };
 
