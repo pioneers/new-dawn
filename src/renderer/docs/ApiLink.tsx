@@ -28,9 +28,9 @@ export default function ApiLink({
   children: string;
 }) {
   const onClick = () => {
-    console.log(onShowHelpModal);
     onShowHelpModal();
-    docsRef.current?.[dest]?.scrollIntoView();
+    // Deferring feels wrong but it works:
+    setTimeout(() => docsRef.current?.[dest]?.scrollIntoView(), 0);
   };
   return (
     <button onClick={onClick} type="button" className="ApiLink">
