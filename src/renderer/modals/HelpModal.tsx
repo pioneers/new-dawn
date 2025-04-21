@@ -1,6 +1,6 @@
 import Modal from './Modal';
 import type { DocsRef } from '../docs/ApiLink';
-import apiDocs from '../docs/apiDocs';
+import apiDocs, { ApiDoc } from '../docs/apiDocs';
 import './HelpModal.css';
 
 /**
@@ -20,15 +20,29 @@ export default function HelpModal({
 }) {
   docsRef.current ??= {};
   return (
-    <Modal modalTitle="Help" className="HelpModal" onClose={onClose} isActive={isActive}>
-      {Object.entries(apiDocs).toSorted().map(([k, v]) => (
-        <div className="HelpModal-doc-section" key={k}>
-          <h1 className="HelpModal-doc-title" ref={(elem) => docsRef.current[k] = elem}>
-            {v.title}
-          </h1>
-          {v.component(() => {}, docsRef)}
-        </div>
-      ))}
+    <Modal
+      modalTitle="Help"
+      className="HelpModal"
+      onClose={onClose}
+      isActive={isActive}
+    >
+      {Object.entries(apiDocs)
+        .toSorted()
+        .map(([k, v]: [string, ApiDoc]) => (
+          <div className="HelpModal-doc-section" key={k}>
+            <h1
+              className="HelpModal-doc-title"
+              ref={(elem) => {
+                if (elem) {
+                  docsRef.current![k] = elem;
+                }
+              }}
+            >
+              {v.title}
+            </h1>
+            {v.component(() => {}, docsRef)}
+          </div>
+        ))}
     </Modal>
   );
 }

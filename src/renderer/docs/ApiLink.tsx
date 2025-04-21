@@ -1,8 +1,8 @@
-import type { RefObject } from 'react';
-import type HelpModal from '../modal/HelpModal.tsx';
+import type { MutableRefObject } from 'react';
+import type HelpModal from '../modals/HelpModal';
 import './ApiLink.css';
 
-export type DocsRef = RefObject<{[key: string]: HTMLElement}>;
+export type DocsRef = MutableRefObject<{[key: string]: HTMLElement}>;
 
 /**
  * Links to a section of the student API documentation, opening the help window or just jumping to

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import AceEditor from 'react-ace';
 import addEditorAutocomplete from './addEditorAutocomplete';
 import addEditorTooltips from './addEditorTooltips';
@@ -178,7 +178,7 @@ export default function Editor({
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
   };
-  const setEditorRef = (editor) => {
+  const setEditorRef = (editor: AceEditor) => {
     if (editor) {
       addEditorAutocomplete(editor.editor);
       addEditorTooltips(editor.editor, onShowHelpModal, docsRef);

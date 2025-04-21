@@ -8,7 +8,7 @@ export type ApiDoc = {
 };
 
 const apiDocs: {
-  [matchText: string]: ApiDocComponent;
+  [matchText: string]: ApiDoc;
 } = {
   'api/Robot.get_value': {
     title: 'Robot.get_value',
