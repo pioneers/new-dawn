@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import Modal from './Modal';
-import { ApiLinkContext, DocsRef } from '../docs/ApiLink';
+import ApiLink, { ApiLinkContext, DocsRef } from '../docs/ApiLink';
 import apiDocs, { ApiDoc } from '../docs/apiDocs';
 import './HelpModal.css';
 
@@ -32,6 +32,14 @@ export default function HelpModal({
       isActive={isActive}
     >
       <ApiLinkContext.Provider value={apiLinkCtx}>
+        <h1 className="HelpModal-doc-title">Table of Contents</h1>
+        <ul className="HelpModal-toc">
+          {Object.entries(apiDocs)
+            .toSorted()
+            .map(([k, v]: [string, ApiDoc]) => (
+              <li key={k}><ApiLink dest={k}>{v.title}</ApiLink></li>
+            ))}
+        </ul>
         {Object.entries(apiDocs)
           .toSorted()
           .map(([k, v]: [string, ApiDoc]) => (
@@ -46,7 +54,7 @@ export default function HelpModal({
               >
                 {v.title}
               </h1>
-              {v.component()}
+              {v.body()}
             </div>
           ))}
       </ApiLinkContext.Provider>

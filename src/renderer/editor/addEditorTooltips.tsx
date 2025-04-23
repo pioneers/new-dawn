@@ -36,7 +36,7 @@ export default function addEditorTooltips(
       const apiLinkCtx = { onShowHelpModal, docsRef };
       root.render(
         <ApiLinkContext.Provider value={apiLinkCtx}>
-          {apiDocs[result].component()}
+          {apiDocs[result].body()}
         </ApiLinkContext.Provider>,
       );
       tooltip.showForRange(editor, range, node, event);
