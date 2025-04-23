@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import AceEditor from 'react-ace';
 import addEditorAutocomplete from './addEditorAutocomplete';
 import addEditorTooltips from './addEditorTooltips';
@@ -174,12 +174,15 @@ export default function Editor({
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
+  const modifiedEditorInstancesRef = useRef(null);
+  modifiedEditorInstancesRef.current ??= new WeakSet();
 
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
   };
   const setEditorRef = (editor: AceEditor) => {
-    if (editor) {
+    if (editor && !modifiedEditorInstancesRef.current!.has(editor)) {
+      modifiedEditorInstancesRef.current!.add(editor);
       addEditorAutocomplete(editor.editor);
       addEditorTooltips(editor.editor, onShowHelpModal, docsRef);
     }
