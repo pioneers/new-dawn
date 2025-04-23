@@ -322,6 +322,26 @@ const apiDocs: {
       </div>
     ),
   },
+  'api/Keyboard': {
+    title: 'Keyboard',
+    body: () => (
+      <div>
+        A global object similar to <ApiLink dest="api/Robot">Robot</ApiLink>
+        that is only made available while an{' '}
+        <ApiLink dest="misc/entry-points">entry point function</ApiLink> is
+        being run. Has only one useful method,
+        <ApiLink dest="api/Keyboard.get_value">Keyboard.get_value</ApiLink>.
+      </div>
+    ),
+  },
+  'api/Keyboard.get_value': {
+    title: 'Keyboard.get_value(name_of_key)',
+    body: () => (
+      <div>
+        WIP
+      </div>
+    ),
+  },
   'misc/entry-points': {
     title: 'Robot code entry points',
     body: () => (
