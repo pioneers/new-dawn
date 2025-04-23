@@ -2,7 +2,7 @@ import { MutableRefObject, createContext, useContext } from 'react';
 import type HelpModal from '../modals/HelpModal';
 import './ApiLink.css';
 
-export type DocsRef = MutableRefObject<{[key: string]: HTMLElement}>;
+export type DocsRef = MutableRefObject<null | {[key: string]: HTMLElement}>;
 export const ApiLinkContext = createContext<{
   onShowHelpModal: null | (() => void);
   docsRef: null | DocsRef;
@@ -24,8 +24,8 @@ export const ApiLinkContext = createContext<{
 export default function ApiLink({
   dest,
   code = false,
-  onShowHelpModal = null,
-  docsRef = null,
+  onShowHelpModal = undefined,
+  docsRef = undefined,
   children,
 }: {
   dest: string;
@@ -65,9 +65,9 @@ ApiLink.defaultProps = {
   /**
    * By default, the callback will be inherited from the closest {@link ApiLinkContext} provider.
    */
-  onShowHelpModal: null,
+  onShowHelpModal: undefined,
   /**
    * By default, the ref will be inherited from the closest {@link ApiLinkContext} provider.
    */
-  docsRef: null,
+  docsRef: undefined,
 };

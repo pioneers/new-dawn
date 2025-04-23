@@ -29,6 +29,7 @@ import {
   Source as RobotInputSource,
   Input as RobotInput,
 } from '../../protos-main/protos';
+import type { DocsRef } from './docs/ApiLink';
 import robotKeyNumberMap from './robotKeyNumberMap';
 import staffCodeSource from './staffCode';
 import './App.css';
@@ -116,7 +117,7 @@ export default function App() {
     [] as DeviceInfoState[],
   );
   // Stores references to HelpModal sections so ApiLinks can jump to them
-  const docsRef = useRef(null);
+  const docsRef = useRef(null) as DocsRef;
 
   const changeActiveModal = (newModalName: string) => {
     if (document.activeElement instanceof HTMLElement) {
