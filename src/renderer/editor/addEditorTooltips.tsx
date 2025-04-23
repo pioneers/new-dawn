@@ -33,12 +33,11 @@ export default function addEditorTooltips(
     const result =
       API_PREFIX + readApiCall(editor.session, range.end, maxMatchTextLength);
     if (result in apiDocs) {
+      const apiLinkCtx = { onShowHelpModal, docsRef };
       root.render(
-        <ApiLinkContext.Provider
-          value={{ onShowHelpModal, docsRef }}
-        >
+        <ApiLinkContext.Provider value={apiLinkCtx}>
           {apiDocs[result].component()}
-        </ApiLinkContext.Provider>
+        </ApiLinkContext.Provider>,
       );
       tooltip.showForRange(editor, range, node, event);
     }

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import Modal from './Modal';
 import { ApiLinkContext, DocsRef } from '../docs/ApiLink';
 import apiDocs, { ApiDoc } from '../docs/apiDocs';
@@ -19,6 +20,10 @@ export default function HelpModal({
   docsRef: DocsRef;
 }) {
   docsRef.current ??= {};
+  const apiLinkCtx = useMemo(
+    () => ({ onShowHelpModal: () => {}, docsRef }),
+    [docsRef],
+  );
   return (
     <Modal
       modalTitle="Help"
@@ -26,7 +31,7 @@ export default function HelpModal({
       onClose={onClose}
       isActive={isActive}
     >
-      <ApiLinkContext.Provider value={{ onShowHelpModal: () => {}, docsRef }}>
+      <ApiLinkContext.Provider value={apiLinkCtx}>
         {Object.entries(apiDocs)
           .toSorted()
           .map(([k, v]: [string, ApiDoc]) => (
@@ -41,10 +46,9 @@ export default function HelpModal({
               >
                 {v.title}
               </h1>
-              {v.component(() => {}, docsRef)}
+              {v.component()}
             </div>
-          ))
-        }
+          ))}
       </ApiLinkContext.Provider>
     </Modal>
   );
