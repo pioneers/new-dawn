@@ -2,7 +2,7 @@ import { Ace, require as acequire } from 'ace-builds';
 import { createRoot } from 'react-dom/client';
 import readApiCall from './readApiCall';
 import apiDocs from '../docs/apiDocs';
-import type { DocsRef } from '../docs/ApiLink';
+import { ApiLinkContext, DocsRef } from '../docs/ApiLink';
 
 const { HoverTooltip } = acequire('ace/tooltip');
 
@@ -33,7 +33,13 @@ export default function addEditorTooltips(
     const result =
       API_PREFIX + readApiCall(editor.session, range.end, maxMatchTextLength);
     if (result in apiDocs) {
-      root.render(apiDocs[result].component(onShowHelpModal, docsRef));
+      root.render(
+        <ApiLinkContext.Provider
+          value={{ onShowHelpModal, docsRef }}
+        >
+          {apiDocs[result].component()}
+        </ApiLinkContext.Provider>
+      );
       tooltip.showForRange(editor, range, node, event);
     }
   });

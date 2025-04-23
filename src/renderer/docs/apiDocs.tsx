@@ -1,10 +1,10 @@
 import { ReactNode } from 'react';
-import ApiLink, { DocsRef } from './ApiLink';
+import ApiLink from './ApiLink';
 import HighlightedCode from './HighlightedCode';
 
 export type ApiDoc = {
   title: string;
-  component: (onShowHelpModal: () => void, docsRef: DocsRef) => ReactNode;
+  component: () => ReactNode;
 };
 
 const apiDocs: {
@@ -12,7 +12,7 @@ const apiDocs: {
 } = {
   'api/Robot.get_value': {
     title: 'Robot.get_value',
-    component: (onShowHelpModal, docsRef) => (
+    component: () => (
       <div>
         The <code>get_value</code> function returns the current value of a
         specified <code>param</code> on a device with the specified{' '}
@@ -29,13 +29,7 @@ const apiDocs: {
             parameter on the specified PiE device will be read. Possible param
             values depend on the specified device. Find a list of params for each
             type of device on the{' '}
-            <ApiLink
-              dest="misc/lowcar-devices"
-              onShowHelpModal={onShowHelpModal}
-              docsRef={docsRef}
-            >
-              lowcar devices
-            </ApiLink> page.
+            <ApiLink dest="misc/lowcar-devices">lowcar devices</ApiLink> page.
           </li>
         </ul>
         The function is useful for checking the current state of devices. For
@@ -62,11 +56,11 @@ const apiDocs: {
   },
   'api/Robot': {
     title: 'Robot',
-    component: (onShowHelpModal, docsRef) => <div>Documentation for Robot object.</div>,
+    component: () => <div>Documentation for Robot object.</div>,
   },
   'misc/lowcar-devices': {
     title: 'Lowcar devices',
-    component: (onShowHelpModal, docsRef) => <div>
+    component: () => <div>
       Lowcar documentation
       <br />
       <br />
