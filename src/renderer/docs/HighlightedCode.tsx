@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-python';
 import './HighlightedCode.css';
@@ -18,6 +19,20 @@ export default function HighlightedCode({
   children: string;
   indent?: number;
 }) {
+  const cleanupRef = useRef(null);
+  const setEditorRef = (editor) => {
+    cleanupRef.current?.();
+    if (editor) {
+      const subscription = editor.editor.getSession().selection.on('changeSelection', () => {
+        editor.editor.getSession().selection.clearSelection();
+      });
+      cleanupRef.current = () => {
+        editor.editor.getSession().selection.off('changeSelection', subscription);
+        cleanupRef.current = null;
+      };
+    }
+  };
+
   const lines = children.split('\n');
   if (lines.length && !lines[0].trim()) {
     lines.shift();
@@ -34,6 +49,7 @@ export default function HighlightedCode({
   const formatted = lines
     .map((line) => ' '.repeat(indent) + line.slice(minIndent))
     .join('\n');
+
   return (
     <AceEditor
       value={formatted}
@@ -43,6 +59,7 @@ export default function HighlightedCode({
       style={{ width: '100%' }}
       mode="python"
       maxLines={Infinity}
+      ref={setEditorRef}
     />
   );
 }

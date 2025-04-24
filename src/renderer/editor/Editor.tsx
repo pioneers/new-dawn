@@ -188,6 +188,7 @@ export default function Editor({
       editorModsCleanupRef.current = () => {
         cleanupAutocomplete();
         cleanupTooltips();
+        editorModsCleanupRef.current = null;
       };
     }
   };
