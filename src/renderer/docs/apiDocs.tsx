@@ -258,10 +258,10 @@ const apiDocs: {
     body: () => (
       <div>
         A global object similar to <ApiLink dest="api/Robot">Robot</ApiLink>
-        that is only made available while an{' '}
+        {' '}that is only made available while an{' '}
         <ApiLink dest="misc/entry-points">entry point function</ApiLink> is
         being run. Has only one useful method,{' '}
-        <ApiLink dest="api/Gamepad.get_value">Gamepad.get_value</ApiLink>.
+        <ApiLink dest="api/Gamepad.get_value">Gamepad.get_value()</ApiLink>.
       </div>
     ),
   },
@@ -322,11 +322,11 @@ const apiDocs: {
         <p>
           When the name of a button is passed in, this function returns a
           boolean value: <code>True</code> if the button is pressed, and{' '}
-          <code>False</code> if the button is not pressed. When a joystick is
-          passed in, this function returns a floating-point (decimal) value
+          <code>False</code> if the button is not pressed. When a joystick name
+          is passed in, this function returns a floating-point (decimal) value
           between -1.0 and 1.0 (inclusive), which correspond to the extremes of
-          movement for the given joystick. On most gamepads, positive values
-          for x point rightward while positive value for y point downward.
+          movement for the given joystick. On most gamepads, positive values for
+          x point rightward while positive values for y point downward.
         </p>
         <p>
           If you are unsure what name a button or joystick on your gamepad is
@@ -345,10 +345,10 @@ const apiDocs: {
     body: () => (
       <div>
         A global object similar to <ApiLink dest="api/Robot">Robot</ApiLink>
-        that is only made available while an{' '}
+        {' '}that is only made available while an{' '}
         <ApiLink dest="misc/entry-points">entry point function</ApiLink> is
         being run. Has only one useful method,{' '}
-        <ApiLink dest="api/Keyboard.get_value">Keyboard.get_value</ApiLink>.
+        <ApiLink dest="api/Keyboard.get_value">Keyboard.get_value()</ApiLink>.
       </div>
     ),
   },
