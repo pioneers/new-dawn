@@ -16,7 +16,7 @@ const apiDocs: {
       <div>
         The <code>Robot</code> object allows your code to control and read data
         from PiE devices connected to your robot. It is available to your code
-        as a global, but only when your
+        as a global, but only when your{' '}
         <ApiLink dest="misc/entry-points">
           <code>autonomous()</code> or <code>teleop()</code> functions
         </ApiLink> are running.
@@ -38,30 +38,34 @@ const apiDocs: {
     title: 'Robot.get_value(device_id, param)',
     body: () => (
       <div>
-        The <code>get_value()</code> function returns the current value of a
-        specified <code>param</code> on a device with the specified{' '}
-        <ApiLink dest="misc/device-id" code={true}>device_id</ApiLink>.
+        <p>
+          The <code>get_value()</code> function returns the current value of a
+          specified <code>param</code> on a device with the specified{' '}
+          <ApiLink dest="misc/device-id" code={true}>device_id</ApiLink>.
+        </p>
         <p>
           Parameters:
-          <ul>
-            <li>
-              <code>device_id</code>: the string ID that specifies which PiE
-              device will be read.
-            </li>
-            <li>
-              <code>param</code>: the string name of the parameter on the
-              specified PiE device will be read. Possible param values depend on
-              the specified device. Find a list of params for each type of
-              device on the{' '}
-              <ApiLink dest="misc/lowcar-devices">lowcar devices</ApiLink> page.
-            </li>
-          </ul>
         </p>
-        The function is useful for checking the current state of devices. For
-        example, getting the current state of a limit switch using its{' '}
-        <code>device_id</code> and the <code>param</code> &quot;switch0&quot;
-        will return True when the switch on the first slot is pressed down and
-        False if not.
+        <ul>
+          <li>
+            <code>device_id</code>: the string ID that specifies which PiE
+            device will be read.
+          </li>
+          <li>
+            <code>param</code>: the string name of the parameter on the
+            specified PiE device will be read. Possible param values depend on
+            the specified device. Find a list of params for each type of
+            device on the{' '}
+            <ApiLink dest="misc/lowcar-devices">lowcar devices</ApiLink> page.
+          </li>
+        </ul>
+        <p>
+          The function is useful for checking the current state of devices. For
+          example, getting the current state of a limit switch using its{' '}
+          <code>device_id</code> and the <code>param</code> &quot;switch0&quot;
+          will return True when the switch on the first slot is pressed down and
+          False if not.
+        </p>
         <HighlightedCode>{`
           limit_switch = "//INSERT SWITCH ID HERE//"
 
@@ -80,34 +84,38 @@ const apiDocs: {
     title: 'Robot.set_value(device_id, param, value)',
     body: () => (
       <div>
-        The <code>set_value()</code> function sets the specified value of the
-        specified param of the device with the specified{' '}
-        <ApiLink dest="misc/device-id" code={true}>device_id</ApiLink>.
+        <p>
+          The <code>set_value()</code> function sets the specified value of the
+          specified param of the device with the specified{' '}
+          <ApiLink dest="misc/device-id" code={true}>device_id</ApiLink>.
+        </p>
         <p>
           Parameters:
-          <ul>
-            <li>
-              <code>device_id</code>: the string ID that specifies which PiE
-              device will have its parameter set.
-            </li>
-            <li>
-              <code>param</code>: the string name of the parameter on the
-              specified PiE device will be set to the provided value. Possible
-              values/parameters depend on the specified device. Find a list of
-              parameters that can be set for each device on the{' '}
-              <ApiLink dest="misc/lowcar-devices">lowcar devices</ApiLink> page.
-            </li>
-            <li>
-              <code>value</code>: the value to set the param to. Depending on
-              the param, this may be an int, bool, or a float.
-            </li>
-          </ul>
         </p>
-        This function is useful for changing the state of certain parts of your
-        robot while it is running. For example, calling this function with a
-        KoalaBear (motor controller)'s ID, the param <code>"velocity_a"</code>
-        {' '}and the value <code>-1.0</code> would drive the motor connected to slot
-        1 on the KoalaBear backwards at full power.
+        <ul>
+          <li>
+            <code>device_id</code>: the string ID that specifies which PiE
+            device will have its parameter set.
+          </li>
+          <li>
+            <code>param</code>: the string name of the parameter on the
+            specified PiE device will be set to the provided value. Possible
+            values/parameters depend on the specified device. Find a list of
+            parameters that can be set for each device on the{' '}
+            <ApiLink dest="misc/lowcar-devices">lowcar devices</ApiLink> page.
+          </li>
+          <li>
+            <code>value</code>: the value to set the param to. Depending on
+            the param, this may be an int, bool, or a float.
+          </li>
+        </ul>
+        <p>
+          This function is useful for changing the state of certain parts of your
+          robot while it is running. For example, calling this function with a
+          KoalaBear (motor controller)'s ID, the param <code>"velocity_a"</code>
+          {' '}and the value <code>-1.0</code> would drive the motor connected to slot
+          1 on the KoalaBear backwards at full power.
+        </p>
         <HighlightedCode>{`
           # The ID of the motor controller both of the motors must be plugged in to.
           controller_id = "6_XXXXXXXXXXXXX"
@@ -126,31 +134,35 @@ const apiDocs: {
     title: 'Robot.run(function, *args)',
     body: () => (
       <div>
-        Executes <code>function</code> with the rest of the arguments passed to{' '}
-        <code>Robot.run()</code> (indicated by <code>*args</code>) in a new
-        thread. This means <code>function</code> will be ran simultaneously and
-        independently from the code that called <code>Robot.run()</code>.
-        See below for restrictions.
+        <p>
+          Executes <code>function</code> with the rest of the arguments passed to{' '}
+          <code>Robot.run()</code> (indicated by <code>*args</code>) in a new
+          thread. This means <code>function</code> will be ran simultaneously and
+          independently from the code that called <code>Robot.run()</code>.
+          See below for restrictions.
+        </p>
         <p>
           Parameters:
-          <ul>
-            <li>
-              <code>function</code>: the function in student code that will be
-              run simultaneously with the calling code.
-            </li>
-            <li>
-              <code>*args</code>: if there are any other arguments passed to{' '}
-              <code>Robot.run()</code> after <code>function</code>, they will be
-              passed to <code>function</code> when it is called in the other
-              thread.
-            </li>
-          </ul>
         </p>
-        This will run the specified function in the background until it returns,
-        or when the opmode ends (whichever is first). For example, if you want a
-        function <code>arm_code()</code> to control the arm that runs at the
-        same time as the rest of your <code>teleop()</code> function, call{' '}
-        <code>Robot.run(arm_code)</code>:
+        <ul>
+          <li>
+            <code>function</code>: the function in student code that will be
+            run simultaneously with the calling code.
+          </li>
+          <li>
+            <code>*args</code>: if there are any other arguments passed to{' '}
+            <code>Robot.run()</code> after <code>function</code>, they will be
+            passed to <code>function</code> when it is called in the other
+            thread.
+          </li>
+        </ul>
+        <p>
+          This will run the specified function in the background until it returns,
+          or when the opmode ends (whichever is first). For example, if you want a
+          function <code>arm_code()</code> to control the arm that runs at the
+          same time as the rest of your <code>teleop()</code> function, call{' '}
+          <code>Robot.run(arm_code)</code>:
+        </p>
         <HighlightedCode>{`
           def counter(start, should_print):
             i = start
@@ -174,23 +186,23 @@ const apiDocs: {
         `}</HighlightedCode>
         <p>
           Restrictions:
-          <ul>
-            <li>
-              <code>Robot.run()</code> cannot run the same function multiple times
-              at once. To check if a function run by <code>Robot.run()</code> has
-              finished running (and is ready to be run again if desired), use{' '}
-              <ApiLink dest="api/Robot.is_running" code={true}>
-                Robot.is_running()
-              </ApiLink>.
-            </li>
-            <li>
-              No more than 8 functions started by <code>Robot.run()</code> may
-              be run at the same time. When 8 functions are running, additional
-              calls to <code>Robot.run()</code> will print a warning instead of
-              running a new function.
-            </li>
-          </ul>
         </p>
+        <ul>
+          <li>
+            <code>Robot.run()</code> cannot run the same function multiple times
+            at once. To check if a function run by <code>Robot.run()</code> has
+            finished running (and is ready to be run again if desired), use{' '}
+            <ApiLink dest="api/Robot.is_running" code={true}>
+              Robot.is_running()
+            </ApiLink>.
+          </li>
+          <li>
+            No more than 8 functions started by <code>Robot.run()</code> may
+            be run at the same time. When 8 functions are running, additional
+            calls to <code>Robot.run()</code> will print a warning instead of
+            running a new function.
+          </li>
+        </ul>
       </div>
     ),
   },
@@ -198,18 +210,20 @@ const apiDocs: {
     title: 'Robot.is_running(function)',
     body: () => (
       <div>
-        Returns <code>True</code> or <code>False</code> depending on if the
-        specified function is still running if started by
-        <ApiLink dest="api/Robot.run" code={true}>Robot.run()</ApiLink>.
+        <p>
+          Returns <code>True</code> or <code>False</code> depending on if the
+          specified function is still running if started by{' '}
+          <ApiLink dest="api/Robot.run" code={true}>Robot.run()</ApiLink>.
+        </p>
         <p>
           Parameters:
-          <ul>
-            <li>
-              <code>function</code>: a function in student code that may or may
-              not have been run using <code>Robot.run()</code>.
-            </li>
-          </ul>
         </p>
+        <ul>
+          <li>
+            <code>function</code>: a function in student code that may or may
+            not have been run using <code>Robot.run()</code>.
+          </li>
+        </ul>
       </div>
     ),
   },
@@ -217,23 +231,25 @@ const apiDocs: {
     title: 'Robot.sleep(seconds)',
     body: () => (
       <div>
-        Pauses the execution of the function that called
-        <code>Robot.sleep()</code> for the specified duration. This does not
-        affect the execution of other functions ran by
-        <ApiLink dest="api/Robot.run" code={true}>Robot.run()</ApiLink>, or the{' '}
-        <code>teleop()</code> and <code>autonomous()</code> functions if they
-        were not the functions that called <code>Robot.sleep()</code>. This is
-        the only PiE-safe method to add delays to your code; functions in the
-        Python standard library are not guaranteed to work on the robot.
+        <p>
+          Pauses the execution of the function that called
+          <code>Robot.sleep()</code> for the specified duration. This does not
+          affect the execution of other functions ran by{' '}
+          <ApiLink dest="api/Robot.run" code={true}>Robot.run()</ApiLink>, or the{' '}
+          <code>teleop()</code> and <code>autonomous()</code> functions if they
+          were not the functions that called <code>Robot.sleep()</code>. This is
+          the only PiE-safe method to add delays to your code; functions in the
+          Python standard library are not guaranteed to work on the robot.
+        </p>
         <p>
           Parameters:
-          <ul>
-            <li>
-              <code>seconds</code>: the number of seconds to pause the execution
-              of the current function for. Does not have to be a whole number.
-            </li>
-          </ul>
         </p>
+        <ul>
+          <li>
+            <code>seconds</code>: the number of seconds to pause the execution
+            of the current function for. Does not have to be a whole number.
+          </li>
+        </ul>
       </div>
     ),
   },
@@ -244,7 +260,7 @@ const apiDocs: {
         A global object similar to <ApiLink dest="api/Robot">Robot</ApiLink>
         that is only made available while an{' '}
         <ApiLink dest="misc/entry-points">entry point function</ApiLink> is
-        being run. Has only one useful method,
+        being run. Has only one useful method,{' '}
         <ApiLink dest="api/Gamepad.get_value">Gamepad.get_value</ApiLink>.
       </div>
     ),
@@ -253,18 +269,20 @@ const apiDocs: {
     title: 'Gamepad.get_value(name_of_input)',
     body: () => (
       <div>
-        Returns the state of a button or joystick on a connected gamepad. If
-        called outside of <ApiLink dest="misc/entry-points">teleop()</ApiLink>,
-        an error will be raised.
+        <p>
+          Returns the state of a button or joystick on a connected gamepad. If
+          called outside of <ApiLink dest="misc/entry-points">teleop()</ApiLink>,
+          an error will be raised.
+        </p>
         <p>
           Parameters:
-          <ul>
-            <li>
-              <code>name_of_input</code>: a string identifying the button or
-              joystick value to return.
-            </li>
-          </ul>
         </p>
+        <ul>
+          <li>
+            <code>name_of_input</code>: a string identifying the button or
+            joystick value to return.
+          </li>
+        </ul>
         <p>
           This function is essential for controlling your robot with the
           gamepad. For example, calling this function with{' '}
@@ -329,7 +347,7 @@ const apiDocs: {
         A global object similar to <ApiLink dest="api/Robot">Robot</ApiLink>
         that is only made available while an{' '}
         <ApiLink dest="misc/entry-points">entry point function</ApiLink> is
-        being run. Has only one useful method,
+        being run. Has only one useful method,{' '}
         <ApiLink dest="api/Keyboard.get_value">Keyboard.get_value</ApiLink>.
       </div>
     ),
