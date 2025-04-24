@@ -174,17 +174,21 @@ export default function Editor({
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
-  const modifiedEditorInstancesRef = useRef(null);
-  modifiedEditorInstancesRef.current ??= new WeakSet();
+  const editorModsCleanupRef = useRef(null);
 
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
   };
+
   const setEditorRef = (editor: AceEditor) => {
-    if (editor && !modifiedEditorInstancesRef.current!.has(editor)) {
-      modifiedEditorInstancesRef.current!.add(editor);
-      addEditorAutocomplete(editor.editor);
-      addEditorTooltips(editor.editor, onShowHelpModal, docsRef);
+    editorModsCleanupRef.current?.();
+    if (editor) {
+      const cleanupAutocomplete = addEditorAutocomplete(editor.editor);
+      const cleanupTooltips = addEditorTooltips(editor.editor, onShowHelpModal, docsRef);
+      editorModsCleanupRef.current = () => {
+        cleanupAutocomplete();
+        cleanupTooltips();
+      };
     }
   };
 

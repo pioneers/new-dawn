@@ -121,9 +121,10 @@ function adaptGlobalCompleter(completer: Ace.Completer) {
 /**
  * Adds PiE API completers to the given editor.
  * @param editor - the editor to modify
+ * @return A function that undoes the modifications to the editor when called.
  */
 export default function addEditorAutocomplete(editor: Ace.Editor) {
-  editor.commands.addCommand({
+  const dotAutoComplete = {
     name: 'dotAutoComplete',
     bindKey: {
       win: '.',
@@ -133,8 +134,8 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       editor.insert('.');
       editor.execCommand('startAutocomplete');
     },
-  });
-  editor.commands.addCommand({
+  };
+  const parenAutoComplete = {
     name: 'parenAutoComplete',
     bindKey: {
       win: '(',
@@ -144,7 +145,12 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       editor.insert('(');
       editor.execCommand('startAutocomplete');
     },
-  });
+  };
+  editor.commands.addCommand(dotAutoComplete);
+  editor.commands.addCommand(parenAutoComplete);
+
+  const oldCompleters = editor.completers;
+
   editor.completers = [
     adaptGlobalCompleter(globalCompleter),
     makeContextCompleter('Robot.', [
@@ -175,6 +181,10 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
       '"dpad_left"',
       '"dpad_right"',
       '"button_xbox"',
+      '"joystick_left_x"',
+      '"joystick_left_y"',
+      '"joystick_right_x"',
+      '"joystick_right_y"',
     ]),
     makeContextCompleter('Keyboard.', ['available', 'get_value']),
     makeContextCompleter(
@@ -183,4 +193,10 @@ export default function addEditorAutocomplete(editor: Ace.Editor) {
     ),
     ...(editor.completers || []).map(adaptGlobalCompleter),
   ];
+
+  return () => {
+    editor.completers = oldCompleters;
+    editor.commands.removeCommand(dotAutoComplete);
+    editor.commands.removeCommand(parenAutoComplete);
+  };
 }

@@ -43,4 +43,6 @@ export default function addEditorTooltips(
     }
   });
   tooltip.addToEditor(editor);
+
+  return () => tooltip.destroy();
 }
