@@ -37,7 +37,9 @@ export default function HelpModal({
           {Object.entries(apiDocs)
             .toSorted()
             .map(([k, v]: [string, ApiDoc]) => (
-              <li key={k}><ApiLink dest={k}>{v.title}</ApiLink></li>
+              <li key={k}>
+                <ApiLink dest={k}>{v.title}</ApiLink>
+              </li>
             ))}
         </ul>
         {Object.entries(apiDocs)

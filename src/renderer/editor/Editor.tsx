@@ -174,7 +174,7 @@ export default function Editor({
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
-  const editorModsCleanupRef = useRef(null);
+  const editorModsCleanupRef = useRef<null | (() => void)>(null);
 
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
@@ -184,7 +184,11 @@ export default function Editor({
     editorModsCleanupRef.current?.();
     if (editor) {
       const cleanupAutocomplete = addEditorAutocomplete(editor.editor);
-      const cleanupTooltips = addEditorTooltips(editor.editor, onShowHelpModal, docsRef);
+      const cleanupTooltips = addEditorTooltips(
+        editor.editor,
+        onShowHelpModal,
+        docsRef,
+      );
       editorModsCleanupRef.current = () => {
         cleanupAutocomplete();
         cleanupTooltips();

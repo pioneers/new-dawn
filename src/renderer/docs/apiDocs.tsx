@@ -17,9 +17,9 @@ const apiDocs: {
         The <code>Robot</code> object allows your code to control and read data
         from PiE devices connected to your robot. It is available to your code
         as a global, but only when your{' '}
-        <ApiLink dest="misc/entry-points">
-          <code>autonomous()</code> or <code>teleop()</code> functions
-        </ApiLink> are running.
+        <ApiLink dest="misc/entry-points" code={true}>autonomous()</ApiLink> or
+        {' '}<ApiLink dest="misc/entry-points" code={true}>teleop()</ApiLink>
+        {' '}functions are running.
       </div>
     ),
   },

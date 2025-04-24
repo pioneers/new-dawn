@@ -19,15 +19,16 @@ export default function HighlightedCode({
   children: string;
   indent?: number;
 }) {
-  const cleanupRef = useRef(null);
-  const setEditorRef = (editor) => {
+  const cleanupRef = useRef<null | (() => void)>(null);
+  const setEditorRef = (editor: AceEditor) => {
     cleanupRef.current?.();
     if (editor) {
-      const subscription = editor.editor.getSession().selection.on('changeSelection', () => {
+      const callback = () => {
         editor.editor.getSession().selection.clearSelection();
-      });
+      };
+      editor.editor.getSession().selection.on('changeSelection', callback);
       cleanupRef.current = () => {
-        editor.editor.getSession().selection.off('changeSelection', subscription);
+        editor.editor.getSession().selection.off('changeSelection', callback);
         cleanupRef.current = null;
       };
     }
