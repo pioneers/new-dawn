@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, MouseEvent } from 'react';
 import Modal from './Modal';
+// ignore the type error for the svgr component
+// @ts-ignore
 import LogitechGamepadSvgr from '../../../assets/logitech-gamepad.svg?svgr';
 import './GamepadInfoModal.css';
 
@@ -21,19 +23,24 @@ const BUTTON_ORDER = [
   'dpad_left',
   'dpad_right',
   'button_xbox',
-];
+] as const;
+
 const AXIS_ORDER = [
   'joystick_left_x',
   'joystick_left_y',
   'joystick_right_x',
   'joystick_right_y',
-];
+] as const;
+
 const CONTROL_NAMES = {
   'a-button': 'button_a',
   'b-button': 'button_b',
   'x-button': 'button_x',
   'y-button': 'button_y',
-  dpad: ['dpad_down', 'dpad_up', 'dpad_left', 'dpad_right'],
+  'dpad-up': 'dpad_up',
+  'dpad-down': 'dpad_down',
+  'dpad-left': 'dpad_left',
+  'dpad-right': 'dpad_right',
   'right-bumper': 'r_bumper',
   'right-trigger': 'r_trigger',
   'left-bumper': 'l_bumper',
@@ -43,11 +50,28 @@ const CONTROL_NAMES = {
   'brand-button': 'button_xbox',
   'left-joystick': ['l_stick', 'joystick_left_x', 'joystick_left_y'],
   'right-joystick': ['r_stick', 'joystick_right_x', 'joystick_right_y'],
-};
+} as const;
+
+type ControlName = keyof typeof CONTROL_NAMES;
+type DataItem = [string, boolean | number];
+
 const GAMEPAD_UPDATE_PERIOD_MS = 50;
 const PREFIX = 'logitech-gamepad_svg__';
 const AXIS_THRESHOLD = 0.25;
-const DATA_PER_ROW = 7;
+
+interface ControlSection {
+  title: string;
+  controls: DataItem[];
+  gridColumn?: string;
+}
+
+const formatValue = (value: number | boolean) => {
+  if (typeof value === 'boolean') {
+    return value ? 'True' : 'False';
+  }
+  // Always show sign and pad to 3 decimal places
+  return (value >= 0 ? '+' : '') + value.toFixed(3);
+};
 
 /**
  * Modal component displaying info about a connected gamepad.
@@ -65,10 +89,12 @@ export default function GamepadInfoModal({
   isActive: boolean;
   isDarkMode: boolean;
 }) {
-  const createEmptyBtnArray = () => BUTTON_ORDER.map((btn) => [btn, false]);
+  const createEmptyBtnArray = () =>
+    BUTTON_ORDER.map((btn) => [btn, false] as [string, boolean]);
   const [buttons, setButtons] = useState(createEmptyBtnArray);
-  const [hoverControl, setHoverControl] = useState('');
+  const [hoverControl, setHoverControl] = useState<ControlName | ''>('');
   const [axes, setAxes] = useState([0, 0, 0, 0]);
+
   const classes = ['logitech-gamepad_svg']
     .concat(buttons.filter((x) => x[1]).map((x) => `active-${x[0]}`))
     .concat(
@@ -76,29 +102,71 @@ export default function GamepadInfoModal({
         .map((x) => (Math.abs(x) > AXIS_THRESHOLD ? Math.sign(x) : 0))
         .map((x, i) =>
           x === 0
-            ? null
+            ? ''
             : `${x === -1 ? 'negative' : 'positive'}-${AXIS_ORDER[i]}`,
         )
-        .filter((x) => x),
+        .filter(Boolean),
     )
     .join(' ');
-  const data = buttons.concat(axes.map((x, i) => [AXIS_ORDER[i], x]));
-  const rows = [];
-  for (let i = 0; i < data.length; i += DATA_PER_ROW) {
-    rows.push(data.slice(i, i + DATA_PER_ROW));
-  }
 
-  const onMouseEnter = ({ target }) => {
-    const unprefixed = target.id.slice(PREFIX.length);
+  const buttonData = buttons as DataItem[];
+  const axesData = axes.map((x, i) => [AXIS_ORDER[i], x] as DataItem);
+
+  // Organize controls by type
+  const sections: ControlSection[] = [
+    {
+      title: 'Face Buttons',
+      controls: buttonData.filter(([name]) =>
+        ['button_a', 'button_b', 'button_x', 'button_y'].includes(name),
+      ),
+    },
+    {
+      title: 'D-Pad',
+      controls: buttonData.filter(([name]) => name.startsWith('dpad_')),
+    },
+    {
+      title: 'Shoulder & Triggers',
+      controls: buttonData.filter(([name]) =>
+        ['l_bumper', 'r_bumper', 'l_trigger', 'r_trigger'].includes(name),
+      ),
+    },
+    {
+      title: 'System Buttons',
+      controls: buttonData.filter(([name]) =>
+        ['button_back', 'button_start', 'button_xbox'].includes(name),
+      ),
+    },
+    {
+      title: 'Left Stick',
+      controls: [
+        ...buttonData.filter(([name]) => name === 'l_stick'),
+        ...axesData.filter(([name]) => name.includes('left')),
+      ],
+    },
+    {
+      title: 'Right Stick',
+      controls: [
+        ...buttonData.filter(([name]) => name === 'r_stick'),
+        ...axesData.filter(([name]) => name.includes('right')),
+      ],
+    },
+  ];
+
+  const onMouseEnter = ({ target }: MouseEvent<SVGElement>) => {
+    const element = target as SVGElement;
+    const unprefixed = element.id.slice(PREFIX.length) as ControlName;
     if (unprefixed in CONTROL_NAMES) {
       setHoverControl(unprefixed);
     }
   };
-  const onMouseLeave = ({ target }) => {
-    if (target.id.slice(PREFIX.length)) {
+
+  const onMouseLeave = ({ target }: MouseEvent<SVGElement>) => {
+    const element = target as SVGElement;
+    if (element.id.slice(PREFIX.length)) {
       setHoverControl('');
     }
   };
+
   useEffect(() => {
     const interval = setInterval(() => {
       const inputs = navigator
@@ -108,7 +176,10 @@ export default function GamepadInfoModal({
         );
       if (inputs.length) {
         setButtons(
-          inputs[0].buttons.map((button, i) => [BUTTON_ORDER[i], button.pressed]),
+          inputs[0].buttons.map((button, i) => [
+            BUTTON_ORDER[i],
+            button.pressed,
+          ]),
         );
         setAxes(inputs[0].axes.slice());
       } else {
@@ -118,41 +189,80 @@ export default function GamepadInfoModal({
     }, GAMEPAD_UPDATE_PERIOD_MS);
     return () => clearInterval(interval);
   });
+
   return (
     <Modal
-      modalTitle="Gamepad info"
+      modalTitle="Gamepad Info"
       onClose={onClose}
       isActive={isActive}
       isDarkMode={isDarkMode}
     >
-      <LogitechGamepadSvgr
-        width="100%"
-        height="500px"
-        className={classes}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-      />
-      <table className="GamepadInfoModal-data">
-        <tbody>
-          {rows.map((row) => (
-            <tr key={row.map((x) => x[0]).join(' ')}>
-              {row.map((datum: [string, boolean]) => (
-                <td
-                  key={datum[0]}
-                  className={
-                    CONTROL_NAMES[hoverControl] === datum[0] ||
-                    CONTROL_NAMES[hoverControl]?.includes?.(datum[0])
-                      ? 'GamepadInfoModal-datum-hovered'
-                      : ''
-                  }
-                >
-                  {datum[0]}: {String(datum[1])}
-                </td>
-              ))}
-            </tr>
+      <div className="GamepadInfoModal-content">
+        <LogitechGamepadSvgr
+          width="100%"
+          height="500px"
+          className={classes}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+        />
+        <div className="GamepadInfoModal-data">
+          {sections.map((section) => (
+            <div
+              key={section.title}
+              className="GamepadInfoModal-section"
+              style={
+                section.gridColumn
+                  ? { gridColumn: section.gridColumn }
+                  : undefined
+              }
+            >
+              <h3>{section.title}</h3>
+              <table>
+                <tbody>
+                  {section.controls.map((datum) => {
+                    const controlValue =
+                      CONTROL_NAMES[hoverControl as ControlName];
+                    const isHovered =
+                      (typeof controlValue === 'string' &&
+                        controlValue === datum[0]) ||
+                      (Array.isArray(controlValue) &&
+                        controlValue.includes(datum[0]));
+
+                    return (
+                      <tr key={datum[0]}>
+                        <td
+                          className={
+                            isHovered ? 'GamepadInfoModal-datum-hovered' : ''
+                          }
+                        >
+                          {datum[0]}
+                          <div className="GamepadInfoModal-value">
+                            {typeof datum[1] === 'boolean' ? (
+                              <div className="GamepadInfoModal-dot-container">
+                                <div
+                                  className="GamepadInfoModal-dot"
+                                  data-active={datum[1]}
+                                />
+                                <div className="GamepadInfoModal-tooltip">
+                                  {formatValue(datum[1])}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="GamepadInfoModal-axis-value">
+                                {formatValue(datum[1])}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      </div>
     </Modal>
   );
 }
