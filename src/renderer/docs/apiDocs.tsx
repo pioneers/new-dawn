@@ -415,7 +415,31 @@ const apiDocs: {
     title: 'Connecting to the robot',
     body: () => (
       <div>
-        WIP
+        <ul>
+          <li>
+            Make sure the robot has a battery and is switched on.
+          </li>
+          <li>
+            Push the switch on the PDB (the board the battery is connected to)
+            INWARDS, away from the USB ports. The red 7-segment display should
+            flash the word "LOC" after the "ALL" battery reading.
+          </li>
+          <li>
+            Make sure your team router is plugged in and has power. A green light
+            should be visible.
+          </li>
+          <li>
+            Connect the computer running Dawn to the router. It will be named TeamXX
+            where XX is your team number, and the password will be on the back of the
+            router.
+          </li>
+          <li>
+            Open Dawn and click the WI-FI icon in the top right corner. The IP address
+            should be 192.168.0.1XX, where XX is your team number. (Some teams' robot IP
+            may be 192.168.0.2XX, but this is normally reserved for staff robots. A
+            staff member will inform you if your robot has an IP like this.)
+          </li>
+        </ul>
       </div>
     ),
   },
@@ -423,9 +447,68 @@ const apiDocs: {
     title: 'Wiring checklist',
     body: () => (
       <div>
-        <strong>Not intended to be a complete tutorial.</strong> Schedule a
-        worksession or message the PiE Discord for comprehensive wiring help.
-        <p>WIP</p>
+        <p>
+          <strong>Not intended to be a complete tutorial.</strong>
+          Schedule a worksession or message the PiE Discord for comprehensive wiring help.
+        </p>
+        <p>
+          Make sure the following wires are securely connected on your robot:
+        </p>
+        <ul>
+          <li>
+            The battery to the PDB :&rparen;
+          </li>
+          <li>
+            USB-A to USB-C: PDB to Raspberry Pi. Use any port on the PDB except
+            the "data1" port, which is the leftmost port if the USB ports are facing you.
+          </li>
+          <li>
+            USB-A to USB-A: PDB data1 port to a USB-A 3.0 port (blue) on the Pi.
+          </li>
+          <li>
+            USB hub plugged in to a USB-A 3.0 port on the Pi.
+          </li>
+          <li>
+            For each motor controller:
+            <ul>
+              <li>
+                Red/black connector: motor controller to the PDB.
+              </li>
+              <li>
+                USB-B to USB-A: motor controller to the USB hub.
+              </li>
+              <li>
+                For each motor:
+                <ul>
+                  <li>
+                    Blue/yellow connector: motor to the motor controller.
+                  </li>
+                  <li>
+                    Encoder wire (4 or 6 pin connector): motor to the motor
+                    controller. Orient the motor controller so the encoder pins
+                    are on your side. The white encoder wire should connect to
+                    the rightmost pin. Make sure the motor is plugged into the
+                    same power and encoder slots (e.g. power slot 1 and encoder
+                    slot 1).
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            For each servo controller:
+            <ul>
+              <li>
+                For each servo:
+                <ul>
+                  <li>
+                    Wire
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
       </div>
     ),
   },
