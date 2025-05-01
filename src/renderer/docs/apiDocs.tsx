@@ -7,6 +7,10 @@ export type ApiDoc = {
   body: () => ReactNode;
 };
 
+function SelfLink({ href }: { href: string }) {
+  return <a href={href}>{href}</a>;
+}
+
 const apiDocs: {
   [matchText: string]: ApiDoc;
 } = {
@@ -391,7 +395,27 @@ const apiDocs: {
     title: 'Important links',
     body: () => (
       <div>
-        WIP
+        <ul>
+          <li>
+            Pioneers in Engineering website:{' '}
+            <SelfLink href="https://pioneers.berkeley.edu" />
+          </li>
+          <li>
+            Software Hub:
+          </li>
+          <li>
+            Official PiE discord:
+          </li>
+          <li>
+            2025 Game Manual:
+          </li>
+          <li>
+            2025 Take-Home Coding Challenges:
+          </li>
+          <li>
+            2025 Custom Parts Form:
+          </li>
+        </ul>
       </div>
     ),
   },
@@ -399,7 +423,29 @@ const apiDocs: {
     title: 'Gamepad troubleshooting',
     body: () => (
       <div>
-        WIP
+        <ul>
+          <li>
+            Ensure you are only accessing the{' '}
+            <ApiLink dest="api/Gamepad" code={true}>Gamepad</ApiLink> in the{' '}
+            <ApiLink dest="misc/entry-points" code={true}>teleop()</ApiLink>
+            {' '}function, or a function called from the <code>teleop()</code>
+            {' '}function. Inputs may not be accessed during the autonomous
+            period.
+          </li>
+          <li>
+            If the message "TELEOP with no input connected" appears in the console
+            when running the teleop mode, try pressing any button on the gamepad.
+            Dawn cannot access a gamepad until it has been interacted with while
+            the Dawn window is open.
+          </li>
+          <li>
+            Click the gamepad icon in the top right corner of Dawn. Pressing
+            buttons and moving joysticks on the gamepad should turn parts of the
+            gamepad visualizer orange. If nothing happens, try restartng Dawn. If
+            the problem persists, the gamepad may be broken. Test it on another
+            device that uses a gamepad.
+          </li>
+        </ul>
       </div>
     ),
   },
@@ -407,7 +453,19 @@ const apiDocs: {
     title: 'Keyboard troubleshooting',
     body: () => (
       <div>
-        WIP
+        <p>
+          Ensure you are only accessing the{' '}
+          <ApiLink dest="api/Keyboard" code={true}>Keyboard</ApiLink> in the{' '}
+          <ApiLink dest="misc/entry-points" code={true}>teleop()</ApiLink>
+          {' '}function, or a function called from the <code>teleop()</code>
+          {' '}function. Inputs may not be accessed during the autonomous
+          period.
+        </p>
+        <p>
+          Enable keyboard control mode in Dawn with the button that looks like
+          an "A" key above the editor. When activated, the editor will be hidden
+          by an overlay.
+        </p>
       </div>
     ),
   },
@@ -429,15 +487,76 @@ const apiDocs: {
             should be visible.
           </li>
           <li>
-            Connect the computer running Dawn to the router. It will be named TeamXX
-            where XX is your team number, and the password will be on the back of the
-            router.
+            Connect the computer running Dawn to the router. It will be named
+            TeamXX where XX is your team number, and the password will be on
+            the back of the router.
           </li>
           <li>
-            Open Dawn and click the WI-FI icon in the top right corner. The IP address
-            should be 192.168.0.1XX, where XX is your team number. (Some teams' robot IP
-            may be 192.168.0.2XX, but this is normally reserved for staff robots. A
-            staff member will inform you if your robot has an IP like this.)
+            Open Dawn and click the WI-FI icon in the top right corner. The IP
+            address should be 192.168.0.1XX, where XX is your team number.
+            (Some teams' robot IP may be 192.168.0.2XX, but this is normally
+            reserved for staff robots. A staff member will inform you if your
+            robot has an IP like this.)
+          </li>
+          <li>
+            The robot should connect to Dawn after a short delay. If not:
+            <ul>
+              <li>
+                On the computer running Dawn, open a browser and go to
+                <SelfLink href="http://tplinkwifi.net" />. (Note the HTTP
+                protocol is used instead of HTTPS.)
+              </li>
+              </li>
+                The username and password are both "admin". If there is only a
+                password field, the password is "admin123".
+              </li>
+              <li>
+                Click on "DHCP" in the menu on the left, then on "DHCP clients
+                list."
+              </li>
+              <li>
+                There should be exactly two devices listed: the computer you
+                are using and the robot, which will be named TeamXX. If there
+                are more, disconnect the other computers from the network. If
+                the robot is not listed, then the Pi is not connecting to the
+                network. Make sure:
+                <ul>
+                  <li>
+                    The robot is powered on.
+                  </li>
+                  <li>
+                    The switch on the PDB is switched away from the USB ports.
+                  </li>
+                  <li>
+                    The router you are using is the router issued to your team
+                    <em>for this season.</em>
+                  </li>
+                </ul>
+                If you have reviewed the above steps and the robot is still not
+                connected to Dawn, continue.
+              </li>
+              <li>
+                Copy the IP address next to the TeamXX entry in the DHCP
+                clients list. If it does not match the IP address in Dawn,
+                change it to match.
+              </li>
+              <li>
+                Ensure you have the latest version of Dawn. Older versions may
+                have connection issues. Visit
+                <SelfLink href="https://pioneers.berkeley.edu/Software-Hub" />
+                for the latest stable Dawn version.
+              </li>
+              <li>
+                Close Dawn and power off the robot. After ~5 seconds, power the
+                robot on. Open the DHCP clients list (instructions above) and
+                refresh until you see the robot (named TeamXX) connect to the
+                network. Reopen Dawn.
+              </li>
+              <li>
+                If the issue persists, notify a staff member or post in{' '}
+                <ApiLink dest="misc/important-links">the PiE Discord</ApiLink>.
+              </li>
+            </ul>
           </li>
         </ul>
       </div>
@@ -456,14 +575,14 @@ const apiDocs: {
         </p>
         <ul>
           <li>
-            The battery to the PDB :&rparen;
-          </li>
-          <li>
             USB-A to USB-C: PDB to Raspberry Pi. Use any port on the PDB except
-            the "data1" port, which is the leftmost port if the USB ports are facing you.
+            the "data1" port, which is the leftmost port if the USB ports are
+            facing you. Plug the PDB into the Pi directly, not through the USB
+            hub.
           </li>
           <li>
-            USB-A to USB-A: PDB data1 port to a USB-A 3.0 port (blue) on the Pi.
+            USB-A to USB-A: PDB data1 port to a USB-A 3.0 port (blue) on the
+            Pi.
           </li>
           <li>
             USB hub plugged in to a USB-A 3.0 port on the Pi.
