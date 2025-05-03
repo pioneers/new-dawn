@@ -126,7 +126,7 @@ const apiDocs: {
 
           def autonomous():
             # During autonomous, set the motor in the first slot to drive in reverse and the motor in the second slot to drive forward.
-            # Because no code ever tells them to stop, they will continue driving until the end of the opmode.
+            # Because no code ever tells them to stop, they will continue driving until the robot is stopped.
 
             Robot.set_value(controller_id, "velocity_a", -1.0)
             Robot.set_value(controller_id, "velocity_b", 1.0)
@@ -161,8 +161,8 @@ const apiDocs: {
           </li>
         </ul>
         <p>
-          This will run the specified function in the background until it returns,
-          or when the opmode ends (whichever is first). For example, if you want a
+          This will run the specified function in the background until it returns, or
+          when the robot is stopped (whichever is first). For example, if you want a
           function <code>arm_code()</code> to control the arm that runs at the
           same time as the rest of your <code>teleop()</code> function, call{' '}
           <code>Robot.run(arm_code)</code>:
@@ -295,33 +295,34 @@ const apiDocs: {
           values for <code>name_of_input</code> are:
         </p>
         <ul>
-          <li>"joystick_left_x"</li>
-          <li>"joystick_left_y"</li>
-          <li>"joystick_right_x"</li>
-          <li>"joystick_right_y"</li>
-          <li>"button_a"</li>
-          <li>"button_b"</li>
-          <li>"button_x"</li>
-          <li>"button_y"</li>
-          <li>"l_bumper"</li>
-          <li>"r_bumper"</li>
-          <li>"l_trigger"</li>
-          <li>"r_trigger"</li>
-          <li>"button_back"</li>
-          <li>"button_start"</li>
-          <li>"l_stick"</li>
-          <li>"r_stick"</li>
-          <li>"dpad_up"</li>
-          <li>"dpad_down"</li>
-          <li>"dpad_left"</li>
-          <li>"dpad_right"</li>
-          <li>"button_xbox"</li>
+          <li><code>"joystick_left_x"</code></li>
+          <li><code>"joystick_left_y"</code></li>
+          <li><code>"joystick_right_x"</code></li>
+          <li><code>"joystick_right_y"</code></li>
+          <li><code>"button_a"</code></li>
+          <li><code>"button_b"</code></li>
+          <li><code>"button_x"</code></li>
+          <li><code>"button_y"</code></li>
+          <li><code>"l_bumper"</code></li>
+          <li><code>"r_bumper"</code></li>
+          <li><code>"l_trigger"</code></li>
+          <li><code>"r_trigger"</code></li>
+          <li><code>"button_back"</code></li>
+          <li><code>"button_start"</code></li>
+          <li><code>"l_stick"</code></li>
+          <li><code>"r_stick"</code></li>
+          <li><code>"dpad_up"</code></li>
+          <li><code>"dpad_down"</code></li>
+          <li><code>"dpad_left"</code></li>
+          <li><code>"dpad_right"</code></li>
+          <li><code>"button_xbox"</code></li>
         </ul>
         <p>
-          Users should be careful to distinguish between values such as
-          "l_stick" and values such as "joystick_left_x". "l_stick" returns
-          whether the joystick has been depressed like a button.
-          "joystick_left_x" returns how far the joystick is moved on the x-axis.
+          Users should be careful to distinguish between values such as{' '}
+          <code>"l_stick"</code> and values such as <code>"joystick_left_x"</code>.
+          {' '} <code>"l_stick"</code> returns whether the joystick has been
+          depressed like a button. <code>"joystick_left_x"</code> returns how far the
+          joystick is moved on the x-axis.
         </p>
         <p>
           When the name of a button is passed in, this function returns a
@@ -360,7 +361,43 @@ const apiDocs: {
     title: 'Keyboard.get_value(name_of_key)',
     body: () => (
       <div>
-        WIP
+        <p>
+          Returns a boolean indicating whether a key on the keyboard is pressed.
+        </p>
+        <p>
+          Parameters:
+        </p>
+        <ul>
+          <li>
+            <code>name_of_key</code>: a string identifying the key whose state will be returned.
+          </li>
+        </ul>
+        <p>
+          This function is essential to controlling your robot with the keyboard.
+          Possible values for <code>name_of_key</code> are:
+        </p>
+        <ul>
+          <li>
+            The letters on the keyboard, lowercase and no spaces: <code>"a"</code>-<code>"z"</code>
+          </li>
+          <li>
+            The numbers on the keyboard, no spaces: <code>"0"</code>-<code>"9"</code>
+          </li>
+          <li>
+            The punctuation keys: <code>","</code>, <code>"."</code>,{' '}
+            <code>"/"</code>, <code>";"</code>, <code>"'"</code>, <code>"["</code>,{' '}
+            <code>"]"</code>
+          </li>
+          <li>
+            The four arrow keys: <code>"left_arrow"</code>,{' '}
+            <code>"right_arrow"</code>, <code>"up_arrow"</code>,{' '}
+            <code>"down_arrow"</code>
+          </li>
+        </ul>
+        <p>
+          The function will return <code>True</code> if the button is pressed, and
+          <code>False</code> if the button is not pressed.
+        </p>
       </div>
     ),
   },
@@ -368,7 +405,35 @@ const apiDocs: {
     title: 'Robot code entry points',
     body: () => (
       <div>
-        WIP
+        <p>
+          Entry points are functions in your code that the robot calls to run the
+          program. The <code>autonomous()</code> function is called when the robot is
+          started in autonomous mode (meaning human input is disabled) and the{' '}
+          <code>teleop()</code> function is called when the robot is started in
+          teleoperated mode (human input is allowed).
+        </p>
+        <p>
+          Certain robot APIs are only accessible inside these functions. In general,
+          very little code besides definitions of functions called by the entry
+          points should be outside the entry point functions.
+        </p>
+        <HighlightedCode>{`
+          controller_id = "6_XXXXXXXXXXXXX"
+
+          def autonomous():
+            print('This will print when the robot is started in autonomous mode!')
+            Robot.set_value(controller_id, "velocity_a", 1.0)
+            Gamepad.get_value("joystick_left_x") # WILL RAISE ERROR
+
+          def teleop():
+            print('This will print when the robot is started in teleoperated mode!')
+            Robot.set_value(controller_id, "velocity_a", 1.0)
+            Gamepad.get_value("joystick_left_x")
+
+          # Note the lack of indentation means this line is outside of the teleop function:
+          Robot.set_value(controller_id, "velocity_a", 1.0) # WILL RAISE ERROR
+          Gamepad.get_value("joystick_left_x") # WILL RAISE ERROR
+        `}</HighlightedCode>
       </div>
     ),
   },
@@ -387,7 +452,304 @@ const apiDocs: {
     title: 'Lowcar devices',
     body: () => (
       <div>
-        WIP
+        <p>
+          Runtime supports devices that implement the "lowcar" protocol. Each device
+          has "parameters" describing properties of the device that may be read from
+          or written to. Devices are how your robot will interact with the world.
+        </p>
+        <div>
+          <h2>Servo Controller</h2>
+          <p>Parameters:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Readable?</th>
+                <th>Writable?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>servo0</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+              </tr>
+              <tr>
+                <td>servo1</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            A servo controller is a device that controls the movement of two servo
+            motors it is attached too. Servos are small mechanical devices that allow
+            students to make precise movements without the size and weight of a
+            regular motor. The tradeoff here is that it has significantly less power
+            than a motor and has a smaller range of motion.
+          </p>
+          <p>
+            Both servos, <code>servo0</code> and <code>servo1</code>, serve as
+            parameters to the servo controller and are readable and writeable
+            parameters. Upon initialization, the servo controller resets the servos
+            to a default starting position and sets the values in the position array
+            to 0. The servo also isn’t technically connected to a pin on the servo
+            controller until the first write to that servo. If already attached or
+            after being attached, the servo controller then calculates how much to
+            move the servo by depending on its starting position and the input that
+            was fed to the servo controller. Each servo has a range of motion of 180
+            degrees. We can also read each servo’s current positions by grabbing it
+            from the positions array. Each servo’s position is stored as a float.
+          </p>
+        </div>
+        <div>
+          <h2>Distance Sensor</h2>
+          <p>Parameters:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Readable?</th>
+                <th>Writable?</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>distance</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>No</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            The distance sensor uses ultrasonic waves and their reflections to detect
+            the distance between the sensor and an object in front of it. PiE's
+            distance sensors are calibrated to output a number in cm, with the range
+            of distance it reads is from 0cm to 500 cm.
+          </p>
+          <p>
+            <em>Note:</em> at the time of writing, the sensor output is noisy and
+            will occasionally output a false reading of 0 distance.
+          </p>
+        </div>
+        <div>
+          <h2>KoalaBear</h2>
+          <p>Parameters:</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Readable?</th>
+                <th>Writable?</th>
+                <th>Default Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>velocity_a</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0.0</td>
+              </tr>
+              <tr>
+                <td>deadband_a</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0.05</td>
+              </tr>
+              <tr>
+                <td>invert_a</td>
+                <td>bool</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>False</td>
+              </tr>
+              <tr>
+                <td>pid_enabled_a</td>
+                <td>bool</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>True</td>
+              </tr>
+              <tr>
+                <td>pid_kp_a</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0.05</td>
+              </tr>
+              <tr>
+                <td>pid_ki_a</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0.035</td>
+              </tr>
+              <tr>
+                <td>pid_kd_a</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0.0</td>
+              </tr>
+              <tr>
+                <td>enc_a</td>
+                <td>int</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0</td>
+              </tr>
+              <tr>
+                <td>velocity_b</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0.0</td>
+              </tr>
+              <tr>
+                <td>deadband_b</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0.05</td>
+              </tr>
+              <tr>
+                <td>invert_b</td>
+                <td>bool</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>False</td>
+              </tr>
+              <tr>
+                <td>pid_enabled_b</td>
+                <td>bool</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>True</td>
+              </tr>
+              <tr>
+                <td>pid_kp_b</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0.05</td>
+              </tr>
+              <tr>
+                <td>pid_ki_b</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0.035</td>
+              </tr>
+              <tr>
+                <td>pid_kd_b</td>
+                <td>float</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0.0</td>
+              </tr>
+              <tr>
+                <td>enc_b</td>
+                <td>int</td>
+                <td>Yes</td>
+                <td>Yes</td>
+                <td>0</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>
+            The KoalaBear is a motor controller, a device that manages the speed and
+            other related parameters of motors. KoalaBears can control two motors at
+            once. For this reason the KoalaBear comes with 16 parameters, making it a
+            thicc device. 8 of the parameters are dedicated to “motor A” and the
+            other 8 are dedicated to “motor b.”
+          </p>
+          <p>
+            The first parameter is <code>velocity</code>, a float value which
+            essentially dictates how powerful the motor should be and in what
+            direction. Students are allowed to modify this to be a value between -1
+            and 1, where 1 is max power in a clockwise direction and -1 is power in a
+            counterclockwise direction.
+          </p>
+          <p>
+            Next is the deadband parameter, which is a float used to create a limit
+            that a parameter must meet. Deadbands are typically used to prevent
+            oscillation in a circuit. So if the change to some value, such as the
+            velocity, is small enough to be less than deadband, then the motor
+            controller ignores that change. For example, if upon initialization,
+            deadband is set to 0.05, and velocity is set to 0.04, then no action will
+            be taken by the motor controller. If velocity is then changed to 0.07,
+            then the motor controller will handle that input.
+          </p>
+          <p>
+            The third parameter, invert, allows the student to run the motor in the
+            opposite direction as specified. If when the student plugs in the motor,
+            they realize that a velocity of 1.0 corresponds to the opposite of the
+            preferred direction of positive velocities for the motor, they can set
+            invert to True and cause the velocity of 1.0 to correspond to the
+            preferred direction for positive velocities.
+          </p>
+          <p>
+            Before moving on to the next set of parameters, we must first talk about
+            the other great change with KoalaBear. Each KoalaBear has a built in
+            encoder that allows us to utilize PID control! An encoder is basically a
+            device that allows us to translate the motor’s movements into actual
+            distance values. Each motor's encoder is accessed with two pins. The
+            outputs of both pins for an encoder are in the form of square waves at
+            the frequency of the motor’s rotation; they are slightly offset from each
+            other. By examining the value of one pin relative to another pin when one
+            of the pins encounters a rising edge, we can determine which direction
+            the motor is rotating. If the voltage of the second pin is 0, then its
+            spinning clockwise, but if it's 5 V, it's counterclockwise. This check is
+            triggered after each rising edge of the encoder related to either motor A
+            or motor B. With these checks, we either increment or decrement the enc_a
+            or enc_b integer parameters depending on which motor is the moving and in
+            which direction. With this information, we can then implement PID
+            control.
+          </p>
+          <p>
+            PID, which stands for proportional integral derivative, is a control loop
+            feedback mechanism to control variables and give the most stable outputs.
+            Essentially, it uses its own outputs as a variable in the inputs to
+            produce accurate outputs. It does this by trying to minimize the “error”
+            of the system down to zero. When the system first starts up, its error to
+            the outcome is initially high, since we haven’t achieved the desired
+            outcome. What I mean by this, is that the closer we get the desired
+            outcome, the more our error will decrease which will be taken into
+            account by the system. To calculate the error, we must sum three things
+            together: the error itself, the accumulated error, and the expected
+            error. These three are respectively multiplied by constant weights KP,
+            KI, and KD. These K values must be adjusted correctly so that its not
+            overtly sensitive or lack sensitivity. For a more in-depth, cohesive
+            explanation, check out these videos:{' '}
+            <a href="https://www.youtube.com/watch?v=UR0hOmjaHp0">
+              God Tier PID explanation
+            </a> and{' '}
+            <a href="https://www.youtube.com/watch?v=XfAt6hNV8XM">
+              PID Examples
+            </a>!
+          </p>
+          <p>
+            PID can be used for many scenarios, but in our case, we just want to make
+            sure the motor’s drive our robot at the appropriate speed. This is only
+            used if the flag pid_enabled is set to true for either motor. When the
+            robot moves forward, we use the enc_a/enc_b variables as the current
+            position to calculate the error values and the desired output. The
+            desired output is a value between [-1,1] that will be used to tell us how
+            much to adjust the motor controller pins by. Upon each calculation, the
+            values that were generated in this iteration are stored into previous
+            values for use at the next calculation. Each motor comes with its own KP,
+            KI, and KD variables as floats to use in this calculation.
+          </p>
+        </div>
       </div>
     ),
   },
@@ -401,16 +763,20 @@ const apiDocs: {
             <SelfLink href="https://pioneers.berkeley.edu" />
           </li>
           <li>
-            Software Hub:
+            Software Hub:{' '}
+            <SelfLink href="https://pioneers.berkeley.edu/competition/SoftwareHub/" />
           </li>
           <li>
-            Official PiE discord:
+            Official PiE discord:{' '}
+            <SelfLink href="https://discord.gg/ydVHmE52b8" />
           </li>
           <li>
-            2025 Game Manual:
+            2025 Game Manual:{' '}
+            <SelfLink href="https://docs.google.com/document/d/1eV7FfOQ9Rb22ZusbkcfQg-Tb3dtdPMqhtkMM7ty2fXs/edit" />
           </li>
           <li>
-            2025 Take-Home Coding Challenges:
+            2025 Take-Home Coding Challenges:{' '}
+            <SelfLink href="https://docs.google.com/document/d/1vAAQRsgHYHFyAIccbXXDm09cGVIeEMUXpQk-nRdDj74/edit" />
           </li>
           <li>
             2025 Custom Parts Form:
