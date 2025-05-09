@@ -261,11 +261,14 @@ const apiDocs: {
     title: 'Gamepad',
     body: () => (
       <div>
-        A global object similar to <ApiLink dest="api/Robot">Robot</ApiLink>
-        {' '}that is only made available while an{' '}
+        A global object similar to{' '}
+        <ApiLink dest="api/Robot" code={true}>Robot</ApiLink>{' '}
+        that is only made available while an{' '}
         <ApiLink dest="misc/entry-points">entry point function</ApiLink> is
         being run. Has only one useful method,{' '}
-        <ApiLink dest="api/Gamepad.get_value">Gamepad.get_value()</ApiLink>.
+        <ApiLink dest="api/Gamepad.get_value" code={true}>
+          Gamepad.get_value()
+        </ApiLink>.
       </div>
     ),
   },
@@ -275,7 +278,8 @@ const apiDocs: {
       <div>
         <p>
           Returns the state of a button or joystick on a connected gamepad. If
-          called outside of <ApiLink dest="misc/entry-points">teleop()</ApiLink>,
+          called outside of{' '}
+          <ApiLink dest="misc/entry-points" code={true}>teleop()</ApiLink>,
           an error will be raised.
         </p>
         <p>
@@ -349,11 +353,14 @@ const apiDocs: {
     title: 'Keyboard',
     body: () => (
       <div>
-        A global object similar to <ApiLink dest="api/Robot">Robot</ApiLink>
+        A global object similar to{' '}
+        <ApiLink dest="api/Robot" code={true}>Robot</ApiLink>
         {' '}that is only made available while an{' '}
         <ApiLink dest="misc/entry-points">entry point function</ApiLink> is
         being run. Has only one useful method,{' '}
-        <ApiLink dest="api/Keyboard.get_value">Keyboard.get_value()</ApiLink>.
+        <ApiLink dest="api/Keyboard.get_value" code={true}>
+          Keyboard.get_value()
+        </ApiLink>.
       </div>
     ),
   },
@@ -779,7 +786,8 @@ const apiDocs: {
             <SelfLink href="https://docs.google.com/document/d/1vAAQRsgHYHFyAIccbXXDm09cGVIeEMUXpQk-nRdDj74/edit" />
           </li>
           <li>
-            2025 Custom Parts Form:
+            2025 Custom Parts Form:{' '}
+            <SelfLink href="https://forms.gle/wfVFBEaa4KbGSswk9" />
           </li>
         </ul>
       </div>
@@ -868,11 +876,11 @@ const apiDocs: {
             The robot should connect to Dawn after a short delay. If not:
             <ul>
               <li>
-                On the computer running Dawn, open a browser and go to
+                On the computer running Dawn, open a browser and go to{' '}
                 <SelfLink href="http://tplinkwifi.net" />. (Note the HTTP
                 protocol is used instead of HTTPS.)
               </li>
-              </li>
+              <li>
                 The username and password are both "admin". If there is only a
                 password field, the password is "admin123".
               </li>
@@ -908,9 +916,9 @@ const apiDocs: {
               </li>
               <li>
                 Ensure you have the latest version of Dawn. Older versions may
-                have connection issues. Visit
+                have connection issues. Visit{' '}
                 <SelfLink href="https://pioneers.berkeley.edu/Software-Hub" />
-                for the latest stable Dawn version.
+                {' '}for the latest stable Dawn version.
               </li>
               <li>
                 Close Dawn and power off the robot. After ~5 seconds, power the
@@ -933,7 +941,7 @@ const apiDocs: {
     body: () => (
       <div>
         <p>
-          <strong>Not intended to be a complete tutorial.</strong>
+          <strong>Not intended to be a complete tutorial.</strong>{' '}
           Schedule a worksession or message the PiE Discord for comprehensive wiring help.
         </p>
         <p>

@@ -98,9 +98,9 @@ const createWindow = async () => {
   menuBuilder.buildMenu();
 
   // Open urls in the user's browser
-  mainWindow.webContents.setWindowOpenHandler((edata) => {
-    shell.openExternal(edata.url);
-    return { action: 'deny' };
+  mainWindow.webContents.on('will-navigate', (details) => {
+    shell.openExternal(details.url);
+    details.preventDefault();
   });
 
   // Remove this if your app does not use auto updates
