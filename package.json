@@ -1,6 +1,6 @@
 {
   "name": "dawn",
-  "version": "4.0.2",
+  "version": "5.0.0",
   "description": "Connects to PiE robot runtime to program, run, and monitor robot code.",
   "main": "./src/main/main.ts",
   "author": {
