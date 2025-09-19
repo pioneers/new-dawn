@@ -28,7 +28,7 @@ const AXIS_ORDER: string[] = [
   'joystick_right_x',
   'joystick_right_y',
 ];
-const CONTROL_NAMES: {[string]: string | [string]} = {
+const CONTROL_NAMES: {[name: string]: string | string[]} = {
   'a-button': 'button_a',
   'b-button': 'button_b',
   'x-button': 'button_x',
@@ -66,8 +66,8 @@ export default function GamepadInfoModal({
   isActive: boolean;
   isDarkMode: boolean;
 }) {
-  const createEmptyBtnArray = () => BUTTON_ORDER.map((btn) => [btn, false]);
-  const [buttons, setButtons] = useState(createEmptyBtnArray);
+  const createEmptyBtnArray = () => BUTTON_ORDER.map((btn): [string, boolean] => [btn, false]);
+  const [buttons, setButtons] = useState<[string, boolean][]>(createEmptyBtnArray);
   const [hoverControl, setHoverControl] = useState('');
   const [axes, setAxes] = useState([0, 0, 0, 0]);
   const classes = ['logitech-gamepad_svg']
@@ -80,22 +80,25 @@ export default function GamepadInfoModal({
             ? null
             : `${x === -1 ? 'negative' : 'positive'}-${AXIS_ORDER[i]}`,
         )
-        .filter((x) => x),
+        .filter((x: string | null): x is string => !!x),
     )
     .join(' ');
-  const data = buttons.concat(axes.map((x, i) => [AXIS_ORDER[i], x]));
-  const rows = [];
+  const data: [string, number | boolean][] = [
+    ...buttons,
+    ...axes.map((x, i): [string, number] => [AXIS_ORDER[i], x])
+  ];
+  const rows: [string, number | boolean][][] = [];
   for (let i = 0; i < data.length; i += DATA_PER_ROW) {
     rows.push(data.slice(i, i + DATA_PER_ROW));
   }
 
-  const onMouseEnter = ({ target }) => {
+  const onMouseEnter = ({ target }: { target: HTMLElement }) => {
     const unprefixed = target.id.slice(PREFIX.length);
     if (unprefixed in CONTROL_NAMES) {
       setHoverControl(unprefixed);
     }
   };
-  const onMouseLeave = ({ target }) => {
+  const onMouseLeave = ({ target }: { target: HTMLElement }) => {
     if (target.id.slice(PREFIX.length)) {
       setHoverControl('');
     }

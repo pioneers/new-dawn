@@ -318,7 +318,7 @@ export default function App() {
             connected: keyboardControlsStatus === 'on',
             axes: [],
             buttons:
-              keyboardControlsStatus === 'off' ? Number(keyboardBitmap) : 0,
+              keyboardControlsStatus === 'on' ? Number(keyboardBitmap) : 0,
             source: RobotInputSource.KEYBOARD,
           }),
         );
