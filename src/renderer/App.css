@@ -29,12 +29,6 @@ body {
   height: 100vh;
   user-select: none;
 }
-.App-cols {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  min-height: 0;
-}
 .App-modal-container {
   position: fixed;
   top: 0;
@@ -57,10 +51,10 @@ body {
 .App-confirm-dialog-text {
   margin-top: 0;
 }
-.link-dark {
+.link-dark, .Modal-content-dark a {
   color: lightblue;
 }
-.link-light {
+.link-light, .Modal-content-light a {
   color: blue;
 }
 .editor-container {

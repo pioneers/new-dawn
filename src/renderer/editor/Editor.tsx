@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import AceEditor from 'react-ace';
 import addEditorAutocomplete from './addEditorAutocomplete';
 import addEditorTooltips from './addEditorTooltips';
+import type { DocsRef } from '../docs/ApiLink';
 
 import 'ace-builds/src-noconflict/mode-python';
 import 'ace-builds/src-noconflict/snippets/python';
@@ -97,6 +98,7 @@ const ACE_THEMES = {
  * be enabled.
  * @param props.robotRunning - whether the robot is running, which affects whether some toolbar
  * buttons are enabled.
+ * @param props.onShowHelpModal - a callback to call when the help modal should be shown.
  * @param props.onOpen - handler called when the user wants to open a file in the editor
  * @param props.onNewFile - handler called when the user wants to close the current file
  * @param props.onLoadStaffCode - handler called when the user wants to load staff code into the
@@ -123,6 +125,8 @@ export default function Editor({
   keyboardControlsStatus,
   robotConnected,
   robotRunning,
+  docsRef,
+  onShowHelpModal,
   isDarkMode,
   onOpen,
   onSave,
@@ -151,6 +155,8 @@ export default function Editor({
   keyboardControlsStatus: KeyboardControlsStatus;
   robotConnected: boolean;
   robotRunning: boolean;
+  docsRef: DocsRef;
+  onShowHelpModal: () => void;
   isDarkMode: boolean;
   onOpen: () => void;
   /**
@@ -176,18 +182,28 @@ export default function Editor({
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
-  const editorRef = useRef(null as AceEditor | null);
+  const editorModsCleanupRef = useRef<null | (() => void)>(null);
 
   const zoomEditor = (increase: boolean) => {
     setFontSize((old) => old + (increase ? 1 : -1));
   };
-  useEffect(() => {
-    if (editorRef.current !== null) {
-      const { editor } = editorRef.current;
-      addEditorAutocomplete(editor);
-      addEditorTooltips(editor);
+
+  const setEditorRef = (editor: AceEditor) => {
+    editorModsCleanupRef.current?.();
+    if (editor) {
+      const cleanupAutocomplete = addEditorAutocomplete(editor.editor);
+      const cleanupTooltips = addEditorTooltips(
+        editor.editor,
+        onShowHelpModal,
+        docsRef,
+      );
+      editorModsCleanupRef.current = () => {
+        cleanupAutocomplete();
+        cleanupTooltips();
+        editorModsCleanupRef.current = null;
+      };
     }
-  }, [editorRef]);
+  };
 
   const [theme, setTheme] = useState('dawn'); // Default theme
   const handleThemeChange = (newTheme: string) => {
@@ -398,7 +414,7 @@ export default function Editor({
           onChange={onChange}
           value={content}
           readOnly={keyboardControlsStatus === 'on'}
-          ref={editorRef}
+          ref={setEditorRef}
           enableBasicAutocompletion
           enableLiveAutocompletion
           enableSnippets

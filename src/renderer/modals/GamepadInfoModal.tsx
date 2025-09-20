@@ -108,7 +108,10 @@ export default function GamepadInfoModal({
         );
       if (inputs.length) {
         setButtons(
-          inputs[0].buttons.map((button, i) => [BUTTON_ORDER[i], button.pressed]),
+          inputs[0].buttons.map((button, i) => [
+            BUTTON_ORDER[i],
+            button.pressed,
+          ]),
         );
         setAxes(inputs[0].axes.slice());
       } else {

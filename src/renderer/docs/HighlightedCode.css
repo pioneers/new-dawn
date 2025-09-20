@@ -10,3 +10,6 @@
 .HighlightedCode-editor .ace_print-margin {
   display: none;
 }
+.HighlightedCode-editor * {
+  cursor: default;
+}
