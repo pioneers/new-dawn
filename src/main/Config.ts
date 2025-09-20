@@ -23,6 +23,10 @@ export default interface Config {
    * these won't be uploaded).
    */
   showDirtyUploadWarning: boolean;
+  /**
+   * Darkmode setting, to be saved to persistent config.
+   */
+  darkmode: boolean;
 }
 
 /**
@@ -70,6 +74,9 @@ export function coerceToConfig(template: unknown): Config {
     typeof config.showDirtyUploadWarning !== 'boolean'
   ) {
     config.showDirtyUploadWarning = true;
+  }
+  if (!('darkmode' in config) || typeof config.darkmode !== 'boolean') {
+    config.darkmode = false;
   }
   // By now we're sure all the required fields are set (and really typescript should be too, so I
   // don't really understand why a cast is needed here)

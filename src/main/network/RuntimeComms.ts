@@ -10,6 +10,7 @@ import * as protos from '../../../protos-main/protos';
 const DEFAULT_RUNTIME_PORT = 8101;
 const TCP_RECONNECT_DELAY = 2000;
 const PING_INTERVAL = 5000;
+const CONNECTION_TIMEOUT = 6000;
 
 /**
  * A type of packet.
@@ -71,6 +72,11 @@ export interface RuntimeCommsListener {
    */
   onRuntimeError: (err: Error) => void;
   /**
+   * Called with verbose debugging messages that should be handled separately from robot logs.
+   * @param msg - the log message.
+   */
+  onTrace: (msg: string) => void;
+  /**
    * Called when the TCP connection to the robot is lost for any reason.
    */
   onRuntimeDisconnect: () => void;
@@ -114,6 +120,10 @@ export default class RuntimeComms {
    */
   #pingInterval: NodeJS.Timeout | null;
 
+  #reconnectAttemptNum: number;
+
+  #connectionTimeout: NodeJS.Timeout | null;
+
   constructor(commsListener: RuntimeCommsListener) {
     this.#commsListener = commsListener;
     this.#runtimeAddr = '';
@@ -121,6 +131,8 @@ export default class RuntimeComms {
     this.#tcpSock = null;
     this.#tcpDisconnected = false;
     this.#pingInterval = null;
+    this.#reconnectAttemptNum = 0;
+    this.#connectionTimeout = null;
   }
 
   /**
@@ -128,10 +140,6 @@ export default class RuntimeComms {
    */
   disconnect() {
     this.#tcpDisconnected = true; // Don't reconnect
-    if (this.#pingInterval) {
-      clearInterval(this.#pingInterval);
-      this.#pingInterval = null;
-    }
     this.#disconnectTcp();
   }
 
@@ -153,6 +161,7 @@ export default class RuntimeComms {
     } catch {
       return false;
     }
+    this.#disconnectTcp();
     this.#connectTcp(); // Reconnect TCP
     return true;
   }
@@ -220,6 +229,9 @@ export default class RuntimeComms {
    * most recently known Runtime IP and port.
    */
   #connectTcp() {
+    this.#commsListener.onTrace(
+      `Attempting connection to ${this.#runtimeAddr}`,
+    );
     this.#tcpDisconnected = false;
     this.#disconnectTcp();
     const tcpStream = new PacketStream().on(
@@ -229,10 +241,10 @@ export default class RuntimeComms {
     this.#tcpSock = createTcpConnection(this.#runtimePort, this.#runtimeAddr)
       .on('connect', this.#handleTcpConnection.bind(this))
       .on('close', this.#handleTcpClose.bind(this))
-      .on(
-        'error',
-        this.#commsListener.onRuntimeTcpError.bind(this.#commsListener),
-      );
+      .on('error', (e) => {
+        this.#commsListener.onTrace("TCP socket emit 'error'");
+        this.#commsListener.onRuntimeTcpError(e);
+      });
     this.#tcpSock.pipe(tcpStream);
     this.#pingInterval = setInterval(
       this.#sendLatencyTest.bind(this),
@@ -244,9 +256,17 @@ export default class RuntimeComms {
    * Ends and disconnects the TCP socket if open.
    */
   #disconnectTcp() {
+    this.#commsListener.onTrace('TCP cleanup');
     if (this.#tcpSock) {
-      this.#tcpSock.resetAndDestroy();
+      this.#commsListener.onTrace('Found old socket, destroying');
+      this.#tcpSock.removeAllListeners();
+      // this.#tcpSock.end();
+      this.#tcpSock.destroy();
       this.#tcpSock = null;
+    }
+    if (this.#pingInterval) {
+      clearInterval(this.#pingInterval);
+      this.#pingInterval = null;
     }
   }
 
@@ -254,9 +274,13 @@ export default class RuntimeComms {
    * Handler for TCP 'connect' event.
    */
   #handleTcpConnection() {
+    this.#commsListener.onTrace(
+      "TCP socket emit 'connected', firing onRuntimeConnect",
+    );
     this.#commsListener.onRuntimeConnect();
     if (this.#tcpSock) {
       this.#tcpSock.write(new Uint8Array([1])); // Tell Runtime that we are Dawn, not Shepherd
+      this.#commsListener.onTrace('Sent identity byte');
     }
   }
 
@@ -265,6 +289,7 @@ export default class RuntimeComms {
    * @param packet - the received packet.
    */
   #handlePacket(packet: Packet) {
+    this.#resetConnectionTimeout();
     const { type, data } = packet;
     try {
       switch (type) {
@@ -319,11 +344,12 @@ export default class RuntimeComms {
               )}`,
             ),
           );
+        // this.#rstAndRetry();
       }
-    } catch (e) {
+    } catch (e: any) {
       this.#commsListener.onRuntimeError(
         new Error(
-          `Uncaught error when reading packet.\nPacket: ${JSON.stringify(
+          `Uncaught error when reading packet. ${e.toString()}\nPacket: ${JSON.stringify(
             packet,
           )}`,
         ),
@@ -335,10 +361,45 @@ export default class RuntimeComms {
    * Handles TCP 'close' event and tries to reconnect if we didn't cause the disconnection.
    */
   #handleTcpClose() {
+    this.#commsListener.onTrace(
+      "TCP socket emitted 'close', firing onRuntimeDisconnect",
+    );
     this.#commsListener.onRuntimeDisconnect();
+    this.#disconnectTcp();
     if (!this.#tcpDisconnected) {
-      setTimeout(this.#connectTcp.bind(this), TCP_RECONNECT_DELAY);
+      this.#commsListener.onTrace(
+        'Scheduling reconnect due to connection close',
+      );
+      this.#reconnectAttemptNum += 1;
+      const attempt = this.#reconnectAttemptNum;
+      setTimeout(() => {
+        if (this.#reconnectAttemptNum === attempt) {
+          this.#connectTcp();
+        }
+      }, TCP_RECONNECT_DELAY);
     }
+  }
+
+  /**
+   * Sends a RST packet, cleans up the socket, and attempts to reconnect.
+   */
+  #rstAndRetry() {
+    this.#tcpSock!.removeAllListeners();
+    this.#tcpSock!.resetAndDestroy();
+    this.#tcpSock = null;
+    this.#handleTcpClose();
+  }
+
+  #resetConnectionTimeout() {
+    if (this.#connectionTimeout) {
+      clearTimeout(this.#connectionTimeout);
+    }
+    const connectionNum = this.#reconnectAttemptNum;
+    this.#connectionTimeout = setTimeout(() => {
+      if (connectionNum === this.#reconnectAttemptNum) {
+        this.#rstAndRetry();
+      }
+    }, CONNECTION_TIMEOUT);
   }
 
   /**

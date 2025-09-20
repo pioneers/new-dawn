@@ -9,15 +9,18 @@ import './HelpModal.css';
  * @param props
  * @param props.onClose - handler called when the modal is closed by any means
  * @param props.isActive - whether to display the modal
+ * @param props.isDarkMode - whether UI is in dark mode
  */
 export default function HelpModal({
   onClose,
   isActive,
   docsRef,
+  isDarkMode,
 }: {
   onClose: () => void;
   isActive: boolean;
   docsRef: DocsRef;
+  isDarkMode: boolean;
 }) {
   docsRef.current ??= {};
   const apiLinkCtx = useMemo(
@@ -30,6 +33,7 @@ export default function HelpModal({
       className="HelpModal"
       onClose={onClose}
       isActive={isActive}
+      isDarkMode={isDarkMode}
     >
       <ApiLinkContext.Provider value={apiLinkCtx}>
         <h1 className="HelpModal-doc-title">Table of Contents</h1>

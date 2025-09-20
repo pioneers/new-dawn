@@ -7,7 +7,25 @@
   flex-shrink: 0;
   user-select: text;
 }
-.AppConsole-inner {
+/* Light Mode */
+.AppConsole-light {
+  padding: 10px;
+  font-family: "Courier New", monospace;
+  min-height: 0;
+  height: 100%;
+  flex-grow: 0;
+  flex-shrink: 0;
+  user-select: text;
+}
+.AppConsole-message-robot-info-light {
+  padding-left: 4px;
+  border-left: 6px solid var(--window-accent-color);
+}
+.AppConsole-message-light {
+  padding: 2px;
+  text-wrap: wrap;
+}
+.AppConsole-inner-light {
   height: 100%;
   background-color: #eee;
   overflow-y: scroll;
@@ -17,19 +35,62 @@
   min-height: 0;
   scroll-behavior: smooth;
 }
-.AppConsole-message {
-  padding: 2px;
-  text-wrap: wrap;
-}
-.AppConsole-message-dawn-err {
+.AppConsole-message-dawn-err-light {
   color: red;
 }
-.AppConsole-message-robot-err {
+.AppConsole-message-robot-err-light {
   background-color: salmon;
   padding-left: 4px;
   border-left: 6px solid crimson;
 }
-.AppConsole-message-robot-info {
+/* Dark Mode */
+.AppConsole-dark {
+  padding: 10px;
+  font-family: "Courier New", monospace;
+  min-height: 0;
+  height: 100%;
+  flex-grow: 0;
+  flex-shrink: 0;
+  user-select: text;
+  background-color: #121212;
+}
+.AppConsole-message-robot-info-dark {
   padding-left: 4px;
   border-left: 6px solid var(--window-accent-color);
+  color: #FFFFFF
+}
+.AppConsole-message-dark {
+  padding: 2px;
+  text-wrap: wrap;
+  color: #FFFFFF;
+}
+.AppConsole-inner-dark {
+  height: 100%;
+  background-color: #1E1E1E;
+  overflow-y: scroll;
+  word-break: break-word;
+  margin: 0;
+  margin-bottom: 50px;
+  padding: 0 0 0 10px;
+  min-height: 0;
+  scroll-behavior: smooth;
+}
+.AppConsole-message-dawn-err-dark {
+  color: #f44336;
+}
+.AppConsole-message-robot-err-dark {
+  background-color: #ED6C02;
+  padding-left: 4px;
+  border-left: 6px solid crimson;
+}
+.AppConsole-inner-dark::-webkit-scrollbar {
+  width: 10px;
+  background-color: #2E2E2E;
+}
+.AppConsole-inner-dark::-webkit-scrollbar-thumb {
+  background-color: #6b6b6b;
+  border-radius: 4px;
+}
+.AppConsole-inner-dark::-webkit-scrollbar-thumb:hover {
+  background-color: #7f7f7f;
 }

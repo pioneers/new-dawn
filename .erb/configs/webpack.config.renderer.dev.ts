@@ -91,7 +91,20 @@ const configuration: webpack.Configuration = {
       // Images
       {
         test: /\.(png|jpg|jpeg|gif|svg)$/i,
+        resourceQuery: { not: [/svgr/] },
         type: 'asset/resource',
+      },
+      {
+        test: /\.svg$/i,
+        resourceQuery: /svgr/,
+        use: [
+          {
+            loader: '@svgr/webpack',
+            options: {
+              svgo: false,
+            },
+          },
+        ],
       },
     ],
   },

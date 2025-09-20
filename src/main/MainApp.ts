@@ -1,6 +1,7 @@
-import { dialog, ipcMain } from 'electron';
+import { dialog, ipcMain, app } from 'electron';
 import type { BrowserWindow, FileFilter } from 'electron';
 import fs from 'fs';
+import path from 'path';
 import { version as dawnVersion } from '../../package.json';
 import AppConsoleMessage from '../common/AppConsoleMessage';
 import DeviceInfoState, { DeviceType } from '../common/DeviceInfoState';
@@ -13,6 +14,7 @@ import type {
   RendererLatencyUpdateData,
   RendererDevicesUpdateData,
   MainChannels,
+  MainConnectionConfigData,
   MainFileControlData,
   MainQuitData,
   MainUpdateRobotModeData,
@@ -36,9 +38,9 @@ const CODE_FILE_FILTERS: FileFilter[] = [
   { name: 'All Files', extensions: ['*'] },
 ];
 /**
- * Relative path to persistent configuration file.
+ * Path to persistent configuration file.
  */
-const CONFIG_RELPATH = 'dawn-config.json';
+const CONFIG_PATH = path.join(app.getPath('userData'), 'dawn-config.json');
 /**
  * Port to use when connecting to robot with SSH.
  */
@@ -84,6 +86,16 @@ function addRendererListener(
 function addRendererListener(
   channel: 'main-update-robot-mode',
   func: (data: MainUpdateRobotModeData) => void,
+): void;
+
+/**
+ * Adds a listener for the main-connection-config IPC event fired by the renderer.
+ * @param channel - the event channel to listen to
+ * @param func - the listener to attach
+ */
+function addRendererListener(
+  channel: 'main-connection-config',
+  func: (data: MainConnectionConfigData) => void,
 ): void;
 
 /**
@@ -141,10 +153,28 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
   #preventQuit: boolean;
 
   /**
+   * Whether the message informing the user the robot has discnonected will be
+   * suppressed. Used so disconnects only generate one log message.
+   */
+  #suppressDisconnectMsg: boolean;
+
+  /**
    * Whether error messages relating to connectivity will be suppressed. Used so disconnects only
    * generate one log message and possibly (hopefully?) the causing error.
    */
   #suppressNetworkErrors: boolean;
+
+  /**
+   * Whether error messages relating to the PDB will be suppressed. Used so faulty PDBs do not flood
+   * the console.
+   */
+  #suppressPdbErrors: boolean;
+
+  /**
+   * Whether verbose debugging logs should be written to the AppConsole. Also changes the behavior
+   * of some error reporting code.
+   */
+  #runtimeTraceMode: boolean;
 
   /**
    * Persistent configuration loaded when MainApp is constructed and saved when the main window is
@@ -171,7 +201,10 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#watcher = null;
     this.#watchDebounce = true;
     this.#preventQuit = true;
+    this.#suppressDisconnectMsg = false;
     this.#suppressNetworkErrors = false;
+    this.#suppressPdbErrors = false;
+    this.#runtimeTraceMode = false;
     this.#codeTransfer = new CodeTransfer(
       REMOTE_CODE_PATH,
       ROBOT_SSH_PORT,
@@ -181,7 +214,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     this.#runtimeComms = new RuntimeComms(this);
 
     mainWindow.on('close', (e) => {
-      if (this.#preventQuit) {
+      if (this.#preventQuit && !this.#mainWindow.webContents.isDestroyed()) {
         e.preventDefault();
         this.#sendToRenderer('renderer-quit-request');
       }
@@ -201,24 +234,35 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       }
     });
     addRendererListener('main-quit', (data) => {
-      // Save config that may have been changed while the program was running
-      this.#config.robotIPAddress = data.robotIPAddress;
-      this.#config.fieldIPAddress = data.fieldIPAddress;
-      this.#config.fieldStationNumber = data.fieldStationNumber;
       this.#config.showDirtyUploadWarning = data.showDirtyUploadWarning;
+      this.#config.darkmode = data.darkmode;
       try {
-        fs.writeFileSync(CONFIG_RELPATH, JSON.stringify(this.#config));
+        fs.writeFileSync(CONFIG_PATH, JSON.stringify(this.#config));
       } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(`Failed to write config on quit. ${String(e)}`);
+        dialog.showErrorBox(
+          'Error',
+          `Failed to write config to ${path.resolve(
+            CONFIG_PATH,
+          )} on quit. ${String(e)}`,
+        );
       }
       this.#preventQuit = false;
-      this.#mainWindow.close();
+      if (
+        !this.#mainWindow.isDestroyed() &&
+        !this.#mainWindow.webContents.isDestroyed()
+      ) {
+        this.#mainWindow.close();
+      }
     });
     addRendererListener(
       'main-update-robot-mode',
       this.#runtimeComms.sendRunMode.bind(this.#runtimeComms),
     );
+    addRendererListener('main-connection-config', (data) => {
+      this.onTrace(`Robot ip changed to ${data.robotIPAddress}`);
+      this.#runtimeComms.setRobotIp(data.robotIPAddress);
+      Object.assign(this.#config, data);
+    });
     addRendererListener(
       'main-robot-input',
       this.#runtimeComms.sendInputs.bind(this.#runtimeComms),
@@ -227,7 +271,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     try {
       this.#config = coerceToConfig(
         JSON.parse(
-          fs.readFileSync(CONFIG_RELPATH, {
+          fs.readFileSync(CONFIG_PATH, {
             encoding: 'utf8',
             flag: 'r',
           }),
@@ -255,6 +299,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       fieldIPAddress: this.#config.fieldIPAddress,
       fieldStationNumber: this.#config.fieldStationNumber,
       showDirtyUploadWarning: this.#config.showDirtyUploadWarning,
+      darkmode: this.#config.darkmode,
     });
   }
 
@@ -277,62 +322,116 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       (state) => state.id.split('_')[0] === DeviceType.PDB.toString(),
     );
     if (pdbs.length !== 1) {
-      this.#sendToRenderer(
-        'renderer-post-console',
-        new AppConsoleMessage(
-          'dawn-err',
-          'Cannot read battery voltage. Not exactly one PDB is connected to the robot.',
-        ),
-      );
+      if (!this.#suppressPdbErrors) {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            'Cannot read battery voltage. Not exactly one PDB is connected to the robot.',
+          ),
+        );
+        this.#suppressPdbErrors = true;
+      }
     } else if (!('v_batt' in pdbs[0]) || Number.isNaN(Number(pdbs[0].v_batt))) {
-      this.#sendToRenderer(
-        'renderer-post-console',
-        new AppConsoleMessage(
-          'dawn-err',
-          'PDB does not have v_batt property or it is not a number.',
-        ),
-      );
+      if (!this.#suppressPdbErrors) {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            'PDB does not have v_batt property or it is not a number.',
+          ),
+        );
+        this.#suppressPdbErrors = true;
+      }
     } else {
       this.#sendToRenderer('renderer-battery-update', Number(pdbs[0].v_batt));
+      this.#suppressPdbErrors = false;
     }
   }
 
   onRuntimeTcpError(err: Error) {
-    if (!this.#suppressNetworkErrors) {
+    if (!this.#suppressNetworkErrors || this.#runtimeTraceMode) {
+      this.#suppressNetworkErrors = true;
+      const rawMsg = err.toString();
+      let msg;
+      if (
+        rawMsg.includes('ETIMEDOUT') ||
+        rawMsg.includes('ENETUNREACH') ||
+        rawMsg.includes('ECONNREFUSED') ||
+        rawMsg.includes('EHOSTUNREACH')
+      ) {
+        msg =
+          "Can't find the robot! Please make sure you are connected to the robot's router," +
+          ' the IP is set correctly, and the robot is turned on.';
+      } else if (rawMsg.includes('ENOTFOUND')) {
+        msg = 'The robot ip is invalid. Please specify a valid ip.';
+      } else if (
+        rawMsg.includes('ECONNABORTED') ||
+        rawMsg.includes('ECONNRESET')
+      ) {
+        msg =
+          'Temporary robot communication error! Dawn will attempt to reconnect.';
+      } else if (rawMsg.includes('Timeout!')) {
+        msg = 'The robot is not responding. Dawn will attempt to reconnect.';
+      } else {
+        msg = `Encountered TCP error when communicating with Runtime. ${rawMsg}`;
+      }
       this.#sendToRenderer(
         'renderer-post-console',
         new AppConsoleMessage(
           'dawn-err',
-          `Encountered TCP error when communicating with Runtime. ${err.toString()}`,
+          `${
+            this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''
+          }${msg}${
+            this.#runtimeTraceMode ? ` (Original message: ${rawMsg})` : ''
+          }`,
         ),
       );
     }
   }
 
   onRuntimeError(err: Error) {
-    if (!this.#suppressNetworkErrors) {
+    if (!this.#suppressNetworkErrors || this.#runtimeTraceMode) {
+      this.#suppressNetworkErrors = true;
       this.#sendToRenderer(
         'renderer-post-console',
         new AppConsoleMessage(
           'dawn-err',
-          `Encountered error when communicating with Runtime. ${err.toString()}`,
+          `${this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''}` +
+            `Encountered error when communicating with Runtime. ${err.toString()}`,
         ),
       );
     }
   }
 
-  onRuntimeDisconnect() {
-    if (!this.#suppressNetworkErrors) {
+  onTrace(msg: string) {
+    if (this.#runtimeTraceMode) {
       this.#sendToRenderer(
         'renderer-post-console',
-        new AppConsoleMessage('dawn-info', 'Disconnected from robot.'),
+        new AppConsoleMessage('dawn-info', msg),
       );
-      this.#suppressNetworkErrors = true;
+    }
+  }
+
+  onRuntimeDisconnect() {
+    this.#sendToRenderer('renderer-latency-update', -1);
+    if (!this.#suppressDisconnectMsg || this.#runtimeTraceMode) {
+      this.#sendToRenderer(
+        'renderer-post-console',
+        new AppConsoleMessage(
+          'dawn-info',
+          `${
+            this.#runtimeTraceMode ? '(Showing suppressed message.) ' : ''
+          }Disconnected from robot.`,
+        ),
+      );
+      this.#suppressDisconnectMsg = true;
     }
   }
 
   onRuntimeConnect() {
     this.#suppressNetworkErrors = false;
+    this.#suppressDisconnectMsg = false;
   }
 
   /**
@@ -383,6 +482,14 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     });
   }
 
+  getRuntimeTraceMode() {
+    return this.#runtimeTraceMode;
+  }
+
+  setRuntimeTraceMode(mode: boolean) {
+    this.#runtimeTraceMode = mode;
+  }
+
   /**
    * Tries to save code to a file. Fails if the user is prompted for a path but does not enter one.
    * @param code - the code to save
@@ -390,56 +497,73 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * currently open file.
    */
   #saveCodeFile(code: string, forceDialog: boolean) {
-    let success = true;
+    let promise = Promise.resolve(true);
     if (this.#savePath === null || forceDialog) {
-      success = this.#showCodePathDialog('save');
+      promise = this.#showCodePathDialog('save');
     }
-    if (success) {
-      // Temporarily disable watcher
-      this.#watcher?.close();
-      this.#watcher = null;
-      fs.writeFile(
-        this.#savePath as string,
-        code,
-        { encoding: 'utf8', flag: 'w' },
-        (err) => {
-          if (err) {
-            this.#sendToRenderer(
-              'renderer-post-console',
-              new AppConsoleMessage(
-                'dawn-err',
-                `Failed to save code to ${this.#savePath}. ${err}`,
-              ),
-            );
-          } else {
-            this.#sendToRenderer('renderer-file-control', { type: 'didSave' });
-          }
-          this.#watchCodeFile();
-        },
-      );
-    }
+    promise
+      .then((success) => {
+        if (success) {
+          // Temporarily disable watcher
+          this.#watcher?.close();
+          this.#watcher = null;
+          fs.writeFile(
+            this.#savePath as string,
+            code,
+            { encoding: 'utf8', flag: 'w' },
+            (err) => {
+              if (err) {
+                throw err;
+              } else {
+                this.#sendToRenderer('renderer-file-control', {
+                  type: 'didSave',
+                });
+              }
+              this.#watchCodeFile();
+            },
+          );
+        }
+        return null;
+      })
+      .catch((err) => {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            `Failed to save code to ${this.#savePath}. ${err}`,
+          ),
+        );
+      });
   }
 
   /**
    * Tries to load code from a file into the editor. Fails if the user does not choose a path.
    */
   #openCodeFile() {
-    const success = this.#showCodePathDialog('load');
-    if (success) {
-      try {
-        const content = fs.readFileSync(this.#savePath as string, {
-          encoding: 'utf8',
-          flag: 'r',
-        });
-        this.#sendToRenderer('renderer-file-control', {
-          type: 'didOpen',
-          content,
-          isCleanFile: true,
-        });
-      } catch {
-        // Don't care
-      }
-    }
+    this.#showCodePathDialog('load')
+      .then((success) => {
+        if (success) {
+          const content = fs.readFileSync(this.#savePath as string, {
+            encoding: 'utf8',
+            flag: 'r',
+          });
+          this.#sendToRenderer('renderer-file-control', {
+            type: 'didOpen',
+            content,
+            isCleanFile: true,
+          });
+        }
+        return null;
+      })
+      .catch((err) => {
+        this.#sendToRenderer(
+          'renderer-post-console',
+          new AppConsoleMessage(
+            'dawn-err',
+            `Failed to load code from ${this.#savePath}. ${err}`,
+          ),
+        );
+      });
   }
 
   /**
@@ -542,34 +666,42 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    * Shows an open or save dialog to the user to select a new save path. On success, this.#savePath
    * is known to be non-null and non-empty.
    * @param mode - the type of dialog that should be shown
-   * @returns Whether a new path was chosen successfully.
+   * @returns A Promise that resolves to whether a new path was chosen successfully.
    */
-  #showCodePathDialog(mode: 'save' | 'load') {
-    let result: string | string[] | undefined;
-    if (mode === 'save') {
-      result = dialog.showSaveDialogSync(this.#mainWindow, {
-        filters: CODE_FILE_FILTERS,
-        ...(this.#savePath === null ? {} : { defaultPath: this.#savePath }),
-      });
-    } else {
-      result = dialog.showOpenDialogSync(this.#mainWindow, {
-        filters: CODE_FILE_FILTERS,
-        properties: ['openFile'],
-      });
-    }
-    if (result && result.length) {
-      this.#savePath = typeof result === 'string' ? result : result[0];
-      const data: RendererFileControlData = {
-        type: 'didChangePath',
-        path: this.#savePath,
-      };
-      this.#sendToRenderer('renderer-file-control', data);
-      if (mode === 'load') {
-        this.#watchCodeFile();
+  #showCodePathDialog(mode: 'save' | 'load'): Promise<boolean> {
+    return new Promise((resolve, reject) => {
+      let promise;
+      if (mode === 'save') {
+        promise = dialog.showSaveDialog(this.#mainWindow, {
+          filters: CODE_FILE_FILTERS,
+          ...(this.#savePath === null ? {} : { defaultPath: this.#savePath }),
+        });
+      } else {
+        promise = dialog.showOpenDialog(this.#mainWindow, {
+          filters: CODE_FILE_FILTERS,
+          properties: ['openFile'],
+        });
       }
-      return true;
-    }
-    return false;
+      promise
+        .then((result) => {
+          if (!result.canceled) {
+            this.#savePath = result.filePaths ? result.filePaths[0] : result.filePath;
+            const data: RendererFileControlData = {
+              type: 'didChangePath',
+              path: this.#savePath,
+            };
+            this.#sendToRenderer('renderer-file-control', data);
+            if (mode === 'load') {
+              this.#watchCodeFile();
+            }
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+          return null;
+        })
+        .catch(reject);
+    });
   }
 
   /**

@@ -1,5 +1,9 @@
-.ConnectionConfigModal-content {
+.ConnectionConfigModal-light {
   font-family: Arial, sans-serif;
+}
+.ConnectionConfigModal-dark {
+  font-family: Arial, sans-serif;
+  color: #FFFFFF;
 }
 .ConnectionConfigModal-config-field {
   display: block;
@@ -17,6 +21,10 @@
 }
 .ConnectionConfigModal-config-field input:focus{
   border-color: var(--window-head-color);
+}
+.ConnectionModalInput-dark {
+  background-color: #1f1f1f;
+  color:#FFFFFF;
 }
 .ConnectionConfigModal-section:not(:first-child) {
   margin-top: 8px;

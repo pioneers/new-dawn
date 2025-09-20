@@ -1,5 +1,11 @@
-.ResizeBar {
+/* light mode */
+.ResizeBar-light {
   background-color: gray;
+  flex-shrink: 0;
+}
+/* dark mode */
+.ResizeBar-dark {
+  background-color: #6b6b6b;
   flex-shrink: 0;
 }
 .ResizeBar-axis-x {

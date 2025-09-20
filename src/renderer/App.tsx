@@ -15,7 +15,7 @@ import Editor, {
 } from './editor/Editor';
 import DeviceInfo from './DeviceInfo';
 import AppConsole from './AppConsole';
-import type AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
+import AppConsoleMessage from '../common/AppConsoleMessage'; // No crypto package on the renderer
 import type DeviceInfoState from '../common/DeviceInfoState';
 import ConfirmModal from './modals/ConfirmModal';
 import ConnectionConfigModal, {
@@ -76,6 +76,8 @@ export default function App() {
   const [consoleMsgs, setConsoleMsgs] = useState([] as AppConsoleMessage[]);
   // Whether the AppConsole is open
   const [consoleIsOpen, setConsoleIsOpen] = useState(true);
+  // Whether the AppConsole will have auto-scroll
+  const [consoleAutoScroll, setConsoleAutoScroll] = useState(false);
   // Whether a new message has been added to the AppConsole since it has been closed (if it is
   // closed)
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
@@ -116,6 +118,8 @@ export default function App() {
   const [deviceInfoState, setDeviceInfoState] = useState(
     [] as DeviceInfoState[],
   );
+  // Dark Mode UI State
+  const [isDarkMode, setIsDarkMode] = useState(false);
   // Stores references to HelpModal sections so ApiLinks can jump to them
   const docsRef = useRef(null) as DocsRef;
 
@@ -132,15 +136,29 @@ export default function App() {
     }
   };
   const closeModal = () => changeActiveModal('');
-  const handleConnectionChange = (event: ConnectionConfigChangeEvent) => {
-    if (event.name === 'IPAddress') {
-      setIPAddress(event.value);
-    } else if (event.name === 'FieldIPAddress') {
-      setFieldIPAddress(event.value);
-    } else if (event.name === 'FieldStationNum') {
-      setFieldStationNum(event.value);
-    }
-  };
+  const handleConnectionChange = useCallback(
+    (event: ConnectionConfigChangeEvent) => {
+      let robotIPAddress = IPAddress;
+      let fieldIPAddress = FieldIPAddress;
+      let fieldStationNumber = FieldStationNum;
+      if (event.name === 'IPAddress') {
+        setIPAddress(event.value);
+        robotIPAddress = event.value;
+      } else if (event.name === 'FieldIPAddress') {
+        setFieldIPAddress(event.value);
+        fieldIPAddress = event.value;
+      } else if (event.name === 'FieldStationNum') {
+        setFieldStationNum(event.value);
+        fieldStationNumber = event.value;
+      }
+      window.electron.ipcRenderer.sendMessage('main-connection-config', {
+        robotIPAddress,
+        fieldIPAddress,
+        fieldStationNumber,
+      });
+    },
+    [IPAddress, FieldIPAddress, FieldStationNum],
+  );
   const startEditorResize = () => setEditorInitialSize(editorSize);
   const updateEditorResize = (d: number) => {
     if (editorInitialSize === -1) {
@@ -159,8 +177,8 @@ export default function App() {
     return true;
   };
   const endEditorResize = () => setEditorInitialSize(-1);
-  const startColsResize = () => setConsoleInitSize(consoleSize);
-  const updateColsResize = (d: number) => {
+  const startRowsResize = () => setConsoleInitSize(consoleSize);
+  const updateRowsResize = (d: number) => {
     if (consoleInitialSize === -1) {
       return false;
     }
@@ -176,20 +194,21 @@ export default function App() {
     );
     return true;
   };
-  const endColsResize = () => setConsoleInitSize(-1);
+  const endRowsResize = () => setConsoleInitSize(-1);
   const changeRunMode = (mode: RobotRunMode) => {
     window.electron.ipcRenderer.sendMessage('main-update-robot-mode', mode);
     setRobotRunning(mode !== RobotRunMode.IDLE);
   };
+  const toggleDarkMode = () => {
+    setIsDarkMode((prev) => !prev);
+  };
 
   const closeWindow = useCallback(() => {
     window.electron.ipcRenderer.sendMessage('main-quit', {
-      robotIPAddress: IPAddress,
-      fieldIPAddress: FieldIPAddress,
-      fieldStationNumber: FieldStationNum,
       showDirtyUploadWarning,
+      darkmode: isDarkMode,
     });
-  }, [IPAddress, FieldIPAddress, FieldStationNum, showDirtyUploadWarning]);
+  }, [showDirtyUploadWarning, isDarkMode]);
   const saveFile = useCallback(
     (forceDialog: boolean) => {
       window.electron.ipcRenderer.sendMessage('main-file-control', {
@@ -302,7 +321,8 @@ export default function App() {
           new RobotInput({
             connected: keyboardControlsStatus === 'on',
             axes: [],
-            buttons: keyboardControlsStatus ? Number(keyboardBitmap) : 0,
+            buttons:
+              keyboardControlsStatus === 'off' ? Number(keyboardBitmap) : 0,
             source: RobotInputSource.KEYBOARD,
           }),
         );
@@ -328,6 +348,7 @@ export default function App() {
           setFieldIPAddress(data.fieldIPAddress);
           setFieldStationNum(data.fieldStationNumber);
           setShowDirtyUploadWarning(data.showDirtyUploadWarning);
+          setIsDarkMode(data.darkmode);
           document.getElementsByTagName(
             'title',
           )[0].innerText = `Dawn ${data.dawnVersion}`;
@@ -413,75 +434,94 @@ export default function App() {
 
   return (
     <StrictMode>
-      <div className="App">
+      <div className={`App-${isDarkMode ? 'dark' : 'light'}`}>
         <Topbar
           onConnectionConfigModalOpen={() =>
             changeActiveModal('ConnectionConfig')
           }
           onHelpModalOpen={() => changeActiveModal('Help')}
+          onGamepadModalOpen={() => changeActiveModal('GamepadInfo')}
           dawnVersion={dawnVersion}
           robotLatencyMs={robotLatencyMs}
           robotBatteryVoltage={robotBatteryVoltage}
+          isDarkMode={isDarkMode}
         />
-        <div className="App-cols">
-          <Editor
-            width={editorSize}
-            onChange={changeEditorContent}
-            fileStatus={editorStatus}
-            filePath={editorPath}
-            content={editorContent}
-            consoleAlert={consoleIsAlerted}
-            consoleIsOpen={consoleIsOpen}
-            keyboardControlsStatus={keyboardControlsStatus}
-            robotConnected={robotLatencyMs !== -1}
-            robotRunning={robotRunning}
-            docsRef={docsRef}
-            onShowHelpModal={() => changeActiveModal('Help')}
-            onOpen={loadFile}
-            onSave={saveFile}
-            onNewFile={createNewFile}
-            onLoadStaffCode={loadStaffCode}
-            onRobotUpload={() => uploadDownloadFile(true)}
-            onRobotDownload={() => uploadDownloadFile(false)}
-            onStartRobot={(opmode: 'auto' | 'teleop') => {
-              changeRunMode(
-                opmode === 'auto' ? RobotRunMode.AUTO : RobotRunMode.TELEOP,
-              );
-            }}
-            onStopRobot={() => changeRunMode(RobotRunMode.IDLE)}
-            onToggleConsole={() => {
-              setConsoleIsOpen((v) => !v);
-              setConsoleIsAlerted(false);
-            }}
-            onClearConsole={() => {
-              setConsoleMsgs([]);
-              setConsoleIsAlerted(false);
-            }}
-            onToggleKeyboardControls={() => {
-              setKeyboardControlsEnabled((v) =>
-                v === 'on' ? 'offEdge' : 'on',
-              );
-            }}
-          />
+        <div className="App-wrapper">
+          <div className="editor-container" style={{ width: editorSize }}>
+            <Editor
+              onChange={changeEditorContent}
+              fileStatus={editorStatus}
+              filePath={editorPath}
+              content={editorContent}
+              consoleAlert={consoleIsAlerted}
+              consoleIsOpen={consoleIsOpen}
+              keyboardControlsStatus={keyboardControlsStatus}
+              robotConnected={robotLatencyMs !== -1}
+              robotRunning={robotRunning}
+              docsRef={docsRef}
+              onShowHelpModal={() => changeActiveModal('Help')}
+              onOpen={loadFile}
+              onSave={saveFile}
+              onNewFile={createNewFile}
+              onLoadStaffCode={loadStaffCode}
+              onRobotUpload={() => uploadDownloadFile(true)}
+              onRobotDownload={() => uploadDownloadFile(false)}
+              onStartRobot={(opmode: 'auto' | 'teleop') => {
+                changeRunMode(
+                  opmode === 'auto' ? RobotRunMode.AUTO : RobotRunMode.TELEOP,
+                );
+              }}
+              onStopRobot={() => changeRunMode(RobotRunMode.IDLE)}
+              onToggleConsole={() => {
+                setConsoleIsOpen((v) => !v);
+                setConsoleIsAlerted(false);
+              }}
+              onClearConsole={() => {
+                setConsoleMsgs([]);
+                setConsoleIsAlerted(false);
+              }}
+              onToggleAutoScroll={() => {
+                if (!consoleAutoScroll) {
+                  setConsoleAutoScroll(true);
+                } else {
+                  setConsoleAutoScroll(false);
+                }
+              }}
+              onToggleKeyboardControls={() => {
+                setKeyboardControlsEnabled((v) =>
+                  v === 'on' ? 'offEdge' : 'on',
+                );
+              }}
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={toggleDarkMode}
+            />
+            {consoleIsOpen && (
+              <>
+                <ResizeBar
+                  onStartResize={startRowsResize}
+                  onUpdateResize={updateRowsResize}
+                  onEndResize={endRowsResize}
+                  axis="y"
+                  isDarkMode={isDarkMode}
+                />
+                <AppConsole
+                  height={consoleSize}
+                  messages={consoleMsgs}
+                  isDarkMode={isDarkMode}
+                  autoscroll={consoleAutoScroll}
+                />
+              </>
+            )}
+          </div>
           <ResizeBar
             onStartResize={startEditorResize}
             onUpdateResize={updateEditorResize}
             onEndResize={endEditorResize}
             axis="x"
+            isDarkMode={isDarkMode}
           />
-          <DeviceInfo deviceStates={deviceInfoState} />
+          <DeviceInfo deviceStates={deviceInfoState} isDarkMode={isDarkMode} />
         </div>
-        {consoleIsOpen && (
-          <>
-            <ResizeBar
-              onStartResize={startColsResize}
-              onUpdateResize={updateColsResize}
-              onEndResize={endColsResize}
-              axis="y"
-            />
-            <AppConsole height={consoleSize} messages={consoleMsgs} />
-          </>
-        )}
         <div className="App-modal-container">
           <ConnectionConfigModal
             isActive={activeModal === 'ConnectionConfig'}
@@ -490,15 +530,18 @@ export default function App() {
             IPAddress={IPAddress}
             FieldIPAddress={FieldIPAddress}
             FieldStationNum={FieldStationNum}
+            isDarkMode={isDarkMode}
           />
           <HelpModal
             isActive={activeModal === 'Help'}
             onClose={closeModal}
+            isDarkMode={isDarkMode}
             docsRef={docsRef}
           />
           <GamepadInfoModal
             isActive={activeModal === 'GamepadInfo'}
             onClose={closeModal}
+            isDarkMode={isDarkMode}
           />
           <ConfirmModal
             isActive={activeModal === 'DirtyLoadConfirm'}
@@ -509,6 +552,7 @@ export default function App() {
               });
             }}
             modalTitle="Confirm load"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really load?
@@ -520,6 +564,7 @@ export default function App() {
             onConfirm={closeWindow}
             modalTitle="Confirm quit"
             noAutoClose
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really quit?
@@ -530,6 +575,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={() => uploadDownloadFile(true)}
             modalTitle="Confirm upload"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               Unsaved changes in the editor will not be uploaded. Really upload?
@@ -548,6 +594,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={() => uploadDownloadFile(false)}
             modalTitle="Confirm download"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really replace editor contents with
@@ -559,6 +606,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={createNewFile}
             modalTitle="Confirm create new file"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really close file?
@@ -569,6 +617,7 @@ export default function App() {
             onClose={closeModal}
             onConfirm={loadStaffCode}
             modalTitle="Confirm load staff code"
+            isDarkMode={isDarkMode}
           >
             <p className="App-confirm-dialog-text">
               You have unsaved changes. Really replace contents of editor with

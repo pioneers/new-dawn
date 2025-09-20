@@ -32,6 +32,8 @@ import startRobot from '../../../assets/start-robot.svg';
 import stopRobot from '../../../assets/stop-robot.svg';
 import keyboardKeySvg from '../../../assets/keyboard-key.svg';
 import themeSvg from '../../../assets/theme.svg';
+import darkModeSvg from '../../../assets/dark-mode.svg';
+import autoscrollSvg from '../../../assets/auto-scroll.svg';
 
 import './Editor.css';
 
@@ -83,7 +85,6 @@ const ACE_THEMES = {
 /**
  * Component holding the Ace editor and editor toolbar.
  * @param props - props
- * @param props.width - width in pixels of Editor container
  * @param props.fileStatus - dirty status of the currently open file
  * @param props.filePath - path of the currently open file, or an empty string if no file is open
  * @param props.content - the content that should be displayed in the code editor
@@ -110,9 +111,11 @@ const ACE_THEMES = {
  * @param props.onToggleConsole - handler called when the user wants to toggle the AppConsole's
  * visibility
  * @param props.onClearConsole - handler called when the user wants to clear the AppConsole
+ * dark mode
+ * @param props.isDarkMode - whether UI is in dark mode
+ * @param props.onToggleDarkMode - handler called when user wans to toggle UI's dark mode.
  */
 export default function Editor({
-  width,
   onChange,
   fileStatus,
   filePath,
@@ -124,6 +127,7 @@ export default function Editor({
   robotRunning,
   docsRef,
   onShowHelpModal,
+  isDarkMode,
   onOpen,
   onSave,
   onNewFile,
@@ -133,10 +137,11 @@ export default function Editor({
   onStartRobot,
   onStopRobot,
   onToggleConsole,
+  onToggleAutoScroll,
   onClearConsole,
   onToggleKeyboardControls,
+  onToggleDarkMode,
 }: {
-  width: number;
   /**
    * change handler for the content of the code editor
    * @param content - the new content of the code editor
@@ -152,6 +157,7 @@ export default function Editor({
   robotRunning: boolean;
   docsRef: DocsRef;
   onShowHelpModal: () => void;
+  isDarkMode: boolean;
   onOpen: () => void;
   /**
    * handler called when the user wants to save the contents of the editor
@@ -170,7 +176,9 @@ export default function Editor({
   onStopRobot: () => void;
   onToggleConsole: () => void;
   onClearConsole: () => void;
+  onToggleAutoScroll: () => void;
   onToggleKeyboardControls: () => void;
+  onToggleDarkMode: () => void;
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
@@ -205,10 +213,9 @@ export default function Editor({
 
   return (
     <div
-      className={`Editor${
+      className={`Editor-${isDarkMode ? 'dark' : 'light'}${
         keyboardControlsStatus === 'on' ? ' Editor-kbctrl-enabled' : ''
       }`}
-      style={{ width }}
     >
       <div className="Editor-file-info">
         <span className="Editor-file-name">{filePath || '[New file]'}</span>
@@ -219,8 +226,12 @@ export default function Editor({
           {STATUS_TEXT[fileStatus]}
         </span>
       </div>
-      <div className="Editor-toolbar">
-        <div className="Editor-toolbar-group">
+      <div className={`Editor-toolbar-${isDarkMode ? 'dark' : 'light'}`}>
+        <div
+          className={`Editor-toolbar-group Editor-toolbar-group-${
+            isDarkMode ? 'dark' : 'light'
+          }`}
+        >
           <button type="button" onClick={onOpen} title="Open">
             <img src={openSvg} alt="Open" />
           </button>
@@ -241,7 +252,11 @@ export default function Editor({
             <img src={pieSvg} alt="Load staff code" />
           </button>
         </div>
-        <div className="Editor-toolbar-group">
+        <div
+          className={`Editor-toolbar-group Editor-toolbar-group-${
+            isDarkMode ? 'dark' : 'light'
+          }`}
+        >
           <button
             type="button"
             onClick={() => robotConnected && onRobotUpload()}
@@ -259,7 +274,11 @@ export default function Editor({
             <img src={downloadSvg} alt="Download code from robot" />
           </button>
         </div>
-        <div className="Editor-toolbar-group">
+        <div
+          className={`Editor-toolbar-group Editor-toolbar-group-${
+            isDarkMode ? 'dark' : 'light'
+          }`}
+        >
           <button
             type="button"
             onClick={onToggleConsole}
@@ -272,8 +291,20 @@ export default function Editor({
           <button type="button" onClick={onClearConsole} title="Clear console">
             <img src={consoleClearSvg} alt="Clear console" />
           </button>
+          <button
+            type="button"
+            title="Turn on auto-scroll"
+            className="Editor-auto-scroll-button"
+            onClick={onToggleAutoScroll}
+          >
+            <img src={autoscrollSvg} alt="Turn on auto-scroll" />
+          </button>
         </div>
-        <div className="Editor-toolbar-group">
+        <div
+          className={`Editor-toolbar-group Editor-toolbar-group-${
+            isDarkMode ? 'dark' : 'light'
+          }`}
+        >
           <button
             type="button"
             onClick={() => zoomEditor(true)}
@@ -301,7 +332,11 @@ export default function Editor({
             <img src={keyboardKeySvg} alt="Toggle keyboard controls" />
           </button>
         </div>
-        <div className="Editor-toolbar-group">
+        <div
+          className={`Editor-toolbar-group Editor-toolbar-group-${
+            isDarkMode ? 'dark' : 'light'
+          }`}
+        >
           <img src={themeSvg} alt="Change Theme" />
           <select
             onChange={(e) => handleThemeChange(`ace/theme/${e.target.value}`)}
@@ -313,8 +348,20 @@ export default function Editor({
               </option>
             ))}
           </select>
+          <button
+            type="button"
+            className="Editor-toolbar-button"
+            onClick={onToggleDarkMode}
+            title="Toggle Dark Mode"
+          >
+            <img src={darkModeSvg} alt="Toggle Dark Theme" />
+          </button>
         </div>
-        <div className="Editor-toolbar-group">
+        <div
+          className={`Editor-toolbar-group Editor-toolbar-group-${
+            isDarkMode ? 'dark' : 'light'
+          }`}
+        >
           <label className="Editor-tbopmode" htmlFor="Editor-toolbar-opmode">
             OpMode:
             <select

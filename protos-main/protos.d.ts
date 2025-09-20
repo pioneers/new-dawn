@@ -1,4 +1,6 @@
 import * as $protobuf from "protobufjs";
+import Long from "long";
+
 /** Properties of a Param. */
 export interface IParam {
 
