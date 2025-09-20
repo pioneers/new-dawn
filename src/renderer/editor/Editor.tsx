@@ -330,6 +330,7 @@ export default function Editor({
           <select
             onChange={(e) => handleThemeChange(`ace/theme/${e.target.value}`)}
             name="Editor-toolbar-opmode"
+            value={theme}
           >
             {Object.entries(ACE_THEMES).map(([themeKey, themeName]) => (
               <option key={themeKey} value={themeKey}>

@@ -205,8 +205,9 @@ export default function App() {
     window.electron.ipcRenderer.sendMessage('main-quit', {
       showDirtyUploadWarning,
       darkmode: isDarkMode,
+      theme: editorTheme,
     });
-  }, [showDirtyUploadWarning, isDarkMode]);
+  }, [showDirtyUploadWarning, isDarkMode, editorTheme]);
   const saveFile = useCallback(
     (forceDialog: boolean) => {
       window.electron.ipcRenderer.sendMessage('main-file-control', {
