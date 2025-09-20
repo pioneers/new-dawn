@@ -85,6 +85,8 @@ export default function App() {
   );
   // Whether the robot is running student code
   const [robotRunning, setRobotRunning] = useState(false);
+  // The theme of the Ace editor
+  const [editorTheme, setEditorTheme] = useState('dawn');
   // Most recent window.innerWidth/Height needed to clamp editor and col size
   const [windowSize, setWindowSize] = useReducer(
     (oldSize: [number, number], newSize: [number, number]) => {
@@ -203,8 +205,9 @@ export default function App() {
     window.electron.ipcRenderer.sendMessage('main-quit', {
       showDirtyUploadWarning,
       darkmode: isDarkMode,
+      theme: editorTheme,
     });
-  }, [showDirtyUploadWarning, isDarkMode]);
+  }, [showDirtyUploadWarning, isDarkMode, editorTheme]);
   const saveFile = useCallback(
     (forceDialog: boolean) => {
       window.electron.ipcRenderer.sendMessage('main-file-control', {
@@ -345,6 +348,7 @@ export default function App() {
           setFieldStationNum(data.fieldStationNumber);
           setShowDirtyUploadWarning(data.showDirtyUploadWarning);
           setIsDarkMode(data.darkmode);
+          setEditorTheme(data.theme);
           document.getElementsByTagName(
             'title',
           )[0].innerText = `Dawn ${data.dawnVersion}`;
@@ -454,6 +458,7 @@ export default function App() {
               keyboardControlsStatus={keyboardControlsStatus}
               robotConnected={robotLatencyMs !== -1}
               robotRunning={robotRunning}
+              theme={editorTheme}
               onOpen={loadFile}
               onSave={saveFile}
               onNewFile={createNewFile}
@@ -488,6 +493,7 @@ export default function App() {
               }}
               isDarkMode={isDarkMode}
               onToggleDarkMode={toggleDarkMode}
+              onChangeTheme={setEditorTheme}
             />
             {consoleIsOpen && (
               <>

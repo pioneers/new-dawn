@@ -57,6 +57,10 @@ export interface RendererInitData {
    * Darkmode setting, to be saved to persistent config.
    */
   darkmode: boolean;
+  /**
+   * Ace editor theme, to be saved to persistent config.
+   */
+  theme: string;
 }
 
 /**
@@ -314,6 +318,10 @@ export interface MainQuitData {
    * Darkmode setting, to be saved to persistent config.
    */
   darkmode: boolean;
+  /**
+   * Ace editor theme, to be saved to persistent config.
+   */
+  theme: string;
 }
 
 /**

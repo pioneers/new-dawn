@@ -27,6 +27,10 @@ export default interface Config {
    * Darkmode setting, to be saved to persistent config.
    */
   darkmode: boolean;
+  /**
+   * Ace editor theme, to be saved to persistent config.
+   */
+  theme: string;
 }
 
 /**
@@ -77,6 +81,9 @@ export function coerceToConfig(template: unknown): Config {
   }
   if (!('darkmode' in config) || typeof config.darkmode !== 'boolean') {
     config.darkmode = false;
+  }
+  if (!('theme' in config) || typeof config.theme !== 'string') {
+    config.theme = 'dawn';
   }
   // By now we're sure all the required fields are set (and really typescript should be too, so I
   // don't really understand why a cast is needed here)
