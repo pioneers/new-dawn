@@ -236,6 +236,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
     addRendererListener('main-quit', (data) => {
       this.#config.showDirtyUploadWarning = data.showDirtyUploadWarning;
       this.#config.darkmode = data.darkmode;
+      this.#config.theme = data.theme;
       try {
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(this.#config));
       } catch (e) {
@@ -300,6 +301,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       fieldStationNumber: this.#config.fieldStationNumber,
       showDirtyUploadWarning: this.#config.showDirtyUploadWarning,
       darkmode: this.#config.darkmode,
+      theme: this.#config.theme,
     });
   }
 
@@ -685,7 +687,9 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       promise
         .then((result) => {
           if (!result.canceled) {
-            this.#savePath = result.filePaths ? result.filePaths[0] : result.filePath;
+            this.#savePath = result.filePaths
+              ? result.filePaths[0]
+              : result.filePath;
             const data: RendererFileControlData = {
               type: 'didChangePath',
               path: this.#savePath,

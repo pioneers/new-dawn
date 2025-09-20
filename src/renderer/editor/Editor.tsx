@@ -97,6 +97,7 @@ const ACE_THEMES = {
  * be enabled.
  * @param props.robotRunning - whether the robot is running, which affects whether some toolbar
  * buttons are enabled.
+ * @param props.theme - the graphical theme of the Ace editor.
  * @param props.onOpen - handler called when the user wants to open a file in the editor
  * @param props.onNewFile - handler called when the user wants to close the current file
  * @param props.onLoadStaffCode - handler called when the user wants to load staff code into the
@@ -111,7 +112,8 @@ const ACE_THEMES = {
  * @param props.onClearConsole - handler called when the user wants to clear the AppConsole
  * dark mode
  * @param props.isDarkMode - whether UI is in dark mode
- * @param props.onToggleDarkMode - handler called when user wans to toggle UI's dark mode.
+ * @param props.onToggleDarkMode - handler called when user wants to toggle UI's dark mode.
+ * @param props.onChangeTheme - handler called when user wants to change the Ace editor theme.
  */
 export default function Editor({
   onChange,
@@ -123,6 +125,7 @@ export default function Editor({
   keyboardControlsStatus,
   robotConnected,
   robotRunning,
+  theme,
   isDarkMode,
   onOpen,
   onSave,
@@ -137,6 +140,7 @@ export default function Editor({
   onClearConsole,
   onToggleKeyboardControls,
   onToggleDarkMode,
+  onChangeTheme,
 }: {
   /**
    * change handler for the content of the code editor
@@ -151,6 +155,7 @@ export default function Editor({
   keyboardControlsStatus: KeyboardControlsStatus;
   robotConnected: boolean;
   robotRunning: boolean;
+  theme: string;
   isDarkMode: boolean;
   onOpen: () => void;
   /**
@@ -173,6 +178,7 @@ export default function Editor({
   onToggleAutoScroll: () => void;
   onToggleKeyboardControls: () => void;
   onToggleDarkMode: () => void;
+  onChangeTheme: (theme: string) => void;
 }) {
   const [opmode, setOpmode] = useState('auto');
   const [fontSize, setFontSize] = useState(12);
@@ -189,10 +195,9 @@ export default function Editor({
     }
   }, [editorRef]);
 
-  const [theme, setTheme] = useState('dawn'); // Default theme
   const handleThemeChange = (newTheme: string) => {
     const cleanTheme = newTheme.replace('ace/theme/', '');
-    setTheme(cleanTheme);
+    onChangeTheme(cleanTheme);
   };
 
   return (
