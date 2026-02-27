@@ -26,17 +26,20 @@ jobs:
           npm run postinstall
           npm run build
 
-      - name: Build Linux artifacts (PR validation)
-        if: ${{ github.event_name == 'pull_request' }}
+      - name: Build Linux packages
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm exec electron-builder -- --linux --publish never
+          if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/main" && "${GITHUB_REPOSITORY_OWNER}" == "electron-react-boilerplate" ]]; then
+            npm exec electron-builder -- --publish always --linux
+          else
+            npm exec electron-builder -- --publish never --linux
+          fi
 
-      - name: Publish Linux releases
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'electron-react-boilerplate' }}
-        env:
-          # This is used for uploading release assets to github
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          npm exec electron-builder -- --publish always --linux
+      - name: Upload Linux build artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-${{ github.run_number }}
+          path: release/build/*
+          if-no-files-found: error
