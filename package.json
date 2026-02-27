@@ -203,7 +203,8 @@
     },
     "linux": {
       "target": [
-        "deb"
+        "deb",
+        "AppImage"
       ],
       "category": "Development"
     },

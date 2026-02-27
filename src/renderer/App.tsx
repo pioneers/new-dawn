@@ -29,6 +29,7 @@ import {
   Input as RobotInput,
 } from '../../protos-main/protos';
 import robotKeyNumberMap from './robotKeyNumberMap';
+import getConnectedGamepads from './gamepadUtils';
 import staffCodeSource from './staffCode';
 import './App.css';
 
@@ -118,6 +119,8 @@ export default function App() {
   );
   // Dark Mode UI State
   const [isDarkMode, setIsDarkMode] = useState(false);
+  // Whether this environment should prioritize controller input for robot control
+  const [preferControllerInput, setPreferControllerInput] = useState(false);
 
   const changeActiveModal = (newModalName: string) => {
     if (document.activeElement instanceof HTMLElement) {
@@ -291,40 +294,37 @@ export default function App() {
     const onKeyUp = ({ key }: { key: string }) => onKeyChange(key, false);
     window.addEventListener('keyup', onKeyUp);
     const gamepadUpdateInterval = setInterval(() => {
-      // Possible bug requires testing: gamepad indices are not preserved after filtering
-      // Filter removes disconnected and 'ghost'/duplicate gamepads (can be distinguished by
-      // different mapping)
-      const inputs = navigator
-        .getGamepads()
-        .filter((gp): gp is Gamepad => gp !== null && gp.mapping === 'standard')
-        .map((gp) => {
-          let buttonBitmap: number = 0;
-          gp.buttons.forEach((button, buttonIdx) => {
-            if (button.pressed) {
-              buttonBitmap |= 1 << buttonIdx;
-            }
-          });
-          return new RobotInput({
-            connected: gp.connected,
-            axes: gp.axes.slice(),
-            buttons: buttonBitmap,
-            source: RobotInputSource.GAMEPAD,
-          });
+      const inputs = getConnectedGamepads(preferControllerInput).map((gp) => {
+        let buttonBitmap: number = 0;
+        gp.buttons.forEach((button, buttonIdx) => {
+          if (button.pressed) {
+            buttonBitmap |= 1 << buttonIdx;
+          }
         });
-      if (keyboardControlsStatus !== 'off') {
+        return new RobotInput({
+          connected: gp.connected,
+          axes: gp.axes.slice(),
+          buttons: buttonBitmap,
+          source: RobotInputSource.GAMEPAD,
+        });
+      });
+      const shouldUseKeyboardInput =
+        keyboardControlsStatus !== 'off' &&
+        !(preferControllerInput && inputs.length > 0);
+      if (shouldUseKeyboardInput) {
         // Possible bug requires testing: is Runtime ok with mixed input sources in same packet?
         inputs.push(
           new RobotInput({
             connected: keyboardControlsStatus === 'on',
             axes: [],
             buttons:
-              keyboardControlsStatus === 'off' ? Number(keyboardBitmap) : 0,
+              keyboardControlsStatus === 'on' ? Number(keyboardBitmap) : 0,
             source: RobotInputSource.KEYBOARD,
           }),
         );
-        if (keyboardControlsStatus === 'offEdge') {
-          setKeyboardControlsEnabled('off');
-        }
+      }
+      if (keyboardControlsStatus === 'offEdge') {
+        setKeyboardControlsEnabled('off');
       }
       window.electron.ipcRenderer.sendMessage('main-robot-input', inputs);
     }, GAMEPAD_UPDATE_PERIOD_MS);
@@ -333,7 +333,7 @@ export default function App() {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
     };
-  }, [keyboardControlsStatus]);
+  }, [keyboardControlsStatus, preferControllerInput]);
   useEffect(() => {
     // Tests won't run main/preload.ts
     if (window.electron) {
@@ -345,6 +345,7 @@ export default function App() {
           setFieldStationNum(data.fieldStationNumber);
           setShowDirtyUploadWarning(data.showDirtyUploadWarning);
           setIsDarkMode(data.darkmode);
+          setPreferControllerInput(data.preferControllerInput);
           document.getElementsByTagName(
             'title',
           )[0].innerText = `Dawn ${data.dawnVersion}`;

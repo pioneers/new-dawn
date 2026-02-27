@@ -1,21 +1,14 @@
 name: Publish
 
 on:
+  pull_request:
   push:
     branches:
       - main
 
 jobs:
-  publish:
-    # To enable auto publishing to github, update your electron publisher
-    # config in package.json > "build" and remove the conditional below
-    if: ${{ github.repository_owner == 'electron-react-boilerplate' }}
-
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [macos-latest]
+  publish-linux:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout git repo
@@ -33,14 +26,17 @@ jobs:
           npm run postinstall
           npm run build
 
-      - name: Publish releases
+      - name: Build Linux artifacts (PR validation)
+        if: ${{ github.event_name == 'pull_request' }}
         env:
-          # These values are used for auto updates signing
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASS }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npm exec electron-builder -- --linux --publish never
+
+      - name: Publish Linux releases
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'electron-react-boilerplate' }}
+        env:
           # This is used for uploading release assets to github
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm exec electron-builder -- --publish always --win --mac --linux
+          npm exec electron-builder -- --publish always --linux

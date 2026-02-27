@@ -3,6 +3,7 @@ import Modal from './Modal';
 // ignore the type error for the svgr component
 // @ts-ignore
 import LogitechGamepadSvgr from '../../../assets/logitech-gamepad.svg?svgr';
+import getConnectedGamepads from '../gamepadUtils';
 import './GamepadInfoModal.css';
 
 const BUTTON_ORDER = [
@@ -169,11 +170,7 @@ export default function GamepadInfoModal({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const inputs = navigator
-        .getGamepads()
-        .filter(
-          (gp): gp is Gamepad => gp !== null && gp.mapping === 'standard',
-        );
+      const inputs = getConnectedGamepads(true);
       if (inputs.length) {
         setButtons(
           inputs[0].buttons.map((button, i) => [
