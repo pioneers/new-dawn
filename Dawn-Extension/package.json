@@ -1,8 +1,9 @@
 {
-  "name": "dawn-VSCODE",
+  "name": "Dawn-Extension",
   "displayName": "Dawn-VS Code",
+  "publisher": "OmegaKM",
   "description": "Dawn Extention for VS Code to help code the robot in a more familiar platform",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.125.0"
   },
@@ -21,7 +22,42 @@
         "command": "dawn-VSCODE.DownloadRobot",
         "title": "Download Code from Robot"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Dawn-VSCODE",
+      "properties": {
+        "dawn-VSCODE.robotIP": {
+          "type": "string",
+          "default": "192.168.0.100",
+          "description": "The IP address of the robot's SSH server",
+          "order": 0
+        },
+        "dawn-VSCODE.SSHPort": {
+          "type": "integer",
+          "default": 22,
+          "description": "The SSH port of the robot",
+          "order": 1
+        },
+        "dawn-VSCODE.SSHUser": {
+          "type": "string",
+          "default": "ubuntu",
+          "description": "The SSH username of robot",
+          "order": 2
+        },
+        "dawn-VSCODE.SSHPassword": {
+          "type": "string",
+          "default": "potato",
+          "description": "The SSH password for robot",
+          "order": 3
+        },
+        "dawn-VSCODE.CodePath": {
+          "type": "string",
+          "default": "/home/ubuntu/runtime/executor/studentcode.py",
+          "description": "The remote path to the student code file",
+          "order": 4
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -38,19 +74,23 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.125.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "24.x",
-    "typescript-eslint": "^8.61.1",
-    "eslint": "^10.5.0",
+    "@types/ssh2": "^1.15.5",
+    "@types/vscode": "^1.125.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.0.0",
     "esbuild": "^0.28.1",
+    "eslint": "^10.5.0",
     "npm-run-all": "^4.1.5",
     "typescript": "^6.0.3",
-    "@vscode/test-cli": "^0.0.15",
-    "@vscode/test-electron": "^3.0.0"
+    "typescript-eslint": "^8.61.1"
   },
   "overrides": {
     "diff": "^8.0.4",
     "serialize-javascript": "^7.0.6"
+  },
+  "dependencies": {
+    "ssh2": "^1.17.0"
   }
 }
