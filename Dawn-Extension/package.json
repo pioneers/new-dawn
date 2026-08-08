@@ -33,7 +33,7 @@
           "order": 0
         },
         "dawn-VSCODE.SSHPort": {
-          "type": "integer",
+          "type": "number",
           "default": 22,
           "description": "The SSH port of the robot",
           "order": 1

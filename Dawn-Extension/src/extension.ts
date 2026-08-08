@@ -1,29 +1,46 @@
 import * as vscode from 'vscode';
 import CodeTransfer from './CodeTransfer';
 
-// Codetransfer function to get info from settings
-function getCodeTransfer(): CodeTransfer | undefined {
-  const config = vscode.workspace.getConfiguration('dawn-VSCODE');
+// Interface to hold config settings
+interface ExtensionSettings {
+  port: number
+  user: string
+  pass: string
+  codepath: string
+  robotIp: string
+}
 
-  const port = config.get<number>("SSHPort")!;
+
+function getExtensionSettings(): ExtensionSettings {
+  const config = vscode.workspace.getConfiguration('dawn-VSCODE');
+  const port = config.get<number>("SSHPort");
   const user = config.get<string>("SSHUser")!;
   const pass = config.get<string>("SSHPassword")!;
-  let codepath = config.get<string>("CodePath")!;
-
+  const codepath = config.get<string>("CodePath")!;
+  const robotIp = config.get<string>('robotIP')!;
   if (!pass) {
-    vscode.window.showErrorMessage(
-      "Set dawn-VSCODE settings before uploading/downloading."
-    );
-    return undefined;
+    throw new Error("SSH password must not be empty");
   }
-  codepath = codepath.replace(/\$\{SSHUser\}/g, user);
-  return new CodeTransfer(codepath, port, user, pass);
-}
-  
+  if (!robotIp) {
+    throw new Error("Robot IP must be set");
+  }
+  if (!port) {
+    throw new Error("SSH Port must be set");
+  }
+  if (!user) {
+    throw new Error("SSH Username must be set");
+  }
+  if (!codepath) {
+    throw new Error("File Code Path must be set");
+  }
 
-// take IP address given from setting otherwise default
-function getRobotIp(): string | undefined {
-  return vscode.workspace.getConfiguration('dawn-VSCODE').get<string>('robotIP');
+  return {
+    port: port,
+    user: user,
+    pass: pass,
+    robotIp: robotIp,
+    codepath: codepath,
+  };
 }
 
 
@@ -32,70 +49,56 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
 
-// Command for Upload
+    // Command for Upload
     vscode.commands.registerCommand('dawn-VSCODE.UploadRobot', async () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
         vscode.window.showErrorMessage('No file open to upload.');
         return;
       }
-	  // save any unsave changes
-	  if (editor.document.isDirty) {
-		await editor.document.save();
-	  }
-
-	  const filePath = editor.document.uri.fsPath;
-
-	// Error pop-up for when IP is not setup correctly
-	  const ip = getRobotIp();
-      if (!ip) {
-        vscode.window.showErrorMessage('Set dawn-VSCODE.robotIp in settings first.');
-        return;
+      // save any unsave changes
+      if (editor.document.isDirty) {
+        await editor.document.save();
       }
 
-       const codeTransfer = getCodeTransfer();
-      if (!codeTransfer) {
-        return;
-      }
+      const filePath = editor.document.uri.fsPath;
+      const settings = getExtensionSettings();
+      const codeTransfer = new CodeTransfer(settings.codepath, settings.port, settings.user, settings.pass);
 
-	  try {
-        await codeTransfer.upload(filePath, ip);
+      try {
+        await codeTransfer.upload(filePath, settings.robotIp);
         vscode.window.showInformationMessage('Code uploaded successfully.');
       } catch (e) {
         vscode.window.showErrorMessage(`Failed to upload code: ${e}`);
       }
     }),
 
-// Command for Download
-	vscode.commands.registerCommand('dawn-VSCODE.DownloadRobot', async () => {
+    // Command for Download
+    vscode.commands.registerCommand('dawn-VSCODE.DownloadRobot', async () => {
 
-      const ip = getRobotIp();
-      if (!ip) {
-        vscode.window.showErrorMessage('Set dawn-VSCODE.robotIp in settings first.');
-        return;
-      }
-
-        const codeTransfer = getCodeTransfer();
-      if (!codeTransfer) {
-        return;
-      }
-
+      const settings = getExtensionSettings();
+      const codeTransfer = new CodeTransfer(settings.codepath, settings.port, settings.user, settings.pass);
+      let content;
       try {
-        const content = await codeTransfer.download(ip);
-        const editor = vscode.window.activeTextEditor;
+        content = await codeTransfer.download(settings.robotIp);
+      } catch (e) {
+        vscode.window.showErrorMessage(`Failed to download code: ${e}`);
+        return;
+      }
+      const editor = vscode.window.activeTextEditor;
 
-        if (editor) {
-          const doc = editor.document;
-          const fullRange = new vscode.Range(
-            doc.positionAt(0),
-            doc.positionAt(doc.getText().length)
-          );
+      if (editor) {
+        const doc = editor.document;
+        const fullRange = new vscode.Range(
+          doc.positionAt(0),
+          doc.positionAt(doc.getText().length)
+        );
 
-          await editor.edit(editBuilder => {
-            editBuilder.replace(fullRange, content);
-          });
+        await editor.edit(editBuilder => {
+          editBuilder.replace(fullRange, content);
+        });
 
-          await doc.save();
+        await doc.save();
 
       } else {
         const doc = await vscode.workspace.openTextDocument({
@@ -104,14 +107,11 @@ export function activate(context: vscode.ExtensionContext) {
         });
         await vscode.window.showTextDocument(doc);
       }
-      
-        vscode.window.showInformationMessage('Code downloaded successfully.');
-      } catch (e) {
-        vscode.window.showErrorMessage(`Failed to download code: ${e}`);
-      }
+
+      vscode.window.showInformationMessage('Code downloaded successfully.');
     }),
   );
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
