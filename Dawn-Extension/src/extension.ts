@@ -62,10 +62,17 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       const filePath = editor.document.uri.fsPath;
-      const settings = getExtensionSettings();
-      const codeTransfer = new CodeTransfer(settings.codepath, settings.port, settings.user, settings.pass);
+
+      let settings: ExtensionSettings;
+      try {
+        settings = getExtensionSettings();
+      } catch (e) {
+        vscode.window.showErrorMessage(`${(e as Error).message}`);
+        return;
+      }
 
       try {
+        const codeTransfer = new CodeTransfer(settings.codepath, settings.port, settings.user, settings.pass);
         await codeTransfer.upload(filePath, settings.robotIp);
         vscode.window.showInformationMessage('Code uploaded successfully.');
       } catch (e) {
@@ -76,10 +83,18 @@ export function activate(context: vscode.ExtensionContext) {
     // Command for Download
     vscode.commands.registerCommand('dawn-VSCODE.DownloadRobot', async () => {
 
-      const settings = getExtensionSettings();
-      const codeTransfer = new CodeTransfer(settings.codepath, settings.port, settings.user, settings.pass);
+      let settings: ExtensionSettings;
+      try {
+        settings = getExtensionSettings();
+      } catch (e) {
+        vscode.window.showErrorMessage(`${(e as Error).message}`);
+        return;
+      }
+
+
       let content;
       try {
+        const codeTransfer = new CodeTransfer(settings.codepath, settings.port, settings.user, settings.pass);
         content = await codeTransfer.download(settings.robotIp);
       } catch (e) {
         vscode.window.showErrorMessage(`Failed to download code: ${e}`);
