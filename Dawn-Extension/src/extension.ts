@@ -11,7 +11,7 @@ interface ExtensionSettings {
 }
 
 
-function getExtensionSettings(): ExtensionSettings {
+export function getExtensionSettings(): ExtensionSettings {
   const config = vscode.workspace.getConfiguration('dawn-VSCODE');
   const port = config.get<number>("SSHPort");
   const user = config.get<string>("SSHUser")!;
@@ -19,19 +19,19 @@ function getExtensionSettings(): ExtensionSettings {
   const codepath = config.get<string>("CodePath")!;
   const robotIp = config.get<string>('robotIP')!;
   if (!pass) {
-    throw new Error("SSH password must not be empty");
+    throw new Error("SSH Password must be set correctly");
   }
   if (!robotIp) {
-    throw new Error("Robot IP must be set");
+    throw new Error("Robot IP must be set correctly");
   }
   if (!port) {
-    throw new Error("SSH Port must be set");
+    throw new Error("SSH Port must be set correctly");
   }
   if (!user) {
-    throw new Error("SSH Username must be set");
+    throw new Error("SSH Username must be set correctly");
   }
   if (!codepath) {
-    throw new Error("File Code Path must be set");
+    throw new Error("File Code Path must be set correctly");
   }
 
   return {
