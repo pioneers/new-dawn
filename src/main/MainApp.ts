@@ -1,6 +1,7 @@
 import { dialog, ipcMain, app } from 'electron';
 import type { BrowserWindow, FileFilter } from 'electron';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { version as dawnVersion } from '../../package.json';
 import AppConsoleMessage from '../common/AppConsoleMessage';
@@ -57,6 +58,27 @@ const ROBOT_SSH_PASS = 'potato';
  * Path on robot to upload student code to.
  */
 const REMOTE_CODE_PATH = `/home/${ROBOT_SSH_USER}/runtime/executor/studentcode.py`;
+const STEAM_DECK_USER = 'deck';
+
+function shouldPreferControllerInput() {
+  let systemUser = process.env.USER || process.env.LOGNAME || '';
+  if (!systemUser) {
+    try {
+      systemUser = os.userInfo().username;
+    } catch {
+      systemUser = '';
+    }
+  }
+  const normalizedUser = systemUser.trim();
+  const normalizedHomeUser = path
+    .basename(process.env.HOME || os.homedir())
+    .trim();
+
+  return (
+    normalizedUser.toLowerCase() === STEAM_DECK_USER ||
+    normalizedHomeUser.toLowerCase() === STEAM_DECK_USER
+  );
+}
 
 /**
  * Adds a listener for the main-quit IPC event fired by the renderer.
@@ -300,6 +322,7 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
       fieldStationNumber: this.#config.fieldStationNumber,
       showDirtyUploadWarning: this.#config.showDirtyUploadWarning,
       darkmode: this.#config.darkmode,
+      preferControllerInput: shouldPreferControllerInput(),
     });
   }
 
@@ -670,37 +693,51 @@ export default class MainApp implements MenuHandler, RuntimeCommsListener {
    */
   #showCodePathDialog(mode: 'save' | 'load'): Promise<boolean> {
     return new Promise((resolve, reject) => {
-      let promise;
       if (mode === 'save') {
-        promise = dialog.showSaveDialog(this.#mainWindow, {
-          filters: CODE_FILE_FILTERS,
-          ...(this.#savePath === null ? {} : { defaultPath: this.#savePath }),
-        });
-      } else {
-        promise = dialog.showOpenDialog(this.#mainWindow, {
-          filters: CODE_FILE_FILTERS,
-          properties: ['openFile'],
-        });
-      }
-      promise
-        .then((result) => {
-          if (!result.canceled) {
-            this.#savePath = result.filePaths ? result.filePaths[0] : result.filePath;
-            const data: RendererFileControlData = {
-              type: 'didChangePath',
-              path: this.#savePath,
-            };
-            this.#sendToRenderer('renderer-file-control', data);
-            if (mode === 'load') {
-              this.#watchCodeFile();
+        dialog
+          .showSaveDialog(this.#mainWindow, {
+            filters: CODE_FILE_FILTERS,
+            ...(this.#savePath === null ? {} : { defaultPath: this.#savePath }),
+          })
+          .then((result) => {
+            if (!result.canceled && result.filePath) {
+              this.#savePath = result.filePath;
+              const data: RendererFileControlData = {
+                type: 'didChangePath',
+                path: this.#savePath,
+              };
+              this.#sendToRenderer('renderer-file-control', data);
+              resolve(true);
+            } else {
+              resolve(false);
             }
-            resolve(true);
-          } else {
-            resolve(false);
-          }
-          return null;
-        })
-        .catch(reject);
+            return null;
+          })
+          .catch(reject);
+      } else {
+        dialog
+          .showOpenDialog(this.#mainWindow, {
+            filters: CODE_FILE_FILTERS,
+            properties: ['openFile'],
+          })
+          .then((result) => {
+            const [selectedPath] = result.filePaths;
+            if (!result.canceled && selectedPath) {
+              this.#savePath = selectedPath;
+              const data: RendererFileControlData = {
+                type: 'didChangePath',
+                path: this.#savePath,
+              };
+              this.#sendToRenderer('renderer-file-control', data);
+              this.#watchCodeFile();
+              resolve(true);
+            } else {
+              resolve(false);
+            }
+            return null;
+          })
+          .catch(reject);
+      }
     });
   }
 

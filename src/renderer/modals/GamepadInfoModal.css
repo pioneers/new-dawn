@@ -1,14 +1,64 @@
+.GamepadInfoModal-content {
+  display: grid;
+  grid-template-columns: minmax(300px, 1fr) minmax(400px, 1.2fr);
+  gap: 2rem;
+  align-items: start;
+  max-height: 80vh;
+  width: 60vw;
+  overflow: hidden;
+}
+
 .GamepadInfoModal-data {
-  border: 1px solid black;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  overflow-y: auto;
+  padding-right: 1rem;
+  max-height: 100%;
+}
+
+.GamepadInfoModal-section {
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 1rem;
+  height: fit-content;
+}
+
+.GamepadInfoModal-section h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.GamepadInfoModal-section table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.GamepadInfoModal-section td {
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.GamepadInfoModal-section tr:last-child td {
+  border-bottom: none;
 }
 
 .GamepadInfoModal-datum-hovered {
   font-weight: bold;
+  background-color: var(--hover);
 }
 
 .logitech-gamepad_svg {
-  --hover: lightgray;
+  --hover: rgba(211, 211, 211, 0.3);
   --active: orange;
+  --border-color: #ddd;
   pointer-events: none;
   fill: none;
   stroke-opacity: 1;
@@ -16,8 +66,15 @@
   fill-opacity: 1;
 }
 
+[data-theme="dark"] .logitech-gamepad_svg {
+  --border-color: #444;
+  --hover: rgba(211, 211, 211, 0.1);
+}
+
 .logitech-gamepad_svg__control {
   pointer-events: fill;
+  fill: black;
+  transition: fill 0.15s ease-out;
 }
 
 .logitech-gamepad_svg__control:hover {
@@ -34,11 +91,14 @@
   stroke-width: 1.3;
 }
 
-.logitech-gamepad_svg__control {
-  fill: black;
-  transition: fill 0.15s ease-out;
+.logitech-gamepad_svg__dpad-overlay {
+  pointer-events: fill;
+  fill: transparent;
 }
 
+.logitech-gamepad_svg__dpad-overlay:hover {
+  fill: var(--hover);
+}
 
 .positive-joystick_left_x #logitech-gamepad_svg__left-joystick {
 
@@ -76,10 +136,10 @@
 .active-button_b #logitech-gamepad_svg__b-button,
 .active-button_x #logitech-gamepad_svg__x-button,
 .active-button_y #logitech-gamepad_svg__y-button,
-.active-dpad-up #logitech-gamepad_svg__dpad,
-.active-dpad-down #logitech-gamepad_svg__dpad,
-.active-dpad-left #logitech-gamepad_svg__dpad,
-.active-dpad-right #logitech-gamepad_svg__dpad,
+.active-dpad_up #logitech-gamepad_svg__dpad,
+.active-dpad_down #logitech-gamepad_svg__dpad,
+.active-dpad_left #logitech-gamepad_svg__dpad,
+.active-dpad_right #logitech-gamepad_svg__dpad,
 .active-r_bumper #logitech-gamepad_svg__right-bumper,
 .active-r_trigger #logitech-gamepad_svg__right-trigger,
 .active-l_bumper #logitech-gamepad_svg__left-bumper,
@@ -90,4 +150,112 @@
 .active-l_stick #logitech-gamepad_svg__left-joystick,
 .active-r_stick #logitech-gamepad_svg__right-joystick {
   fill: var(--active);
+}
+
+/* Add hover interactions for dpad overlays */
+#logitech-gamepad_svg__dpad-up:hover ~ #logitech-gamepad_svg__dpad,
+#logitech-gamepad_svg__dpad-down:hover ~ #logitech-gamepad_svg__dpad,
+#logitech-gamepad_svg__dpad-left:hover ~ #logitech-gamepad_svg__dpad,
+#logitech-gamepad_svg__dpad-right:hover ~ #logitech-gamepad_svg__dpad {
+  fill: var(--hover);
+}
+
+.GamepadInfoModal-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+  min-width: 65px;
+  justify-content: flex-end;
+}
+
+.GamepadInfoModal-dot-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.GamepadInfoModal-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--dot-color, #e63946);
+  transition: all 0.2s ease-out;
+  position: relative;
+}
+
+.GamepadInfoModal-dot::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  background-color: var(--dot-color, #e63946);
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+  filter: blur(2px);
+  z-index: -1;
+}
+
+.GamepadInfoModal-dot[data-active="true"] {
+  --dot-color: #2ecc71;
+}
+
+.GamepadInfoModal-dot[data-active="true"]::after {
+  opacity: 0.4;
+}
+
+.GamepadInfoModal-dot[data-active="false"] {
+  --dot-color: #e63946;
+  opacity: 0.7;
+}
+
+.GamepadInfoModal-dot-container:hover .GamepadInfoModal-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.GamepadInfoModal-tooltip {
+  position: absolute;
+  right: calc(100% + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--tooltip-bg, rgba(33, 33, 33, 0.95));
+  color: var(--tooltip-color, white);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease-out, visibility 0.15s ease-out;
+}
+
+.GamepadInfoModal-tooltip::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left: 4px solid var(--tooltip-bg, rgba(33, 33, 33, 0.95));
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+}
+
+[data-theme="dark"] .GamepadInfoModal-tooltip {
+  --tooltip-bg: rgba(240, 240, 240, 0.95);
+  --tooltip-color: #222;
+}
+
+.GamepadInfoModal-axis-value {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  color: var(--axis-color, #2f80ed);
+  text-align: right;
+  min-width: 4.5ch;
+  display: inline-block;
 }

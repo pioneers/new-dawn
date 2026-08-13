@@ -1,34 +1,70 @@
 .ConnectionConfigModal-light {
-  font-family: Arial, sans-serif;
+  font-family: system-ui, -apple-system, Arial, sans-serif;
+  --input-border-color: var(--window-accent-color);
+  --input-focus-color: var(--window-head-color);
+  --text-color: #000000;
+  --bg-color: #ffffff;
 }
+
 .ConnectionConfigModal-dark {
-  font-family: Arial, sans-serif;
-  color: #FFFFFF;
+  font-family: system-ui, -apple-system, Arial, sans-serif;
+  --input-border-color: var(--window-accent-color);
+  --input-focus-color: var(--window-head-color);
+  --text-color: #ffffff;
+  --bg-color: #1f1f1f;
+  color: var(--text-color);
 }
+
 .ConnectionConfigModal-config-field {
   display: block;
-  padding: 2px 0 2px;
+  padding: 8px 0;
+  margin-bottom: 4px;
+  display: flex;
+  gap: 4px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
 }
+
 .ConnectionConfigModal-section .ConnectionConfigModal-config-field {
   padding-left: 12px;
 }
+
 .ConnectionConfigModal-config-field input {
-  margin-left: 4px;
+  margin-left: 8px;
+  padding: 6px 8px;
   border: none;
   border-bottom: 1px solid var(--window-accent-color);
   outline: none;
   font-size: 16px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin-left: auto;
+  transition: all 0.2s ease-in-out;
 }
-.ConnectionConfigModal-config-field input:focus{
-  border-color: var(--window-head-color);
+
+.ConnectionConfigModal-config-field input:focus {
+  border-color: var(--input-focus-color);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .ConnectionModalInput-dark {
-  background-color: #1f1f1f;
-  color:#FFFFFF;
+  background-color: var(--bg-color) !important;
+  color: var(--text-color) !important;
 }
+
 .ConnectionConfigModal-section:not(:first-child) {
-  margin-top: 8px;
+  margin-top: 16px;
 }
+
 .ConnectionConfigModal-section-header {
-  padding: 4px 0 4px 0;
+  padding: 8px 0;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.ConnectionConfigModal-section {
+  border: 1px solid var(--window-accent-color);
+  padding: 1rem 1rem 1rem 1rem;
+  border-radius: 4px;
 }

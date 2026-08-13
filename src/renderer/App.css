@@ -3,12 +3,12 @@ body {
 }
 /* Light Mode */
 .App-light {
-  --window-head-color: navy;
-  --window-head-text-color: white;
-  --window-accent-color: grey;
-  --body-color: white;
-  --body-text-color: black;
-  --body-accent-color: lightgray;
+  --window-head-color: #1e40af; /* Tailwind blue-800 */
+  --window-head-text-color: black;
+  --window-accent-color: #64748b; /* Tailwind slate-500 */
+  --body-color: #ffffff; /* Tailwind white */
+  --body-text-color: #1e293b; /* Tailwind slate-800 */
+  --body-accent-color: #e2e8f0; /* Tailwind slate-200 */
 
   display: flex;
   flex-direction: column;
@@ -17,12 +17,12 @@ body {
 }
 /* Dark Mode */
 .App-dark {
-  --window-head-color: #1F1A24;
-  --window-head-text-color: white;
-  --window-accent-color: grey;
-  --body-color: #1F1F1F;
-  --body-text-color: #FFFFFF;
-  --body-accent-color: lightgray;
+  --window-head-color: #0f172a; /* Tailwind slate-900 */
+  --window-head-text-color: #f8fafc; /* Tailwind slate-50 */
+  --window-accent-color: #475569; /* Tailwind slate-600 */
+  --body-color: #1e293b; /* Tailwind slate-800 */
+  --body-text-color: #f1f5f9; /* Tailwind slate-100 */
+  --body-accent-color: #334155; /* Tailwind slate-700 */
 
   display: flex;
   flex-direction: column;
@@ -58,21 +58,21 @@ body {
   margin-top: 0;
 }
 .link-dark {
-  color: lightblue;
+  color: #93c5fd; /* Tailwind blue-300 */
 }
 .link-light {
-  color: blue;
+  color: #2563eb; /* Tailwind blue-600 */
 }
 .editor-container {
-  display: flex; 
+  display: flex;
   flex-direction: column;
   overflow: hidden;
   min-width: 0;
 }
 .editor-container > * {
-  flex-shrink: 0; 
+  flex-shrink: 0;
 }
 .editor-container > :first-child {
   flex: 1;
-  min-height: 0; 
+  min-height: 0;
 }

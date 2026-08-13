@@ -57,6 +57,10 @@ export interface RendererInitData {
    * Darkmode setting, to be saved to persistent config.
    */
   darkmode: boolean;
+  /**
+   * Whether Dawn should prioritize controller input over keyboard controls.
+   */
+  preferControllerInput: boolean;
 }
 
 /**

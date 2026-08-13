@@ -1,21 +1,14 @@
 name: Publish
 
 on:
+  pull_request:
   push:
     branches:
       - main
 
 jobs:
-  publish:
-    # To enable auto publishing to github, update your electron publisher
-    # config in package.json > "build" and remove the conditional below
-    if: ${{ github.repository_owner == 'electron-react-boilerplate' }}
-
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [macos-latest]
+  publish-linux:
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout git repo
@@ -33,14 +26,20 @@ jobs:
           npm run postinstall
           npm run build
 
-      - name: Publish releases
+      - name: Build Linux packages
         env:
-          # These values are used for auto updates signing
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASS }}
-          CSC_LINK: ${{ secrets.CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          # This is used for uploading release assets to github
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npm exec electron-builder -- --publish always --win --mac --linux
+          if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == "refs/heads/main" && "${GITHUB_REPOSITORY_OWNER}" == "electron-react-boilerplate" ]]; then
+            npm exec electron-builder -- --publish always --linux
+          else
+            npm exec electron-builder -- --publish never --linux
+          fi
+
+      - name: Upload Linux build artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build-${{ github.run_number }}
+          path: release/build/*
+          if-no-files-found: error
