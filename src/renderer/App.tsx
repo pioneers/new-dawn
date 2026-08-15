@@ -80,9 +80,9 @@ export default function App() {
   // closed)
   const [consoleIsAlerted, setConsoleIsAlerted] = useState(false);
   // Whether keyboard controls are enabled.
-  const [keyboardControlsStatus, setKeyboardControlsEnabled] = useState(
-    'off' as KeyboardControlsStatus,
-  );
+  const [keyboardControlsStatus, setKeyboardControlsEnabled] =
+    useState<KeyboardControlsStatus>('off');
+
   // Whether the robot is running student code
   const [robotRunning, setRobotRunning] = useState(false);
   // Most recent window.innerWidth/Height needed to clamp editor and col size
@@ -318,7 +318,7 @@ export default function App() {
             connected: keyboardControlsStatus === 'on',
             axes: [],
             buttons:
-              keyboardControlsStatus === 'off' ? Number(keyboardBitmap) : 0,
+              keyboardControlsStatus === 'on' ? Number(keyboardBitmap) : 0,
             source: RobotInputSource.KEYBOARD,
           }),
         );
