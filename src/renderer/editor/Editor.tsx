@@ -175,11 +175,19 @@ export default function Editor({
   onToggleDarkMode: () => void;
 }) {
   const [opmode, setOpmode] = useState('auto');
-  const [fontSize, setFontSize] = useState(12);
+  const [fontSize, setFontSize] = useState(() => {
+    const saved = localStorage.getItem('editor-fontSize');
+    return saved ? parseInt(saved, 10) : 12;
+  });
+
   const editorRef = useRef(null as AceEditor | null);
 
   const zoomEditor = (increase: boolean) => {
-    setFontSize((old) => old + (increase ? 1 : -1));
+    setFontSize((old) => {
+      const next = old + (increase ? 1 : -1);
+      localStorage.setItem('editor-fontSize', String(next));
+      return next;
+    });
   };
   useEffect(() => {
     if (editorRef.current !== null) {
@@ -189,10 +197,13 @@ export default function Editor({
     }
   }, [editorRef]);
 
-  const [theme, setTheme] = useState('dawn'); // Default theme
+  const [theme, setTheme] = useState(
+    () => localStorage.getItem('editor-theme') ?? 'dawn',
+  );
   const handleThemeChange = (newTheme: string) => {
     const cleanTheme = newTheme.replace('ace/theme/', '');
     setTheme(cleanTheme);
+    localStorage.setItem('editor-theme', cleanTheme);
   };
 
   return (
@@ -323,8 +334,9 @@ export default function Editor({
         >
           <img src={themeSvg} alt="Change Theme" />
           <select
-            onChange={(e) => handleThemeChange(`ace/theme/${e.target.value}`)}
-            name="Editor-toolbar-opmode"
+            value={theme}
+            onChange={(e) => handleThemeChange(e.target.value)}
+            name="editor-theme"
           >
             {Object.entries(ACE_THEMES).map(([themeKey, themeName]) => (
               <option key={themeKey} value={themeKey}>
