@@ -94,3 +94,71 @@
 .AppConsole-inner-dark::-webkit-scrollbar-thumb:hover {
   background-color: #7f7f7f;
 }
+.AppConsole-zoom-controls {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+  padding: 2px 4px;
+  border-radius: 4px;
+  opacity: 0.75;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.AppConsole-zoom-controls:hover {
+  opacity: 1;
+}
+
+.AppConsole-zoom-controls-dark {
+  background-color: rgba(30, 30, 30, 0.9);
+  border: 1px solid #444;
+}
+
+.AppConsole-zoom-controls-light {
+  background-color: rgba(245, 245, 245, 0.9);
+  border: 1px solid #ccc;
+}
+
+.AppConsole-zoom-btn-dark,
+.AppConsole-zoom-reset-dark,
+.AppConsole-zoom-btn-light,
+.AppConsole-zoom-reset-light {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.AppConsole-zoom-btn-dark,
+.AppConsole-zoom-reset-dark {
+  color: #FFFFFF;
+}
+
+.AppConsole-zoom-btn-light,
+.AppConsole-zoom-reset-light {
+  color: #121212;
+}
+
+.AppConsole-zoom-btn-dark:hover:not(:disabled),
+.AppConsole-zoom-reset-dark:hover:not(:disabled) {
+  background-color: #3c3c3c;
+}
+
+.AppConsole-zoom-btn-light:hover:not(:disabled),
+.AppConsole-zoom-reset-light:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+
+.AppConsole-zoom-btn-dark:disabled,
+.AppConsole-zoom-reset-dark:disabled,
+.AppConsole-zoom-btn-light:disabled,
+.AppConsole-zoom-reset-light:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

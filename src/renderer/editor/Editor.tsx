@@ -270,7 +270,7 @@ export default function Editor({
             title="Toggle console"
           >
             {consoleAlert && <div className="Editor-tbbtn-alert" />}
-            <img src={consoleSvg} alt="Stop robot" />
+            <img src={consoleSvg} alt="Toggle console" />
           </button>
           <button type="button" onClick={onClearConsole} title="Clear console">
             <img src={consoleClearSvg} alt="Clear console" />

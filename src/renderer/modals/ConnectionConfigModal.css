@@ -1,34 +1,82 @@
-.ConnectionConfigModal-light {
-  font-family: Arial, sans-serif;
-}
+.ConnectionConfigModal-light,
 .ConnectionConfigModal-dark {
   font-family: Arial, sans-serif;
+  min-width: 480px;
+  padding: 6px 4px;
+}
+
+.ConnectionConfigModal-light {
+  color: #121212;
+}
+
+.ConnectionConfigModal-dark {
   color: #FFFFFF;
 }
+
 .ConnectionConfigModal-config-field {
-  display: block;
-  padding: 2px 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0 8px 10px;
+  margin: 4px 0;
+  font-size: 14px;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  transition: border-color 0.15s ease;
 }
+
+.ConnectionConfigModal-config-field:focus-within {
+  border-left-color: var(--window-accent-color);
+}
+
 .ConnectionConfigModal-section .ConnectionConfigModal-config-field {
-  padding-left: 12px;
+  padding-left: 14px;
 }
+
 .ConnectionConfigModal-config-field input {
-  margin-left: 4px;
+  width: 220px;
+  padding: 6px 10px;
   border: none;
-  border-bottom: 1px solid var(--window-accent-color);
+  border-bottom: 2px solid var(--window-accent-color);
+  border-radius: 3px 3px 0 0;
   outline: none;
   font-size: 16px;
+  font-family: inherit;
+  text-align: right;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.ConnectionConfigModal-config-field input:focus{
+
+.ConnectionConfigModal-config-field input:focus {
   border-color: var(--window-head-color);
+  box-shadow: 0 2px 0 0 var(--window-head-color);
 }
+
+.ConnectionModalInput-light {
+  background-color: #eeeeee;
+  color: #121212;
+}
+
 .ConnectionModalInput-dark {
   background-color: #1f1f1f;
-  color:#FFFFFF;
+  color: #FFFFFF;
 }
+
 .ConnectionConfigModal-section:not(:first-child) {
-  margin-top: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(128, 128, 128, 0.25);
 }
+
 .ConnectionConfigModal-section-header {
-  padding: 4px 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0 8px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-left: 4px solid var(--window-accent-color);
+  opacity: 0.9;
 }

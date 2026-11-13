@@ -63,9 +63,7 @@ export default function ConnectionConfigModal({
       modalTitle="Connection settings"
       onClose={onClose}
       isActive={isActive}
-      className={`ConnectionConfigModal-content-${
-        isDarkMode ? 'dark' : 'light'
-      }`}
+      className={`ConnectionConfigModal-${isDarkMode ? 'dark' : 'light'}`}
       isDarkMode={isDarkMode}
     >
       <label

@@ -96,7 +96,7 @@ export default function App() {
         return (old * newSize[0]) / oldSize[0];
       });
       setConsoleSize((old) => {
-        if (consoleSize === -1) {
+        if (old === -1) {
           return INITIAL_CONSOLE_HEIGHT_PERCENT * newSize[1];
         }
         return (old * newSize[1]) / oldSize[1];
@@ -318,7 +318,7 @@ export default function App() {
             connected: keyboardControlsStatus === 'on',
             axes: [],
             buttons:
-              keyboardControlsStatus === 'off' ? Number(keyboardBitmap) : 0,
+              keyboardControlsStatus === 'offEdge' ? Number(keyboardBitmap) : 0,
             source: RobotInputSource.KEYBOARD,
           }),
         );
